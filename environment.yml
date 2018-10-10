@@ -1,4 +1,4 @@
-name: P2_circ_disruption_environment 
+name: actigraphy_analysis_environment
 
 dependencies:
 - python = 3.7
@@ -7,6 +7,4 @@ dependencies:
 - matplotlib == 2.2.3
 - pip
 - pip:
-  - /Users/angusfisk/Documents/01_PhD_files/01_projects/P2_Circ_Disruption_paper_chapt2/01_analysis_files/A2_analysis_library
- 
-
+  - git+https://github.com/A-Fisk/actigraphy_analysis.git@master
