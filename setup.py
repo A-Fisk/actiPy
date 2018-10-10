@@ -4,7 +4,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="actigraphy_analysis",
+    name="actigraphyanalysis",
     version="0.0.1",
     author="Angus Fisk", 
     author_email="angus_fisk@hotmail.com",
