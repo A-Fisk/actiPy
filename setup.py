@@ -12,7 +12,7 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/A-Fisk/actigraphy_analysis",
-    packages=setuptools.find_packages(),
+    packages=['actigraphy_analysis']
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: GNU General Public License v3.0",
