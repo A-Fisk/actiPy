@@ -1,13 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="94a6ed03-1a6a-4982-ae42-4e1ff293e4a5" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/actigraphy_analysis/L1_preprocessing.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/actigraphy_analysis/L2_activity_analyse.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/actigraphy_analysis/L3_sleep_analyse.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/actigraphy_analysis/L4_bout_find.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/actigraphy_analysis/L5_actogram_create.py" beforeDir="false" />
-    </list>
+    <list default="true" id="94a6ed03-1a6a-4982-ae42-4e1ff293e4a5" name="Default Changelist" comment="" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -35,12 +29,12 @@
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
           <entry key="Python Console" value="59" />
-          <entry key="py" value="203" />
+          <entry key="py" value="204" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
-          <entry key="Python" value="262" />
+          <entry key="Python" value="263" />
         </counts>
       </usages-collector>
     </session>
@@ -52,11 +46,8 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/tests/T1_preprocessing_test.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="120">
-                  <caret line="8" selection-start-line="8" selection-end-line="8" />
-                  <folding>
-                    <element signature="e#45#60#0" expanded="true" />
-                  </folding>
+                <state relative-caret-position="105">
+                  <caret line="7" column="56" selection-start-line="7" selection-start-column="56" selection-end-line="7" selection-end-column="56" />
                 </state>
               </provider>
             </entry>
@@ -177,13 +168,14 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1440" height="900" extended-state="0" />
+    <editor active="true" />
     <layout>
       <window_info id="Favorites" side_tool="true" />
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.19238901" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info anchor="bottom" id="Version Control" show_stripe_button="false" />
       <window_info anchor="bottom" id="Python Console" weight="0.32891566" />
-      <window_info active="true" anchor="bottom" id="Terminal" visible="true" weight="0.32891566" />
+      <window_info anchor="bottom" id="Terminal" weight="0.32891566" />
       <window_info anchor="bottom" id="Event Log" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
@@ -206,11 +198,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/tests/T1_preprocessing_test.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="120">
-          <caret line="8" selection-start-line="8" selection-end-line="8" />
-          <folding>
-            <element signature="e#45#60#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="105">
+          <caret line="7" column="56" selection-start-line="7" selection-start-column="56" selection-end-line="7" selection-end-column="56" />
         </state>
       </provider>
     </entry>
