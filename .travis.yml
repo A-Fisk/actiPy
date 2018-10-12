@@ -25,7 +25,7 @@ install:
   - source activate actigraphy_analysis_environment
 
 script:
- - python Tests/T1_preprocessing_test.py
- - python Tests/T3_preprocessing_test.py
+ - python tests/T1_preprocessing_test.py
+ - python tests/T3_preprocessing_test.py
 
  
