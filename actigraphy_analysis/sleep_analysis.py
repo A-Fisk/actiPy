@@ -4,7 +4,7 @@ import pandas as pd
 import matplotlib
 import matplotlib.pyplot as plt
 import pathlib
-from acitgraphy_analysis.preprocessing import remove_object_col, read_file_to_df
+from actigraphy_analysis.preprocessing import remove_object_col, read_file_to_df
 
 def sleep_process(data, window=4):
     """
