@@ -4,9 +4,7 @@ import pandas as pd
 import matplotlib
 import matplotlib.pyplot as plt
 import pathlib
-import sys
-sys.path.append('..')
-from A2_analysis_library.L1_preprocessing import remove_object_col, read_file_to_df
+from acitgraphy_analysis.preprocessing import remove_object_col, read_file_to_df
 
 def sleep_process(data, window=4):
     """
