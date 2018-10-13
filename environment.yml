@@ -7,4 +7,4 @@ dependencies:
 - matplotlib == 2.2.3
 - pip
 - pip:
-  - git+https://github.com/A-Fisk/actigraphy_analysis.git@master
+  - git+https://github.com/A-Fisk/actigraphy_analysis.git@issue1
