@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import pathlib
 import datetime
-import L1_preprocessing
+import actigraphy_analysis.preprocessing as preprocessing
 
 np.random.seed(42)
 
@@ -81,7 +81,7 @@ class tests_preprocessing(unittest.TestCase):
         :return:
         """
 
-        removed_col_data = L1_preprocessing.remove_object_col(self.test_data_df)
+        removed_col_data = preprocessing.remove_object_col(self.test_data_df)
         number_remaining_columns = len(removed_col_data.columns)
         self.assertEqual(2, number_remaining_columns)
 
@@ -92,7 +92,7 @@ class tests_preprocessing(unittest.TestCase):
         :return:
         """
 
-        separated_list = L1_preprocessing.separate_by_condition(self.test_data_df,
+        separated_list = preprocessing.separate_by_condition(self.test_data_df,
                                                                 label_col=-1)
         number_of_separate_conditions = len(separated_list)
         self.assertEqual(3, number_of_separate_conditions)
@@ -109,7 +109,7 @@ class tests_preprocessing(unittest.TestCase):
         """
         # check reads file correctly
         # use the function to read the file.
-        df_testread = L1_preprocessing.read_file_to_df(self.save_str)
+        df_testread = preprocessing.read_file_to_df(self.save_str)
 
         # check index [0] is correct
         first_index = (df_testread.index[0])
@@ -148,7 +148,7 @@ class test_split_by_period_functions(unittest.TestCase):
                             index=index,
                             columns=self.test_col_name)
         self.data = data
-        self.test_period_index = L1_preprocessing.create_period_index(
+        self.test_period_index = preprocessing.create_period_index(
                                     self.data)
 
     def test_create_period_index(self):
@@ -159,14 +159,14 @@ class test_split_by_period_functions(unittest.TestCase):
         # should have 3 columns = len is 3
         # select the series then pass to the function
         data_series = self.data.iloc[:,0]
-        period_sliced_df = L1_preprocessing.slice_dataframe_by_index(
+        period_sliced_df = preprocessing.slice_dataframe_by_index(
                             data_series,
                             self.test_period_index)
         self.assertEqual(len(period_sliced_df.columns), 3)
         
     def test_integrated_slice_function(self):
         # call slice function
-        sliced_df = L1_preprocessing.split_dataframe_by_period(self.data,
+        sliced_df = preprocessing.split_dataframe_by_period(self.data,
                                                                0)
         # assert name is correct
         self.assertEqual(sliced_df.name, self.test_col_name[0])

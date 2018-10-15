@@ -1,0 +1,5 @@
+#!/bin/bash
+
+conda remove --name actigraphy_analysis_environment --all
+
+conda env create -f environment.yml
