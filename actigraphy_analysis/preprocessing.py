@@ -155,7 +155,12 @@ class SaveObjectPipeline:
             self.df_list.append(temp_df)
 
     # method for saving a csv file
-    def save_csv_file(self, function_name, subdir_name, save_suffix):
+    def save_csv_file(self,
+                      function_name,
+                      subdir_name,
+                      save_suffix,
+                      *args,
+                      **kwargs):
         """
         Method that applies a defined function to all the
         dataframes in the df_list and saves them to the subdir that
@@ -181,7 +186,9 @@ class SaveObjectPipeline:
             temp_df = function_name(df)
             file_name_path = create_file_name_path(subdir_path,
                                                    file,
-                                                   save_suffix)
+                                                   save_suffix,
+                                                   args,
+                                                   kwargs)
             temp_df.to_csv(file_name_path)
             self.processed_list.append(temp_df)
 
@@ -193,7 +200,9 @@ class SaveObjectPipeline:
                     save_suffix='.png',
                     showfig=False,
                     savefig=True,
-                    dpi=300):
+                    dpi=300,
+                    *args,
+                    **kwargs):
         """
         Method to take each df and apply given plot function and save to file
         Default parameters of showfig = False
@@ -228,6 +237,8 @@ class SaveObjectPipeline:
                                                    file, save_suffix)
             temp_df = remove_object_col(df, return_cols=False)
             function_name(temp_df,
+                          args,
+                          kwargs,
                           file_name_path,
                           showfig=showfig,
                           savefig=savefig,
@@ -365,3 +376,28 @@ def split_dataframe_by_period(data,
     period_sliced_data.name = animal_label
 
     return period_sliced_data
+
+def split_entire_dataframe(data,
+                           period=None,
+                           CT_period=None):
+    """
+    applies split_dataframe_by_period to each animal in turn in the dataframe
+    :param data: dataframe
+    :param period: default none
+    :param CT_period: default none.
+    :param label col: not using as assuming already dropped before coming
+        into this function
+    :return: list of split dataframes
+    """
+    
+    # apply split to each column
+    # and save in a list
+    # return the list
+    split_df_list = []
+    for num, column in enumerate(data.columns):
+        temp_split_df = split_dataframe_by_period(data,
+                                                  num,
+                                                  period=period,
+                                                  CT_period=CT_period)
+        split_df_list.append(temp_split_df)
+    return split_df_list

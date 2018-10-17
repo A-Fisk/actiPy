@@ -103,10 +103,7 @@ venv.bak/
 # mypy
 .mypy_cache/
 
-<<<<<<< HEAD
-# idea
-.idea/
-=======
 #pycharm environment
 .idea/*
->>>>>>> 7be9674b60e7f36d9780208675834359b41c6b78
+
+
