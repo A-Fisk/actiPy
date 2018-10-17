@@ -1,10 +1,8 @@
 import pandas as pd
-
-
-# This script contains functions which are useful for preprocessing of PIR data
+# This script contains functions which are useful for preprocessing of
+# actigraphy data
 
 # function to remove column if object
-
 def remove_object_col(data, return_cols=False):
     """
     Function to check the data type in each column
@@ -33,7 +31,6 @@ def remove_object_col(data, return_cols=False):
 
     else:
         return data
-
 
 # Function to split dataframe into periods based on label_column
 def separate_by_condition(data, label_col=-1):
@@ -75,7 +72,6 @@ def read_file_to_df(file_name):
                      parse_dates=True)
     return df
 
-
 # Function to check subdirectory and create if doesn't exist
 def create_subdir(input_directory, subdir_name):
     """
@@ -97,7 +93,6 @@ def create_subdir(input_directory, subdir_name):
     if not sub_dir_path.exists():
         sub_dir_path.mkdir()
     return sub_dir_path
-
 
 # Function to create file_name_path
 def create_file_name_path(directory, file, save_suffix):
@@ -401,3 +396,29 @@ def split_entire_dataframe(data,
                                                   CT_period=CT_period)
         split_df_list.append(temp_split_df)
     return split_df_list
+
+def remap_LDR(data, LDR_col=-1, invert=True):
+    """
+    Function to remap LDR values from light = high to
+    light = low - allows easier plotting of actigraphy data
+    because colouring in the light phase is UGLY
+    :param light_data:
+    :return:
+    """
+    # remap the LDR data to 150 as max then take 150
+    # from the values to code darkness
+    light_data = data.iloc[:,LDR_col].copy()
+    if light_data.max() < 150:
+        raise ValueError
+    # select from the first value >1 and
+    # the last value > 1
+    high_light_index = light_data.loc[light_data>150].index
+    start = data.index.get_loc(high_light_index[0])
+    end = data.index.get_loc(high_light_index[-1])
+    # convert all high values to 150
+    light_data.loc[light_data>150] = 150
+    if invert:
+        light_data = 150 - light_data
+    data_new = data.iloc[:,:].copy()
+    data_new.iloc[start:end,LDR_col] = light_data
+    return data_new

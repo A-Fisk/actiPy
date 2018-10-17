@@ -38,10 +38,7 @@ def actogram_plot(data,
     for data in data_to_plot, light_data:
         data = pad_first_last_days(data)
         # set all 0 values to Nan
-        data = convert_zeros(data, -10)
-    # invert LDR values so dark is high in
-    # plot
-    # light_data = remap_LDR(light_data)
+        data = convert_zeros(data, -100)
     
     # data now ready to plot, have to create the plot
     # by looping through each day and plotting
@@ -55,17 +52,41 @@ def actogram_plot(data,
         # create index to plot between
         index = range(0, len(two_days_data))
         axis.plot(index, two_days_data)
+        axis.fill_between(index, two_days_data)
         axis.fill_between(index,
                           two_days_lights,
                           facecolor='grey',
                           alpha=0.5)
         # set parameters for current subplot
         axis.set(xticks=[],
-                 ylim=[0,100],
-                 yticks=[])
+                 ylim=[0,110],
+                 yticks=[],
+                 xlim=[0, len(two_days_data)])
+        axis.set_frame_on(False)
+        
+    # set the xticks on the final plot
+    xticks = np.linspace(plt.xlim()[0],
+                         plt.xlim()[-1],
+                         9)
+    xlabels = [0,6,12,18,24,6,12,18,24]
+    ax[-1].set(xticks=xticks,
+               xticklabels=xlabels)
+    
+    # create the y labels for every 10th row
+    day_markers = np.arange(0,NUM_DAYS, 10)
+    for axis, day in zip(ax[::10], day_markers):
+        axis.set_ylabel(day,
+                        rotation=0,
+                        va='center',
+                        ha='right')
+        
     # set parameters for figure
     fig.subplots_adjust(hspace=0)
 
+    plt.show()
+#  TODO write tests!
+# TODO add in showfig and savefig options
+    
 def pad_first_last_days(data):
     """
     Simple function to add a day to the start and end
@@ -131,8 +152,7 @@ def remap_LDR(light_data, invert=True):
     if invert:
         light_data = 150-light_data
     return light_data
-# TODO add in x and y labels
-# TODO remap LDR only in areas when have activity/light levels already
+
 
 
 #     How is this going to work? Needs the full df

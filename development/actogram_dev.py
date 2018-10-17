@@ -16,9 +16,12 @@ file_name = list(input_dir.glob("*.csv"))[0]
 data = prep.read_file_to_df(file_name)
 data_num = prep.remove_object_col(data)
 
-short_data = data_num.iloc[:(8640*20)]
+short_data = data_num.iloc[:]
+
+short_data_remap = prep.remap_LDR(short_data)
 
 # run split program on the data
-split_df_list = prep.split_entire_dataframe(short_data)
+split_df_list = prep.split_entire_dataframe(short_data_remap,
+                                            period="20H")
 
 act.actogram_plot(split_df_list, 0)
