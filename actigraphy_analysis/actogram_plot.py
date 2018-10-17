@@ -32,12 +32,17 @@ def actogram_plot(data,
     # set up some constants
     NUM_BINS = len(data_to_plot)
     NUM_DAYS = len(data_to_plot.columns)
-   
+    
+    # add in values at the start and end
+    # to let us double plot effectively
     for data in data_to_plot, light_data:
         data = pad_first_last_days(data)
         # set all 0 values to Nan
         data = convert_zeros(data, -10)
-
+    # invert LDR values so dark is high in
+    # plot
+    # light_data = remap_LDR(light_data)
+    
     # data now ready to plot, have to create the plot
     # by looping through each day and plotting
     # this day and the next day, stopping at -1
@@ -104,9 +109,30 @@ def get_two_days_as_array(data, day_one_label):
     day_two = data.iloc[:,(day_no+1)].values
     two_days_array = np.append(day_one, day_two)
     return two_days_array
-# TODO tidy up so not showing x axis lines for each subplot
+
+def remap_LDR(light_data, invert=True):
+    """
+    Takes values for an LDR where light on = high values
+    and remaps to a where darkness is high values so
+    can have darkness shaded on plot
+    :param light_data:
+    :param invert:
+    :return:
+    """
+    # remap only between where the values are > 0 [0] and [-1]
+    for day in light_data.columns:
+        day_data = light_data.loc[:,day]
+        if not (day_data>1).any():
+            day_data = 200
+            
+    if (light_data.max() < 150).any():
+        raise ValueError
+    light_data[light_data>150] = 150
+    if invert:
+        light_data = 150-light_data
+    return light_data
 # TODO add in x and y labels
-# TODO add in LDR levels
+# TODO remap LDR only in areas when have activity/light levels already
 
 
 #     How is this going to work? Needs the full df
