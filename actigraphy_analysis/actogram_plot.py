@@ -1,8 +1,37 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import actigraphy_analysis.preprocessing as prep
 
 # function to create actogram plot
+
+def actogram_plot_from_df(data,
+                          animal_number,
+                          LDR=-1,
+                          period="24H",
+                          *args,
+                          **kwargs):
+    """
+    Function to apply LDR remap, then split the dataframe
+    according to the given period, then plot the actogram
+    :param data: dataframe of activity data
+    :param animal_number: which column to plot
+    :param LDR: which column has the light data
+    :param args:
+    :param kwargs:
+    :return:
+    """
+    
+    # remap the light data
+    data_LDR_remap = prep.remap_LDR(data)
+    # split the dfs
+    split_df_list = prep.split_entire_dataframe(data_LDR_remap,
+                                                period=period)
+    # plot with actogram
+    actogram_plot(split_df_list,
+                  animal_number,
+                  LDR=LDR,
+                  **kwargs)
 
 def actogram_plot(data,
                   animal_number,
@@ -82,11 +111,30 @@ def actogram_plot(data,
         
     # set parameters for figure
     fig.subplots_adjust(hspace=0)
+    # set the axis titles
+    if "xtitle" in kwargs:
+        plt.xlabel(kwargs["xtitle"])
+    else:
+        plt.xlabel("Circadian Time (Hours)")
+    if "ytitle" in kwargs:
+        y_label = kwargs['ytitle']
+    else:
+        y_label = "Days"
+    fig.text(0.06,
+             0.5,
+             y_label,
+             ha='center',
+             va='center',
+             rotation='vertical')
+        
+    # set kwarg values for showfig and savefig
+    if "showfig" in kwargs and kwargs["showfig"]:
+        plt.show()
+    if "savefig" in kwargs and kwargs["savefig"]:
+        plt.savefig(fname=kwargs['fname'],
+                    format='svg')
 
-    plt.show()
-#  TODO write tests!
-# TODO add in showfig and savefig options
-    
+
 def pad_first_last_days(data):
     """
     Simple function to add a day to the start and end
@@ -131,30 +179,6 @@ def get_two_days_as_array(data, day_one_label):
     two_days_array = np.append(day_one, day_two)
     return two_days_array
 
-def remap_LDR(light_data, invert=True):
-    """
-    Takes values for an LDR where light on = high values
-    and remaps to a where darkness is high values so
-    can have darkness shaded on plot
-    :param light_data:
-    :param invert:
-    :return:
-    """
-    # remap only between where the values are > 0 [0] and [-1]
-    for day in light_data.columns:
-        day_data = light_data.loc[:,day]
-        if not (day_data>1).any():
-            day_data = 200
-            
-    if (light_data.max() < 150).any():
-        raise ValueError
-    light_data[light_data>150] = 150
-    if invert:
-        light_data = 150-light_data
-    return light_data
-
-
-
 #     How is this going to work? Needs the full df
 #  so can take in the LDR data as well so
 # then add in a day of 0s at the start and the end
@@ -171,3 +195,4 @@ def remap_LDR(light_data, invert=True):
 # want to create split dataframe
 # then try imshow?
 # or plot.subplots?
+

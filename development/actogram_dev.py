@@ -18,10 +18,17 @@ data_num = prep.remove_object_col(data)
 
 short_data = data_num.iloc[:]
 
-short_data_remap = prep.remap_LDR(short_data)
+act.actogram_plot_from_df(short_data,
+                          0,
+                          showfig=True)
+
+
+# short_data_remap = prep.remap_LDR(short_data)
 
 # run split program on the data
-split_df_list = prep.split_entire_dataframe(short_data_remap,
-                                            period="20H")
+# split_df_list = prep.split_entire_dataframe(short_data_remap)
 
-act.actogram_plot(split_df_list, 0)
+
+# act.actogram_plot(split_df_list, 1,
+#                   showfig=True)
+

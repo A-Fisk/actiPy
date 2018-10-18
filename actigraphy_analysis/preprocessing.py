@@ -232,12 +232,13 @@ class SaveObjectPipeline:
                                                    file, save_suffix)
             temp_df = remove_object_col(df, return_cols=False)
             function_name(temp_df,
-                          args,
-                          kwargs,
                           file_name_path,
                           showfig=showfig,
                           savefig=savefig,
-                          dpi=dpi)
+                          dpi=dpi,
+                          *args,
+                          **kwargs)
+                          
         
         # TODO update to save as svg format by default.
 
