@@ -1,4 +1,5 @@
-# Scripts for finding activity episodes
+# Scripts for finding episodes
+# can be sleep or activity episodes!
 
 import pandas as pd
 
