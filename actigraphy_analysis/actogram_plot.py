@@ -5,6 +5,38 @@ import actigraphy_analysis.preprocessing as prep
 
 # function to create actogram plot
 
+def actogram_plot_all_cols(data,
+                           fname,
+                           LDR=-1,
+                           period="24H",
+                           *args,
+                           **kwargs):
+    """
+    Function to loop through each column of activity data
+    and plot every column except for the LDR
+    :param data:
+    :param LDR:
+    :param period: default "24H"
+    :param args:
+    :param kwargs: savefig, showfig, fname mainly
+    :return:
+    """
+    # remove LDR column then call actogram plot from
+    # df on each remaining column
+    # and create new file name for each
+    data_with_ldr = data.copy()
+    ldr_data = data.pop(data.columns[LDR])
+    for animal_no, label in enumerate(data.columns):
+        file_name = fname.parent / (fname.stem +
+                                    str(animal_no) +
+                                    fname.suffix)
+        actogram_plot_from_df(data_with_ldr,
+                              animal_number=animal_no,
+                              period=period,
+                              fname=file_name,
+                              *args,
+                              **kwargs)
+
 def actogram_plot_from_df(data,
                           animal_number,
                           LDR=-1,
@@ -31,6 +63,7 @@ def actogram_plot_from_df(data,
     actogram_plot(split_df_list,
                   animal_number,
                   LDR=LDR,
+                  *args,
                   **kwargs)
 
 def actogram_plot(data,
@@ -88,7 +121,7 @@ def actogram_plot(data,
                           alpha=0.5)
         # set parameters for current subplot
         axis.set(xticks=[],
-                 ylim=[0,110],
+                 ylim=[0,120],
                  yticks=[],
                  xlim=[0, len(two_days_data)])
         axis.set_frame_on(False)
@@ -126,13 +159,15 @@ def actogram_plot(data,
              ha='center',
              va='center',
              rotation='vertical')
+    if "figsize" in kwargs:
+        fig.set_size_inches(kwargs["figsize"])
         
     # set kwarg values for showfig and savefig
     if "showfig" in kwargs and kwargs["showfig"]:
         plt.show()
     if "savefig" in kwargs and kwargs["savefig"]:
-        plt.savefig(fname=kwargs['fname'],
-                    format='svg')
+        plt.savefig(fname=kwargs['fname'])
+        plt.close()
 
 
 def pad_first_last_days(data):
