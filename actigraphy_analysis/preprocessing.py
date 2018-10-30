@@ -132,30 +132,35 @@ class SaveObjectPipeline:
     """
 
     # init method to create attributes
-    def __init__(self, input_directory, search_suffix=".csv"):
+    def __init__(self,
+                 input_directory,
+                 save_directory,
+                 search_suffix=".csv"):
 
         self.processed_list = []
         self.input_directory = input_directory
         self.search_suffix = search_suffix
+        self.save_directory = save_directory
 
         # create the file list by globbing for the search suffix
         self.file_list = list(self.input_directory.glob("*" +
-                                                        self.search_suffix))
+                                           self.search_suffix))
 
         # read all the dfs into a list
         self.df_list = []
-
         for file in self.file_list:
             temp_df = read_file_to_df(file)
             self.df_list.append(temp_df)
 
     # method for saving a csv file
-    def save_csv_file(self,
-                      function_name,
-                      subdir_name,
-                      save_suffix,
-                      *args,
-                      **kwargs):
+    def process_file(self,
+                     module,
+                     function_name,
+                     subdir_name,
+                     save_suffix='.csv',
+                     savecsv=False,
+                     *args,
+                     **kwargs):
         """
         Method that applies a defined function to all the
         dataframes in the df_list and saves them to the subdir that
@@ -174,28 +179,25 @@ class SaveObjectPipeline:
         # save the df there
         # Save to a processed list so can use for plotting
 
-        subdir_path = create_subdir(self.input_directory,
+        subdir_path = create_subdir(self.save_directory,
                                     subdir_name=subdir_name)
-
+        func = getattr(module, function_name)
         for df, file in zip(self.df_list, self.file_list):
-            temp_df = function_name(df)
-            file_name_path = create_file_name_path(subdir_path,
-                                                   file,
-                                                   save_suffix,
-                                                   args,
-                                                   kwargs)
-            temp_df.to_csv(file_name_path)
+            temp_df = func(df,*args,**kwargs)
             self.processed_list.append(temp_df)
+            if savecsv:
+                file_name_path = create_file_name_path(subdir_path,
+                                                       file,
+                                                       save_suffix)
+                temp_df.to_csv(file_name_path)
 
     # method for saving a plot
     def create_plot(self,
                     function_name,
+                    module,
                     subdir_name,
                     data_list=None,
-                    save_suffix='.png',
-                    showfig=False,
-                    savefig=True,
-                    dpi=300,
+                    save_suffix='.svg',
                     *args,
                     **kwargs):
         """
@@ -223,19 +225,20 @@ class SaveObjectPipeline:
             data_list = self.processed_list
 
         # create the subdir
-        subdir_path = create_subdir(self.input_directory,
+        subdir_path = create_subdir(self.save_directory,
                                     subdir_name=subdir_name)
 
+        # grab the function as an attribute so can properly call
+        # if called as a string does odd things
+        function_attr = getattr(module,function_name)
         # loop through the dfs and pass to plotting function (saves by default))
         for df, file in zip(data_list, self.file_list):
             file_name_path = create_file_name_path(subdir_path,
-                                                   file, save_suffix)
+                                                   file,
+                                                   save_suffix)
             temp_df = remove_object_col(df, return_cols=False)
-            function_name(temp_df,
-                          file_name_path,
-                          showfig=showfig,
-                          savefig=savefig,
-                          dpi=dpi,
+            function_attr(temp_df,
+                          fname=file_name_path,
                           *args,
                           **kwargs)
                           
@@ -271,6 +274,7 @@ def create_period_index(data, period=None):
                                       freq=period)
 
     return period_index_list
+
 
 def slice_dataframe_by_index(data_series, index_list):
     """
@@ -422,4 +426,32 @@ def remap_LDR(data, LDR_col=-1, invert=True):
         light_data = 150 - light_data
     data_new = data.iloc[:,:].copy()
     data_new.iloc[start:end,LDR_col] = light_data
+    return data_new
+
+
+def slice_by_label_col(data,
+                       label_col=-1,
+                       section_label="disrupted",
+                       baseline_length="6D",
+                       post_length="16D"):
+    """
+    Function to slice the dataframe into a shorter period based on the
+    label column. Primary use for defining times to use for
+    creating pretty actograms
+    :param data:
+    :param label_col:
+    :param section_label:
+    :param baseline_length: how many days before disruption
+        starts to slice
+    :param post_length: how many days (or just time period
+        generally) to slice afterwards
+    :return:
+    """
+    
+    start_timeshift = pd.Timedelta(baseline_length)
+    end_timeshift = pd.Timedelta(post_length)
+    disrupted_index = data[data.iloc[:,label_col]==section_label].index
+    start = disrupted_index[0] - start_timeshift
+    end = disrupted_index[-1] + end_timeshift
+    data_new = data.loc[start:end].copy()
     return data_new
