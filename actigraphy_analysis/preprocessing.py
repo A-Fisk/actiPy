@@ -413,8 +413,6 @@ def remap_LDR(data, LDR_col=-1, invert=True):
     # remap the LDR data to 150 as max then take 150
     # from the values to code darkness
     light_data = data.iloc[:,LDR_col].copy()
-    if light_data.max() < 150:
-        raise ValueError
     # select from the first value >1 and
     # the last value > 1
     high_light_index = light_data.loc[light_data>150].index

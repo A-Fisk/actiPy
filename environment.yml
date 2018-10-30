@@ -5,6 +5,7 @@ dependencies:
 - numpy == 1.15
 - pandas == 0.23.3
 - matplotlib == 2.2.3
+- cython == 0.29
 - pip
 - pip:
   - git+https://github.com/A-Fisk/actigraphy_analysis.git@master
