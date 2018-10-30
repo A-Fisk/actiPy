@@ -418,7 +418,6 @@ def remap_LDR(data, LDR_col=-1, invert=True):
     high_light_index = light_data.loc[light_data>150].index
     start = data.index.get_loc(high_light_index[0])
     end = data.index.get_loc(high_light_index[-1])
-    # convert all high values to 150
     light_data.loc[light_data>150] = 150
     if invert:
         light_data = 150 - light_data

@@ -35,7 +35,7 @@ def episode_finder(data):
     # get the timedeltas between them
     data_zeros_shift = data_zeros[1:]
     episode_lengths = (data_zeros_shift.index -
-                       data_zeros.index[:-1])
+                       data_zeros.index[:-1]).total_seconds()
     # create Series with the start times
     start_times = data_zeros.index[:-1]
     episode_series = pd.Series(episode_lengths,
@@ -45,7 +45,7 @@ def episode_finder(data):
     # find the unit of time - assuming stationary
     basic_time_unit = data.index[1] - data.index[0]
     extended_time_unit = (basic_time_unit +
-                          pd.Timedelta("2S"))
+                          pd.Timedelta("2S")).total_seconds()
     episode_lengths_filtered = episode_series[
                                 episode_series > extended_time_unit
                                 ]
@@ -54,7 +54,8 @@ def episode_finder(data):
     episode_lengths_filtered.name = name
     return episode_lengths_filtered
    
-def episode_find_df(data):
+def episode_find_df(data,
+                    LDR=-1):
     """
     finds episodes for the entire dataframe given
     by looping over each and saving them to a new
@@ -64,10 +65,13 @@ def episode_find_df(data):
     """
     # loop through each column
     # and find the episodes in that column
+    ldr_data = data.iloc[:,LDR].copy()
+    ldr_label = data.columns[LDR]
     episode_series_list = []
     for col in data:
         data_series = data.loc[:,col]
         col_episodes = episode_finder(data_series)
         episode_series_list.append(col_episodes)
-    episode_df = pd.concat(episode_series_list)
+    episode_df = pd.concat(episode_series_list, axis=1)
+    episode_df[ldr_label] = ldr_data
     return episode_df
