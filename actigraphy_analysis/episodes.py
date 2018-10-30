@@ -2,6 +2,7 @@
 # can be sleep or activity episodes!
 
 import pandas as pd
+import matplotlib.pyplot as plt
 
 # function to create episode dataframe
 # starting off by working on just a single
@@ -17,6 +18,7 @@ def episode_finder(data):
     series - defined as from 0 to another
     0 point, must have non-0 between the two zero
     values
+    Saves all in the value of total_seconds
     :param data:
     :param animal_number:
     :return:
@@ -75,3 +77,39 @@ def episode_find_df(data,
     episode_df = pd.concat(episode_series_list, axis=1)
     episode_df[ldr_label] = ldr_data
     return episode_df
+
+
+### Functions to plot histogram of data
+def episode_histogram(data,
+                      LDR=-1,
+                      *args,
+                      **kwargs):
+    """
+    Function to take dataframe and plot each pir as a
+    separate column
+    :param data:
+    :param LDR:
+    :param args:
+    :param kwargs:
+    :return:
+    """
+    
+    ldr_label = data.columns[LDR]
+    ldr_col = data.pop(ldr_label)
+    data.dropna(inplace=True)
+    no_animals = len(data.columns)
+    fig, ax = plt.subplots(nrows=1,
+                           ncols=no_animals)
+    for axis, col in zip(ax, data.columns):
+        axis.hist(data.loc[:,col])
+        axis.set_yscale('log')
+    
+    if "figsize" in kwargs:
+       fig.set_size_inches(kwargs["figsize"])
+    # set kwarg values for showfig and savefig
+    if "showfig" in kwargs and kwargs["showfig"]:
+        plt.show()
+    if "savefig" in kwargs and kwargs["savefig"]:
+        plt.savefig(fname=kwargs['fname'])
+        plt.close()
+
