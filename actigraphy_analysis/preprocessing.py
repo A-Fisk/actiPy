@@ -19,16 +19,20 @@ def remove_object_col(data, return_cols=False):
     # return the dataframe
 
     dropped_cols = []
+    if hasattr(data, "name"):
+        name = data.name
+    else:
+        name = "NaN"
     for column in data.columns:
         column_data = data.loc[:, column]
         if column_data.dtype == 'O':
             current_col = data.loc[:, column]
             dropped_cols.append(current_col)
             data = data.drop(column, axis=1)
-
+    data.name = name
+    
     if return_cols:
         return data, dropped_cols
-
     else:
         return data
 
@@ -49,9 +53,12 @@ def separate_by_condition(data, label_col=-1):
     # append to list and return list of separated dataframes
 
     unique_conditions = data.iloc[:, label_col].unique()
+    # remove nan values
+    unique_conditions = unique_conditions[~pd.isnull(unique_conditions)]
     list_of_dataframes_by_condition = []
     for condition in unique_conditions:
         temporary_sliced_data = data[data.iloc[:, label_col] == condition]
+        temporary_sliced_data.name = condition
         list_of_dataframes_by_condition.append(temporary_sliced_data)
 
     return list_of_dataframes_by_condition
@@ -198,6 +205,7 @@ class SaveObjectPipeline:
                     subdir_name,
                     data_list=None,
                     save_suffix='.svg',
+                    remove_col=True,
                     *args,
                     **kwargs):
         """
@@ -236,7 +244,10 @@ class SaveObjectPipeline:
             file_name_path = create_file_name_path(subdir_path,
                                                    file,
                                                    save_suffix)
-            temp_df = remove_object_col(df, return_cols=False)
+            if remove_col:
+                temp_df = remove_object_col(df, return_cols=False)
+            else:
+                temp_df = df.copy()
             function_attr(temp_df,
                           fname=file_name_path,
                           *args,

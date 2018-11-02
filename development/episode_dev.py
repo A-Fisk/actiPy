@@ -13,11 +13,14 @@ input_dir = pathlib.Path("/Users/angusfisk/Documents/01_PhD_files/"
                          "/03_data_files")
 file_name = list(input_dir.glob("*.csv"))[0]
 data = prep.read_file_to_df(file_name)
-data_nums = prep.remove_object_col(data)
+test_fname = pathlib.Path('./test.png')
 
-# now to test the new function as we write it
-episodes = ep.episode_find_df(data_nums)
+episodes = ep.create_episode_df(data,
+                                min_length="19S")
 
-ep.episode_histogram(episodes,
-                     showfig=True)
+ep.ep_hist_conditions_from_df(episodes,
+                              showfig=True,
+                              fname=file_name)
+
+
 
