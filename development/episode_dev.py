@@ -1,5 +1,7 @@
 import pathlib
 import sys
+import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 sys.path.insert(0, "/Users/angusfisk/Documents/01_PhD_files/"
                    "07_python_package/actigraphy_analysis")
@@ -16,11 +18,15 @@ data = prep.read_file_to_df(file_name)
 test_fname = pathlib.Path('./test.png')
 
 episodes = ep.create_episode_df(data,
-                                min_length="19S")
+                                min_length="20S")
+
+bins = np.linspace(0,100,11)
 
 ep.ep_hist_conditions_from_df(episodes,
                               showfig=True,
-                              fname=file_name)
+                              fname=file_name,
+                              bins=bins,
+                              logy=False)
 
 
 
