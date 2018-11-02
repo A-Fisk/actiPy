@@ -110,7 +110,8 @@ def create_episode_df(data,
     return episode_df
 
 def check_episode_max(data,
-                      max_time="6H"):
+                      max_time="6H",
+                      LDR=-1):
     """
     Simple function to raise value error if any of the
     values are over 6 hours long
@@ -118,7 +119,9 @@ def check_episode_max(data,
     :return:
     """
     comparison = pd.Timedelta(max_time).total_seconds()
+    # grab the max values from all non-LDR columns
     max_values = data.max()
+    max_values.pop(data.columns[LDR])
     if any(max_values>comparison):
         raise ValueError("Max episode longer than %s" % max_time)
     
@@ -192,6 +195,9 @@ def episode_histogram_all_conditions(data_list,
     :param LDR:
     :param args:
     :param kwargs:
+        bins: if given will take bins in seconds and convert to
+            seconds. Assumes input as an array of data,
+            takes the second last value and assigns ta
     :return:
     """
 
@@ -202,13 +208,20 @@ def episode_histogram_all_conditions(data_list,
         df = prep.remove_object_col(df)
         ldr_label = df.columns[LDR]
         ldr_col = df.pop(ldr_label)
-        mod_data = df.dropna()
-        data = convert_data_to_unit(mod_data)
+        data = df#convert_data_to_unit(df)
         tidied_data_list.append(data)
         label_list.append(df.name)
     no_animals = len(tidied_data_list[0].columns)
-    bins = np.linspace(0,5,50)
-    bins = np.append(bins, 200)
+
+    # let the function define bins as needed
+    if "bins" in kwargs:
+        bins = kwargs["bins"]#convert_data_to_unit(kwargs["bins"])
+    else:
+        bins = 10
+    if "logy" in kwargs:
+        log = kwargs["logy"]
+    else:
+        log = False
     
     # Plot the data
     fig, ax = plt.subplots(nrows=len(data_list),
@@ -218,9 +231,13 @@ def episode_histogram_all_conditions(data_list,
     for row, condition in enumerate(label_list):
         plotting_df = tidied_data_list[row]
         for col_plot, col_label in enumerate(plotting_df):
-            plotting_col = plotting_df.loc[:,col_label]
+            plotting_col = plotting_df.loc[:,col_label].dropna()
             curr_axis = ax[row,col_plot]
-            curr_axis.hist(plotting_col,log=True)
+            curr_axis.hist(plotting_col,
+                           bins=bins,
+                           log=log,
+                           density=True)
+            # curr_axis.set(xlim=[0,bins[-2]])
             if row == 0:
                 curr_axis.set_title(col_label)
             if col_plot == 0:
@@ -229,14 +246,18 @@ def episode_histogram_all_conditions(data_list,
                         wspace=0)
     
     # set the labelling parameters
+    if "xtitle" in kwargs:
+        xtitle = kwargs["xtitle"]
+    else:
+        xtitle = "Episode duration"
     fig.text(0.5,
              0.01,
-             'Episode duration (minutes)',
+             xtitle,
              ha='center',
              va='center')
     fig.text(0.03,
              0.5,
-             "Count (log)",
+             "Normalised density",
              ha="center",
              va='center',
              rotation='vertical')
@@ -245,7 +266,7 @@ def episode_histogram_all_conditions(data_list,
         
     # set the extra parameters
     if "figsize" in kwargs:
-       fig.set_size_inches(kwargs["figsize"])
+        fig.set_size_inches(kwargs["figsize"])
     # set extra kwarg parameters
     if "showfig" in kwargs and kwargs["showfig"]:
         plt.show()
