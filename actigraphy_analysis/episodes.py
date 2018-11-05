@@ -215,7 +215,7 @@ def episode_histogram_all_conditions(data_list,
 
     # let the function define bins as needed
     if "bins" in kwargs:
-        bins = kwargs["bins"]#convert_data_to_unit(kwargs["bins"])
+        bins = kwargs["bins"]
     else:
         bins = 10
     if "logy" in kwargs:

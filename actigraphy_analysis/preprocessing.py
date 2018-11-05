@@ -142,9 +142,11 @@ class SaveObjectPipeline:
     def __init__(self,
                  input_directory,
                  save_directory,
-                 search_suffix=".csv"):
+                 search_suffix=".csv",
+                 readfile=True):
 
         self.processed_list = []
+        self.processed_file_list = []
         self.input_directory = input_directory
         self.search_suffix = search_suffix
         self.save_directory = save_directory
@@ -155,9 +157,10 @@ class SaveObjectPipeline:
 
         # read all the dfs into a list
         self.df_list = []
-        for file in self.file_list:
-            temp_df = read_file_to_df(file)
-            self.df_list.append(temp_df)
+        if readfile:
+            for file in self.file_list:
+                temp_df = read_file_to_df(file)
+                self.df_list.append(temp_df)
 
     # method for saving a csv file
     def process_file(self,
@@ -166,6 +169,7 @@ class SaveObjectPipeline:
                      subdir_name,
                      save_suffix='.csv',
                      savecsv=False,
+                     object_list=None,
                      *args,
                      **kwargs):
         """
@@ -186,16 +190,20 @@ class SaveObjectPipeline:
         # save the df there
         # Save to a processed list so can use for plotting
 
+        if not object_list:
+            object_list = self.df_list
+
         subdir_path = create_subdir(self.save_directory,
                                     subdir_name=subdir_name)
         func = getattr(module, function_name)
-        for df, file in zip(self.df_list, self.file_list):
+        for df, file in zip(object_list, self.file_list):
             temp_df = func(df,*args,**kwargs)
             self.processed_list.append(temp_df)
             if savecsv:
                 file_name_path = create_file_name_path(subdir_path,
                                                        file,
                                                        save_suffix)
+                self.processed_file_list.append(file_name_path)
                 temp_df.to_csv(file_name_path)
 
     # method for saving a plot

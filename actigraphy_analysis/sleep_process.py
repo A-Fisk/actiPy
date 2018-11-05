@@ -1,5 +1,6 @@
 # functions for sleep processing
 
+import os
 import numpy as np
 import actigraphy_analysis.preprocessing as prep
 
@@ -54,7 +55,8 @@ def scored_active_times(data,
     # those times
     # find first non-0 time
     data_use = data.copy()
-    ldr = data_use.pop(data_use.columns[LDR])
+    LDR_label = data.columns[LDR]
+    ldr = data_use.pop(LDR_label)
     data_nan = data_use.replace(0, np.nan).copy()
     
     # find the first time that consistently > 0 to filter out noise
@@ -82,7 +84,23 @@ def scored_active_times(data,
     data_final.loc[:first_time] = 0
     data_final.loc[last_time:] = 0
     data_final.loc[first_time:last_time] = scored_data
-    data_final.iloc[:,LDR] = ldr
+    data_final[LDR_label] = ldr
     
     return data_final
     
+def alter_file_name(file_name,
+                    suffix,
+                    remove_slice_after=-9):
+    """
+    Function to take in the file name and remove part of the
+    name, replace with "suffix" and rename the file
+    :param file_name:
+    :param suffix:
+    :param slice_range:
+    :return:
+    """
+    new_file_name = file_name.stem[:remove_slice_after] + \
+                    suffix + \
+                    file_name.suffix
+    new_file_path = file_name.parent / new_file_name
+    os.rename(file_name, new_file_path)
