@@ -64,7 +64,9 @@ def separate_by_condition(data, label_col=-1):
     return list_of_dataframes_by_condition
 
 # Function to read files in as a pandas dataframe in standard way
-def read_file_to_df(file_name):
+def read_file_to_df(file_name,
+                    index_col=0,
+                    header=0):
     """
     function to take given csv file name and turn it into a df
     :param file_name:
@@ -75,8 +77,11 @@ def read_file_to_df(file_name):
     if file_name.suffix != ".csv":
         raise ValueError("Not a csv file")
     df = pd.read_csv(file_name,
-                     index_col=0,
+                     index_col=index_col,
+                     header=header,
                      parse_dates=True)
+    name = file_name.stem
+    df.name = name
     return df
 
 # Function to check subdirectory and create if doesn't exist
@@ -142,8 +147,11 @@ class SaveObjectPipeline:
     def __init__(self,
                  input_directory,
                  save_directory,
+                 read_file_fx=(globals(),
+                               "read_file_to_df"),
                  search_suffix=".csv",
-                 readfile=True):
+                 readfile=True,
+                 **kwargs):
 
         self.processed_list = []
         self.processed_file_list = []
@@ -152,14 +160,16 @@ class SaveObjectPipeline:
         self.save_directory = save_directory
 
         # create the file list by globbing for the search suffix
-        self.file_list = list(self.input_directory.glob("*" +
-                                           self.search_suffix))
+        self.file_list = sorted(self.input_directory.glob("*" +
+                                self.search_suffix))
 
         # read all the dfs into a list
         self.df_list = []
         if readfile:
+            read_fx = getattr(read_file_fx[0], read_file_fx[1])
             for file in self.file_list:
-                temp_df = read_file_to_df(file)
+                temp_df = read_fx(file,
+                                  **kwargs)
                 self.df_list.append(temp_df)
 
     # method for saving a csv file
@@ -170,7 +180,6 @@ class SaveObjectPipeline:
                      save_suffix='.csv',
                      savecsv=False,
                      object_list=None,
-                     *args,
                      **kwargs):
         """
         Method that applies a defined function to all the
@@ -197,7 +206,7 @@ class SaveObjectPipeline:
                                     subdir_name=subdir_name)
         func = getattr(module, function_name)
         for df, file in zip(object_list, self.file_list):
-            temp_df = func(df,*args,**kwargs)
+            temp_df = func(df,**kwargs)
             self.processed_list.append(temp_df)
             if savecsv:
                 file_name_path = create_file_name_path(subdir_path,
@@ -208,11 +217,10 @@ class SaveObjectPipeline:
 
     # method for saving a plot
     def create_plot(self,
-                    function_name,
-                    module,
-                    subdir_name,
+                    function=(),
+                    subdir_name=(),
                     data_list=None,
-                    save_suffix='.svg',
+                    save_suffix='.png',
                     remove_col=True,
                     *args,
                     **kwargs):
@@ -234,11 +242,12 @@ class SaveObjectPipeline:
         # for every df in the list
         # create the save name
         # remove the object col
-        # apply the plotting function, passing savefig and showfig arguments to the function and the path to save name
+        # apply the plotting function, passing savefig and showfig arguments
+        # to the function and the path to save name
 
-        # define the data list
+        # define the data list <- doesn't like self in definition
         if data_list is None:
-            data_list = self.processed_list
+            data_list = self.df_list
 
         # create the subdir
         subdir_path = create_subdir(self.save_directory,
@@ -246,7 +255,7 @@ class SaveObjectPipeline:
 
         # grab the function as an attribute so can properly call
         # if called as a string does odd things
-        function_attr = getattr(module,function_name)
+        function_attr = getattr(function[0], function[1])
         # loop through the dfs and pass to plotting function (saves by default))
         for df, file in zip(data_list, self.file_list):
             file_name_path = create_file_name_path(subdir_path,
@@ -418,6 +427,7 @@ def split_entire_dataframe(data,
                                                   num,
                                                   period=period,
                                                   CT_period=CT_period)
+        temp_split_df.name = column
         split_df_list.append(temp_split_df)
     return split_df_list
 
