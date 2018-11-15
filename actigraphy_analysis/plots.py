@@ -82,7 +82,9 @@ def multiple_plot_kwarg_decorator(func):
             location = 0
             if "legend_loc" in kwargs:
                 location = kwargs["legend_loc"]
-            fig.legend(loc=location)
+            # set the legend using only the final subplot values
+            handles, labels = ax.get_legend_handles_labels()
+            fig.legend(handles, labels, loc=location)
         
         # set the xlimits of the plot to the given parameters
         if "xlim" in params_dict:

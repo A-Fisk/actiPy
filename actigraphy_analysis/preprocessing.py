@@ -7,7 +7,7 @@ def remove_object_col(data, return_cols=False):
     """
     Function to check the data type in each column
     and drop it if it is an object
-    Does not distinguish between float, int, strings
+    does not distinguish between float, int, strings
     :param data: pandas dataframe to check
     :param return_cols: Boolean - default False, returns columns as a list
     :return: pandas dataframe without object columns
@@ -36,6 +36,7 @@ def remove_object_col(data, return_cols=False):
     else:
         return data
 
+
 # Function to split dataframe into periods based on label_column
 def separate_by_condition(data, label_col=-1):
     """
@@ -63,6 +64,7 @@ def separate_by_condition(data, label_col=-1):
 
     return list_of_dataframes_by_condition
 
+
 # Function to read files in as a pandas dataframe in standard way
 def read_file_to_df(file_name,
                     index_col=0,
@@ -83,6 +85,7 @@ def read_file_to_df(file_name,
     name = file_name.stem
     df.name = name
     return df
+
 
 # Function to check subdirectory and create if doesn't exist
 def create_subdir(input_directory, subdir_name):
@@ -106,6 +109,7 @@ def create_subdir(input_directory, subdir_name):
         sub_dir_path.mkdir()
     return sub_dir_path
 
+
 # Function to create file_name_path
 def create_file_name_path(directory, file, save_suffix):
     """
@@ -116,10 +120,16 @@ def create_file_name_path(directory, file, save_suffix):
     :param save_suffix:
     :return:
     """
-
-    # combine directory, file stem and save suffix
-    file_path = directory / (file.stem + save_suffix)
+    # define the file name
+    if isinstance(file, str):
+        name = file
+    else:
+        name = file.stem
+    
+    # combine directory, name and save suffix
+    file_path = directory / (name + save_suffix)
     return file_path
+
 
 # Create save_pipeline class with objects
 # for saving csv and plots depending on the method used
@@ -145,41 +155,52 @@ class SaveObjectPipeline:
 
     # init method to create attributes
     def __init__(self,
-                 input_directory,
-                 save_directory,
-                 read_file_fx=(globals(),
-                               "read_file_to_df"),
+                 input_directory="",
+                 save_directory="",
+                 subdir_name="",
+                 func=(globals(),
+                       "read_file_to_df"),
                  search_suffix=".csv",
                  readfile=True,
                  **kwargs):
-
-        self.processed_list = []
-        self.processed_file_list = []
+        
+        # create the lists to be used later and save the arguments as
+        # object attributes
         self.input_directory = input_directory
         self.search_suffix = search_suffix
         self.save_directory = save_directory
+        self.subdir_name = subdir_name
+        self.processed_list = []
+        self.processed_file_list = []
 
         # create the file list by globbing for the search suffix
-        self.file_list = sorted(self.input_directory.glob("*" +
-                                self.search_suffix))
+        self.file_list = sorted(
+            self.input_directory.glob("*" +
+            self.search_suffix)
+        )
+        
+        # create the subdirectory in the save dir
+        self.subdir_path = create_subdir(
+            self.save_directory,
+            subdir_name=self.subdir_name
+        )
 
         # read all the dfs into a list
-        self.df_list = []
+        self.object_list = []
         if readfile:
-            read_fx = getattr(read_file_fx[0], read_file_fx[1])
+            read_fx = getattr(func[0], func[1])
             for file in self.file_list:
                 temp_df = read_fx(file,
                                   **kwargs)
-                self.df_list.append(temp_df)
+                self.object_list.append(temp_df)
 
     # method for saving a csv file
     def process_file(self,
-                     module,
-                     function_name,
-                     subdir_name,
+                     function=(),
                      save_suffix='.csv',
                      savecsv=False,
                      object_list=None,
+                     file_list=None,
                      **kwargs):
         """
         Method that applies a defined function to all the
@@ -191,38 +212,38 @@ class SaveObjectPipeline:
         :param subdir_name
         :return:
         """
-
-        # create the subdirectory
-        # For every df in the list
-        # apply the function
-        # create the name to save it
-        # save the df there
-        # Save to a processed list so can use for plotting
-
+        
+        # define the function to be used for processing
+        func = getattr(function[0], function[-1])
+        
+        # set the default lists to iterate through
         if not object_list:
-            object_list = self.df_list
-
-        subdir_path = create_subdir(self.save_directory,
-                                    subdir_name=subdir_name)
-        func = getattr(module, function_name)
-        for df, file in zip(object_list, self.file_list):
-            temp_df = func(df,**kwargs)
+            object_list = self.object_list
+        if not file_list:
+            file_list = self.file_list
+            
+        # iterate through the objects and call the function on each one
+        for object, file in zip(object_list, file_list):
+            temp_df = func(object,**kwargs)
             self.processed_list.append(temp_df)
+            # create the file name path and put in attribute list
+            file_name_path = create_file_name_path(
+                self.subdir_path,
+                file,
+                save_suffix
+            )
+            self.processed_file_list.append(file_name_path)
+            # save the csv to the subdirectory if asked to do so
             if savecsv:
-                file_name_path = create_file_name_path(subdir_path,
-                                                       file,
-                                                       save_suffix)
-                self.processed_file_list.append(file_name_path)
                 temp_df.to_csv(file_name_path)
 
     # method for saving a plot
     def create_plot(self,
                     function=(),
-                    subdir_name=(),
-                    data_list=None,
                     save_suffix='.png',
+                    data_list=None,
+                    file_list=None,
                     remove_col=True,
-                    *args,
                     **kwargs):
         """
         Method to take each df and apply given plot function and save to file
@@ -238,40 +259,31 @@ class SaveObjectPipeline:
         :return:
         """
 
-        # create subdir
-        # for every df in the list
-        # create the save name
-        # remove the object col
-        # apply the plotting function, passing savefig and showfig arguments
-        # to the function and the path to save name
-
-        # define the data list <- doesn't like self in definition
-        if data_list is None:
-            data_list = self.df_list
-
-        # create the subdir
-        subdir_path = create_subdir(self.save_directory,
-                                    subdir_name=subdir_name)
-
         # grab the function as an attribute so can properly call
         # if called as a string does odd things
-        function_attr = getattr(function[0], function[1])
-        # loop through the dfs and pass to plotting function (saves by default))
-        for df, file in zip(data_list, self.file_list):
-            file_name_path = create_file_name_path(subdir_path,
-                                                   file,
-                                                   save_suffix)
+        func = getattr(function[0], function[1])
+        
+        # define the lists to iterate through
+        if data_list is None:
+            data_list = self.object_list
+        if file_list is none:
+            file_list = self.file_list
+        
+        # loop through the dfs and pass to plotting function
+        for df, file in zip(data_list, file_list):
+            file_name_path = create_file_name_path(
+                self.subdir_path,
+                file,
+                save_suffix
+            )
             if remove_col:
                 temp_df = remove_object_col(df, return_cols=False)
             else:
                 temp_df = df.copy()
-            function_attr(temp_df,
-                          fname=file_name_path,
-                          *args,
-                          **kwargs)
-                          
-        
-        # TODO update to save as svg format by default.
+            func(temp_df,
+                 fname=file_name_path,
+                 **kwargs)
+
 
 ######### Group of functions for split by period function ##########
 
