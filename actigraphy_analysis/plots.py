@@ -79,7 +79,7 @@ def multiple_plot_kwarg_decorator(func):
         
         # set the legend to given location
         if "legend" in kwargs and kwargs["legend"]:
-            location = 0
+            location = 1
             if "legend_loc" in kwargs:
                 location = kwargs["legend_loc"]
             # set the legend using only the final subplot values

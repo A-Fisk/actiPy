@@ -244,6 +244,7 @@ class SaveObjectPipeline:
                     data_list=None,
                     file_list=None,
                     remove_col=True,
+                    subdir_path=None,
                     **kwargs):
         """
         Method to take each df and apply given plot function and save to file
@@ -266,13 +267,15 @@ class SaveObjectPipeline:
         # define the lists to iterate through
         if data_list is None:
             data_list = self.object_list
-        if file_list is none:
+        if file_list is None:
             file_list = self.file_list
+        if subdir_path is None:
+            subdir_path = self.subdir_path
         
         # loop through the dfs and pass to plotting function
         for df, file in zip(data_list, file_list):
             file_name_path = create_file_name_path(
-                self.subdir_path,
+                subdir_path,
                 file,
                 save_suffix
             )
