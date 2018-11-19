@@ -2,7 +2,7 @@
 
 import pandas as pd
 import numpy as np
-import actigraphy_analysis.preprocessing as prep
+import actiPy.preprocessing as prep
 
 # function for mean waveform
 def mean_activity(data,

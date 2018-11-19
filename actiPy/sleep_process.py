@@ -2,7 +2,7 @@
 
 import os
 import numpy as np
-import actigraphy_analysis.preprocessing as prep
+import actiPy.preprocessing as prep
 
 def sleep_process(data, window=4):
     """

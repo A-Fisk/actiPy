@@ -4,7 +4,7 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import actigraphy_analysis.preprocessing as prep
+import actiPy.preprocessing as prep
 
 # function to create episode dataframe
 # starting off by working on just a single

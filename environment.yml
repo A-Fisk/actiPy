@@ -1,4 +1,4 @@
-name: actigraphy_analysis_environment
+name: actiPy_environment
 
 dependencies:
 - python = 3.7
@@ -9,4 +9,4 @@ dependencies:
 - cython == 0.29
 - pip
 - pip:
-  - git+https://github.com/A-Fisk/actigraphy_analysis.git@master
+  - git+https://github.com/A-Fisk/actiPy.git@master

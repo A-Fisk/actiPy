@@ -2,8 +2,8 @@
 
 import unittest
 import pandas as pd
-import actigraphy_analysis.sleep_process as sleep
-import actigraphy_analysis.episodes as ep
+import actiPy.sleep_process as sleep
+import actiPy.episodes as ep
 
 # test sleep processing
 
