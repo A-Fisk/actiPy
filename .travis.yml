@@ -26,6 +26,6 @@ install:
 
 script:
  - python ./tests/preprocessing_tests.py
- - python ./tests/sleep_analysis_tests.py
+ - python ./tests/sleep_process_tests.py
 
  
