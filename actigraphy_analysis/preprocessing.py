@@ -217,9 +217,9 @@ class SaveObjectPipeline:
         func = getattr(function[0], function[-1])
         
         # set the default lists to iterate through
-        if not object_list:
+        if object_list is None:
             object_list = self.object_list
-        if not file_list:
+        if file_list is None:
             file_list = self.file_list
             
         # iterate through the objects and call the function on each one
@@ -283,6 +283,7 @@ class SaveObjectPipeline:
                 temp_df = remove_object_col(df, return_cols=False)
             else:
                 temp_df = df.copy()
+            temp_df.name = df.name
             func(temp_df,
                  fname=file_name_path,
                  **kwargs)
