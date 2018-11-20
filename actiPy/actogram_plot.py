@@ -2,6 +2,8 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import actiPy.preprocessing as prep
+from actiPy.plots import multiple_plot_kwarg_decorator, \
+    show_savefig_decorator, set_title_decorator
 
 # function to create actogram plot
 
@@ -26,23 +28,25 @@ def actogram_plot_all_cols(data,
     # and create new file name for each
     data_with_ldr = data.copy()
     ldr_data = data.pop(data.columns[LDR])
+    
     for animal_no, label in enumerate(data.columns):
         file_name = fname.parent / (fname.stem +
                                     str(animal_no) +
                                     fname.suffix)
-        actogram_plot_from_df(data_with_ldr,
+        _actogram_plot_from_df(data_with_ldr,
                               animal_number=animal_no,
                               period=period,
                               fname=file_name,
                               *args,
                               **kwargs)
 
-def actogram_plot_from_df(data,
-                          animal_number,
-                          LDR=-1,
-                          period="24H",
-                          *args,
-                          **kwargs):
+
+def _actogram_plot_from_df(data,
+                           animal_number=0,
+                           LDR=-1,
+                           period="24H",
+                           *args,
+                           **kwargs):
     """
     Function to apply LDR remap, then split the dataframe
     according to the given period, then plot the actogram
@@ -56,83 +60,81 @@ def actogram_plot_from_df(data,
     
     # remap the light data
     data_LDR_remap = prep.remap_LDR(data)
+    
+    # remove top level of the index
+    data_LDR_remap.index = data_LDR_remap.index.droplevel(0)
+    
     # split the dfs
     split_df_list = prep.split_entire_dataframe(data_LDR_remap,
                                                 period=period)
     # plot with actogram
-    actogram_plot(split_df_list,
-                  animal_number,
-                  LDR=LDR,
-                  *args,
-                  **kwargs)
+    _actogram_plot(split_df_list,
+                   animal_number,
+                   LDR=LDR,
+                   *args,
+                   **kwargs)
 
-def actogram_plot(data,
-                  animal_number,
-                  LDR=-1,
-                  *args,
-                  **kwargs):
+
+@set_title_decorator
+@show_savefig_decorator
+@multiple_plot_kwarg_decorator
+def _actogram_plot(data,
+                   animal_number=0,
+                   LDR=-1,
+                   **kwargs):
     """
-    Function to create double plotted actogram from actigraphy
-    data.
-    :param data: list of dataframes where each has been
-        split by the test period - given by output
-        of the preprocessing.split_entire_dataframe
-        function
-    :param animal_number: int, which dataframe from
-        the list of dataframes going to plot
-    :param LDR: int, which dataframe from the list
-        of dataframes is the light levels to plot
-        in the background
-    :param args:
+    Function to take in dataframe and plot a double-plotted actogram
+    with lights shaded in
+    :param data:
+    :param animal_number:
+    :param LDR:
     :param kwargs:
     :return:
     """
+
     # select the correct data
     data_to_plot = data[animal_number].copy()
     light_data = data[LDR].copy()
-    
+
     # set up some constants
-    NUM_BINS = len(data_to_plot)
     NUM_DAYS = len(data_to_plot.columns)
-    
+
     # add in values at the start and end
     # to let us double plot effectively
     for data in data_to_plot, light_data:
         data = pad_first_last_days(data)
         # set all 0 values to Nan
         data = convert_zeros(data, -100)
-    
-    # data now ready to plot, have to create the plot
-    # by looping through each day and plotting
-    # this day and the next day, stopping at -1
-    # only plotting the values though
+
+    # create the axes
     fig, ax = plt.subplots(nrows=(NUM_DAYS+1))
+
+    # plot two days on each row
     for day_label, axis in zip(data_to_plot.columns[:-1], ax):
-        # grab the values from the first two days to plot
-        two_days_data = get_two_days_as_array(data_to_plot, day_label)
-        two_days_lights = get_two_days_as_array(light_data, day_label)
-        # create index to plot between
-        index = range(0, len(two_days_data))
-        axis.plot(index, two_days_data)
-        axis.fill_between(index, two_days_data)
-        axis.fill_between(index,
-                          two_days_lights,
-                          facecolor='grey',
-                          alpha=0.5)
-        # set parameters for current subplot
-        axis.set(xticks=[],
-                 ylim=[0,120],
-                 yticks=[],
-                 xlim=[0, len(two_days_data)])
-        axis.set_frame_on(False)
+        # get two days of data to plot
+        day_data = two_days(data_to_plot, day_label)
+        day_light_data = two_days(light_data, day_label)
         
-    # set the xticks on the final plot
-    xticks = np.linspace(plt.xlim()[0],
-                         plt.xlim()[-1],
-                         9)
-    xlabels = [0,6,12,18,24,6,12,18,24]
-    ax[-1].set(xticks=xticks,
-               xticklabels=xlabels)
+        # plot the data and LDR
+        axis.plot(day_data)
+        axis.fill_between(day_data.index,
+                          day_data)
+        axis.fill_between(day_light_data.index,
+                          day_light_data,
+                          alpha= 0.5,
+                          facecolor= "grey")
+        
+        # need to hide all the axis to make visible
+        axis.set(xticks=[],
+                 xlim= [day_data.index[0],
+                        day_data.index[-1]],
+                 yticks=[],
+                 ylim=[0, 120],)
+        spines = ["left", "right", "top", "bottom"]
+        for pos in spines:
+            axis.spines[pos].set_visible(False)
+    
+    fig.subplots_adjust(hspace=0)
     
     # create the y labels for every 10th row
     day_markers = np.arange(0,NUM_DAYS, 10)
@@ -142,32 +144,15 @@ def actogram_plot(data,
                         va='center',
                         ha='right')
         
-    # set parameters for figure
-    fig.subplots_adjust(hspace=0)
-    # set the axis titles
-    if "xtitle" in kwargs:
-        plt.xlabel(kwargs["xtitle"])
-    else:
-        plt.xlabel("Circadian Time (Hours)")
-    if "ytitle" in kwargs:
-        y_label = kwargs['ytitle']
-    else:
-        y_label = "Days"
-    fig.text(0.06,
-             0.5,
-             y_label,
-             ha='center',
-             va='center',
-             rotation='vertical')
-    if "figsize" in kwargs:
-        fig.set_size_inches(kwargs["figsize"])
-        
-    # set kwarg values for showfig and savefig
-    if "showfig" in kwargs and kwargs["showfig"]:
-        plt.show()
-    if "savefig" in kwargs and kwargs["savefig"]:
-        plt.savefig(fname=kwargs['fname'])
-        plt.close()
+    # create defaults dict
+    params_dict = {
+        "xlabel": "Time",
+        "ylabel": "Days",
+        "interval": 6,
+        "title": "Double Plotted Actogram"
+    }
+    
+    return fig, ax[-1], params_dict
 
 
 def pad_first_last_days(data):
@@ -199,7 +184,7 @@ def convert_zeros(data, value):
     data[data==0] = value
     return data
 
-def get_two_days_as_array(data, day_one_label):
+def two_days(data, day_one_label):
     """
     gets column of day label and day
     label plus one and returns the values
@@ -208,11 +193,18 @@ def get_two_days_as_array(data, day_one_label):
     :param day_one_label:
     :return:
     """
+    # get two days as a dataframe
+    
+    # grab the values of the first two days
     day_no = data.columns.get_loc(day_one_label)
-    day_one = data.iloc[:,day_no].values
-    day_two = data.iloc[:,(day_no+1)].values
-    two_days_array = np.append(day_one, day_two)
-    return two_days_array
+    day_one = data.iloc[:,day_no]
+    day_two = data.iloc[:,(day_no+1)]
+    
+    # change day_two index so not overlapping
+    day_two.index = day_one.index + pd.Timedelta("1D")
+
+    two_days = pd.concat([day_one, day_two])
+    return two_days
 
 #     How is this going to work? Needs the full df
 #  so can take in the LDR data as well so

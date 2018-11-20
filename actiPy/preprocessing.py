@@ -68,7 +68,8 @@ def separate_by_condition(data, label_col=-1):
 # Function to read files in as a pandas dataframe in standard way
 def read_file_to_df(file_name,
                     index_col=0,
-                    header=0):
+                    header=0,
+                    **kwargs):
     """
     function to take given csv file name and turn it into a df
     :param file_name:
@@ -377,9 +378,9 @@ def create_ct_based_index(period_sliced_data, CT_period=None):
     new_frequency = str(int_seconds) + "S " + str(miliseconds) + "ms"
 
     # create new index from frequency and length of dataframe
-    new_index = pd.timedelta_range(start="0S",
-                                   freq=new_frequency,
-                                   periods=dataframe_seconds)
+    new_index = pd.date_range(start="2010-01-01 00:00:00",
+                              freq=new_frequency,
+                              periods=dataframe_seconds)
 
     return new_index
 
