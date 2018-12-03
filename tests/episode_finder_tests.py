@@ -3,7 +3,7 @@
 import unittest
 import numpy as np
 import pandas as pd
-import actigraphy_analysis.episode_finder as ep
+import actiPy.episode_finder as ep
 
 np.random.seed(42)
 

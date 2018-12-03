@@ -3,9 +3,9 @@ import sys
 import numpy as np
 import pandas as pd
 sys.path.insert(0, "/Users/angusfisk/Documents/01_PhD_files/"
-                   "07_python_package/actigraphy_analysis")
-import actigraphy_analysis.preprocessing as prep
-import actigraphy_analysis.actogram_plot as act
+                   "07_python_package/actiPy")
+import actiPy.preprocessing as prep
+import actiPy.actogram_plot as act
 
 # developing actogram scripting
 

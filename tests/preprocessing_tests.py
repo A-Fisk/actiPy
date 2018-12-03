@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import pathlib
 import datetime
-import actigraphy_analysis.preprocessing as preprocessing
+import actiPy.preprocessing as preprocessing
 
 np.random.seed(42)
 

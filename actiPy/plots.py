@@ -69,13 +69,13 @@ def multiple_plot_kwarg_decorator(func):
         fig, ax, params_dict = func(data, **kwargs)
 
         # set the x axis times to show only every few hours and look pretty
-        fig.autofmt_xdate()
         xfmt = mdates.DateFormatter("%H:%M:%S")
         ax.xaxis.set_major_formatter(xfmt)
         interval = params_dict["interval"]
         if "interval" in kwargs:
             interval = kwargs["interval"]
         ax.xaxis.set_major_locator(mdates.HourLocator(interval=interval))
+        fig.autofmt_xdate()
         
         # set the legend to given location
         if "legend" in kwargs and kwargs["legend"]:
@@ -139,3 +139,24 @@ def show_savefig_decorator(func):
             
     return wrapper
 
+
+def set_title_decorator(func,
+                        set_file_title=True,
+                        set_name_title=False):
+    """
+    Decorator to set the "title" in kwargs
+    :param func:
+    :return:
+    """
+    def wrapper(data,
+                *args,
+                **kwargs):
+        # set the title of the plot to be the file name or
+        # period name if needed
+        if set_file_title:
+            kwargs["title"] = kwargs["fname"].stem
+        if set_name_title:
+            kwargs["title"] = kwargs["fname"].stem + "_" + data.name
+        func(data, *args, **kwargs)
+        
+    return wrapper
