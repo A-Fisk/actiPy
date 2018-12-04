@@ -68,15 +68,16 @@ def multiple_plot_kwarg_decorator(func):
         # and set the default values for all the labels
         fig, ax, params_dict = func(data, **kwargs)
 
-        # set the x axis times to show only every few hours and look pretty
-        xfmt = mdates.DateFormatter("%H:%M:%S")
-        ax.xaxis.set_major_formatter(xfmt)
-        interval = params_dict["interval"]
-        if "interval" in kwargs:
-            interval = kwargs["interval"]
-        ax.xaxis.set_major_locator(mdates.HourLocator(interval=interval))
-        fig.autofmt_xdate()
-        
+        if "timeaxis" in params_dict and params_dict["timeaxis"]:
+            # set the x axis times to show only every few hours and look pretty
+            xfmt = mdates.DateFormatter("%H:%M:%S")
+            ax.xaxis.set_major_formatter(xfmt)
+            interval = params_dict["interval"]
+            if "interval" in kwargs:
+                interval = kwargs["interval"]
+            ax.xaxis.set_major_locator(mdates.HourLocator(interval=interval))
+            fig.autofmt_xdate()
+            
         # set the legend to given location
         if "legend" in kwargs and kwargs["legend"]:
             location = 1
@@ -87,7 +88,7 @@ def multiple_plot_kwarg_decorator(func):
             fig.legend(handles, labels, loc=location)
         
         # set the xlimits of the plot to the given parameters
-        if "xlim" in params_dict:
+        if "xlim" in params_dict or "xlim" in kwargs:
             xlim = params_dict["xlim"]
             if "xlim" in kwargs:
                 xlim = kwargs["xlim"]
@@ -102,17 +103,20 @@ def multiple_plot_kwarg_decorator(func):
         if "xlabel" in kwargs:
             xlabel = kwargs["xlabel"]
         ax.set_xlabel(xlabel)
-        ylabel = params_dict["ylabel"]
-        if "ylabel" in kwargs:
-            ylabel = kwargs["ylabel"]
-        fig.text(
-            0.02,
-            0.5,
-            ylabel,
-            ha="center",
-            va='center',
-            rotation='vertical'
-        )
+        if "ylabel" in params_dict or "ylabel" in kwargs:
+            ax.set_ylabel("")
+            if "ylabel" in params_dict:
+                ylabel = params_dict["ylabel"]
+            if "ylabel" in kwargs:
+                ylabel = kwargs["ylabel"]
+            fig.text(
+                0.02,
+                0.5,
+                ylabel,
+                ha="center",
+                va='center',
+                rotation='vertical'
+            )
         
         return fig, ax
     
@@ -140,15 +144,15 @@ def show_savefig_decorator(func):
     return wrapper
 
 
-def set_title_decorator(func,
-                        set_file_title=True,
-                        set_name_title=False):
+def set_title_decorator(func):
     """
     Decorator to set the "title" in kwargs
     :param func:
     :return:
     """
     def wrapper(data,
+                set_file_title=True,
+                set_name_title=False,
                 *args,
                 **kwargs):
         # set the title of the plot to be the file name or

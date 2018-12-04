@@ -5,6 +5,10 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import actiPy.preprocessing as prep
+from actiPy.preprocessing import _drop_level_decorator, _name_decorator, \
+    _remove_lights_decorator
+from actiPy.plots import multiple_plot_kwarg_decorator,  \
+    show_savefig_decorator, set_title_decorator
 
 # function to create episode dataframe
 # starting off by working on just a single
@@ -14,7 +18,7 @@ import actiPy.preprocessing as prep
 # to loop over and do for everything in the
 # df
 
-def episode_finder(data, *args, **kwargs):
+def _episode_finder(data, *args, **kwargs):
     """
     Function to find the episodes in the
     series - defined as from 0 to another
@@ -59,7 +63,10 @@ def episode_finder(data, *args, **kwargs):
     name = data.name
     episode_lengths_filtered.name = name
     return episode_lengths_filtered
-   
+ 
+ 
+@_name_decorator
+@_drop_level_decorator
 def episode_find_df(data,
                     LDR=-1,
                     *args,
@@ -73,41 +80,31 @@ def episode_find_df(data,
     """
     # loop through each column
     # and find the episodes in that column
+    
+    # remove light column
     ldr_data = data.iloc[:,LDR].copy()
     ldr_label = data.columns[LDR]
+    
+    # find episodes for each animal
     episode_series_list = []
     for col in data:
         data_series = data.loc[:,col]
-        col_episodes = episode_finder(data_series, *args, **kwargs)
+        col_episodes = _episode_finder(data_series, *args, **kwargs)
         episode_series_list.append(col_episodes)
     episode_df = pd.concat(episode_series_list, axis=1)
+    
+    # put light column back in
     episode_df[ldr_label] = ldr_data
+    
+    # check that we are getting reasonable episode lengths
+    try:
+        check_episode_max(episode_df)
+    except:
+        episode_df = episode_df.iloc[:-1,:]
     check_episode_max(episode_df)
+    
     return episode_df
 
-def create_episode_df(data,
-                      LDR=-1,
-                      *args,
-                      **kwargs):
-    """
-    Function to create entire dataframe with correct LDR and
-    label columns
-    :param data:
-    :param LDR:
-    :param args:
-    :param kwargs:
-    :return:
-    """
-    # remove object column, find episodes, reappend and return
-    mod_data, object_col = prep.remove_object_col(data,
-                                                  return_cols=True)
-    episode_df = episode_find_df(mod_data,
-                                 LDR=LDR,
-                                 *args,
-                                 **kwargs)
-    col_name = object_col[0].name
-    episode_df[col_name] = object_col[0]
-    return episode_df
 
 def check_episode_max(data,
                       max_time="6H",
@@ -126,9 +123,18 @@ def check_episode_max(data,
         raise ValueError("Max episode longer than %s" % max_time)
     
 ### Functions to plot histogram of data
+
+@set_title_decorator
+@show_savefig_decorator
+@multiple_plot_kwarg_decorator
+@_remove_lights_decorator
+@_drop_level_decorator
 def episode_histogram(data,
+                      fig=None,
+                      ax=None,
                       LDR=-1,
-                      *args,
+                      convert=False,
+                      log=True,
                       **kwargs):
     """
     Function to take dataframe and plot each pir as a
@@ -140,47 +146,30 @@ def episode_histogram(data,
     :return:
     """
     # preprocess to be able to plot easily
-    ldr_label = data.columns[LDR]
-    ldr_col = data.pop(ldr_label)
     data.dropna(inplace=True)
-    no_animals = len(data.columns)
-    data = convert_data_to_unit(data)
-    
-    # Plot the data
-    fig, ax = plt.subplots(nrows=1,
-                           ncols=no_animals,
-                           sharex=True,
-                           sharey=True)
+    if convert:
+        data = convert_data_to_unit(data)
+ 
+    # create figure if not given
+    if not fig and not ax:
+        no_animals = len(data.columns)
+        fig, ax = plt.subplots(nrows=1,
+                               ncols=no_animals,
+                               sharex=True,
+                               sharey=True)
+ 
+    # plot a histogram on the axis
     for axis, col in zip(ax, data.columns):
         axis.hist(data.loc[:,col])
-        axis.set_yscale('log')
+        if log:
+            axis.set_yscale('log')
         axis.set_title(col)
+ 
+    # set the defaults
+    params_dict = {
     
-    # set the labelling parameters
-    fig.text(0.5,
-             0.01,
-             'Episode duration (minutes)',
-             ha='center',
-             va='center')
-    fig.text(0.06,
-             0.5,
-             "Count",
-             ha="center",
-             va='center',
-             rotation='vertical')
-    if "title" in kwargs:
-        fig.suptitle(kwargs["title"])
-        
-    # set the extra parameters
-    if "figsize" in kwargs:
-       fig.set_size_inches(kwargs["figsize"])
-    # set kwarg values for showfig and savefig
-    if "showfig" in kwargs and kwargs["showfig"]:
-        plt.show()
-    if "savefig" in kwargs and kwargs["savefig"]:
-        plt.savefig(fname=kwargs['fname'])
-        plt.close()
-
+    }
+    
 # unfortunately have to basically copy paste a lot because
 # can't figure out how to modify axis objects
 # once already created to plot each df separately
