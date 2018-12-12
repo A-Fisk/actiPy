@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import actiPy.preprocessing as prep
 from actiPy.preprocessing import _drop_level_decorator, _name_decorator, \
-    _remove_lights_decorator
+    _remove_lights_decorator, sep_by_index_decorator
 from actiPy.plots import multiple_plot_kwarg_decorator,  \
     show_savefig_decorator, set_title_decorator
 
@@ -129,7 +129,7 @@ def check_episode_max(data,
 @multiple_plot_kwarg_decorator
 @_remove_lights_decorator
 @_drop_level_decorator
-def episode_histogram(data,
+def _deprec_episode_histogram(data,
                       fig=None,
                       ax=None,
                       LDR=-1,
@@ -169,120 +169,72 @@ def episode_histogram(data,
     params_dict = {
     
     }
-    
-# unfortunately have to basically copy paste a lot because
-# can't figure out how to modify axis objects
-# once already created to plot each df separately
-def episode_histogram_all_conditions(data_list,
-                                     LDR=-1,
-                                     *args,
-                                     **kwargs):
+   
+
+@sep_by_index_decorator
+@set_title_decorator
+@multiple_plot_kwarg_decorator
+def episode_histogram(data_list,
+                      LDR: int=-1,
+                      **kwargs):
     """
-    Function to plot all the different conditions in the list
-    as their own row in a histogram plot
-    :param data:
+    Plotting function takes in df and separates into list and plots
+    :param data_list:
     :param LDR:
-    :param args:
     :param kwargs:
-        bins: if given will take bins in seconds and convert to
-            seconds. Assumes input as an array of data,
-            takes the second last value and assigns ta
     :return:
     """
-
-    # preprocess to be able to plot easily
-    tidied_data_list = []
-    label_list = []
-    for df in data_list:
-        df = prep.remove_object_col(df)
-        ldr_label = df.columns[LDR]
-        ldr_col = df.pop(ldr_label)
-        data = df#convert_data_to_unit(df)
-        tidied_data_list.append(data)
-        label_list.append(df.name)
+    
+    # remove LDR from all dfs in the list and put in label
+    tidied_data_list = [x.drop(x.columns[LDR], axis=1) for x in data_list]
+    label_list = [x.name for x in data_list]
     no_animals = len(tidied_data_list[0].columns)
-
-    # let the function define bins as needed
+    no_conditions = len(tidied_data_list)
+    
+    # set some function constants
+    bins = 10
     if "bins" in kwargs:
         bins = kwargs["bins"]
-    else:
-        bins = 10
+    logy = False
     if "logy" in kwargs:
-        log = kwargs["logy"]
-    else:
-        log = False
+        logy = kwargs["logy"]
     
-    # Plot the data
-    fig, ax = plt.subplots(nrows=len(data_list),
+    # plot the data, each condition separate row, each animal on a column
+    fig, ax = plt.subplots(nrows=no_conditions,
                            ncols=no_animals,
                            sharex=True,
                            sharey=True)
+    # plot each condition on a separate row
     for row, condition in enumerate(label_list):
         plotting_df = tidied_data_list[row]
         for col_plot, col_label in enumerate(plotting_df):
             plotting_col = plotting_df.loc[:,col_label].dropna()
-            curr_axis = ax[row,col_plot]
+            if no_animals > 1:
+                curr_axis = ax[row, col_plot]
+            else:
+                curr_axis = ax[row]
             curr_axis.hist(plotting_col,
                            bins=bins,
-                           log=log,
+                           log=logy,
                            density=True)
-            # curr_axis.set(xlim=[0,bins[-2]])
             if row == 0:
                 curr_axis.set_title(col_label)
             if col_plot == 0:
-                curr_axis.set_ylabel(label_list[row])
+                curr_axis.set_ylabel(condition)
+    
+    # tidy up the subplots
     fig.subplots_adjust(hspace=0,
                         wspace=0)
     
-    # set the labelling parameters
-    if "xtitle" in kwargs:
-        xtitle = kwargs["xtitle"]
-    else:
-        xtitle = "Episode duration"
-    fig.text(0.5,
-             0.01,
-             xtitle,
-             ha='center',
-             va='center')
-    fig.text(0.03,
-             0.5,
-             "Normalised density",
-             ha="center",
-             va='center',
-             rotation='vertical')
-    if "title" in kwargs:
-        fig.suptitle(kwargs["title"])
-        
-    # set the extra parameters
-    if "figsize" in kwargs:
-        fig.set_size_inches(kwargs["figsize"])
-    # set extra kwarg parameters
-    if "showfig" in kwargs and kwargs["showfig"]:
-        plt.show()
-    if "savefig" in kwargs and kwargs["savefig"]:
-        plt.savefig(fname=kwargs['fname'])
-        plt.close()
+    # set the default values
+    params_dict = {
+        "xlabel": "Episode Duration, seconds",
+        "ylabel": "Normalised Density",
+        "title": "Episode histogram"
+    }
+    
+    return fig, curr_axis, params_dict
 
-def ep_hist_conditions_from_df(data,
-                               LDR=-1,
-                               *args,
-                               **kwargs):
-    """
-    Function to take in dataframe, separate into list of conditions
-    then plot
-    :param data:
-    :param LDR:
-    :param args:
-    :param kwargs:
-    :return:
-    """
-    data_list = prep.separate_by_condition(data)
-    if "fname" in kwargs:
-        kwargs["title"] = kwargs["fname"].stem
-    episode_histogram_all_conditions(data_list=data_list,
-                                     LDR=LDR,
-                                     *args,
-                                     **kwargs)
 
 def convert_data_to_unit(data,
                          unit_time="1M"):
@@ -297,3 +249,21 @@ def convert_data_to_unit(data,
     conversion_amount = pd.Timedelta(unit_time).total_seconds()
     data_new = data.copy() / conversion_amount
     return data_new
+
+
+@_remove_lights_decorator
+def _stack_all_values(data):
+    """
+    gets all values for all animals in a single column
+    :param data:
+    :return:
+    """
+    # create long dataframe with values for all animals in it
+    df_long = data.stack()
+    df_long.index = df_long.index.droplevel(2)
+    df = pd.DataFrame(df_long)
+    
+    df.columns = ["Sum of all animals"]
+    df.name = data.name
+    
+    return df

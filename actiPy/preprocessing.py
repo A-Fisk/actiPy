@@ -9,19 +9,21 @@ def _drop_level_decorator(func):
     :param func:
     :return:
     """
-    def wrapper(data, drop_level=True, **kwargs):
+    def wrapper(data, drop_level=True, reset_level=True, **kwargs):
         
         # drop top level of axis if asked, save
         if drop_level:
             data_dropped = data.reset_index(0)
             label_name = data_dropped.columns[0]
             label_col = data_dropped.pop(label_name)
+        else:
+            data_dropped = data.copy()
         
         # call the function on the data
         new_data = func(data_dropped, **kwargs)
         
         # re-index to original level
-        if drop_level:
+        if reset_level:
             new_data[label_name] = label_col
             new_cols = [new_data.columns[-1], new_data.index]
             new_data.set_index(new_cols, inplace=True)
@@ -69,6 +71,28 @@ def _remove_lights_decorator(func):
         
         return new_data
     
+    return wrapper
+    
+    
+def sep_by_index_decorator(func):
+    """
+    Separates into a list of dataframes by the given level of the index and
+    passes to the function
+    """
+    
+    def wrapper(data, level=0, **kwargs):
+        
+        vals = data.index.get_level_values(level).unique()
+        idx = pd.IndexSlice
+        list_by_vals = []
+        for val in vals:
+            temp_df = data.loc[idx[val, :], :]
+            temp_df.reset_index(0, drop=True, inplace=True)
+            temp_df.name = val
+            list_by_vals.append(temp_df)
+        
+        func(list_by_vals, **kwargs)
+        
     return wrapper
     
     
@@ -364,6 +388,8 @@ class SaveObjectPipeline:
         # define the lists to iterate through
         if data_list is None:
             data_list = self.object_list
+        elif "processed" in data_list:
+            data_list = self.processed_list
         if file_list is None:
             file_list = self.file_list
         if subdir_path is None:
@@ -481,8 +507,10 @@ def create_ct_based_index(period_sliced_data, CT_period=None):
 
     return new_index
 
+@_drop_level_decorator
+@_remove_lights_decorator
 def split_dataframe_by_period(data,
-                              animal_number,
+                              animal_number: int=0,
                               period=None,
                               CT_period=None):
     """
@@ -544,6 +572,23 @@ def split_entire_dataframe(data,
         temp_split_df.name = column
         split_df_list.append(temp_split_df)
     return split_df_list
+
+
+def split_all_animals(df):
+    # get all animals in one big df
+    split_dict = {}
+    for no, col in enumerate(df.columns[:-1]):
+        # split by period, then plot mean +/- sem?
+        split_df = split_dataframe_by_period(df,
+                                             drop_level=True,
+                                             reset_level=False,
+                                             animal_number=no)
+        split_dict[col] = split_df
+        
+    all_df = pd.concat(split_dict, axis=1, ignore_index=True)
+
+    return all_df
+
 
 def remap_LDR(data,
               ldr_col=-1,

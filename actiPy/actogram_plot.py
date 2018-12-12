@@ -78,7 +78,6 @@ def _actogram_plot_from_df(data,
 
 
 @set_title_decorator
-@show_savefig_decorator
 @multiple_plot_kwarg_decorator
 def _actogram_plot(data,
                    animal_number=0,

@@ -89,9 +89,10 @@ def multiple_plot_kwarg_decorator(func):
         
         # set the xlimits of the plot to the given parameters
         if "xlim" in params_dict or "xlim" in kwargs:
-            xlim = params_dict["xlim"]
             if "xlim" in kwargs:
                 xlim = kwargs["xlim"]
+            else:
+                xlim = params_dict["xlim"]
             ax.set(xlim=xlim)
         
         # set the plot title, the x axis label and the y axis label
@@ -102,12 +103,16 @@ def multiple_plot_kwarg_decorator(func):
         xlabel = params_dict["xlabel"]
         if "xlabel" in kwargs:
             xlabel = kwargs["xlabel"]
-        ax.set_xlabel(xlabel)
+        fig.text(0.5,
+                 0.05,
+                 xlabel,
+                 ha='center',
+                 va='center')
         if "ylabel" in params_dict or "ylabel" in kwargs:
-            ax.set_ylabel("")
             if "ylabel" in params_dict:
                 ylabel = params_dict["ylabel"]
             if "ylabel" in kwargs:
+                ax.set_ylabel("")
                 ylabel = kwargs["ylabel"]
             fig.text(
                 0.02,
@@ -117,7 +122,15 @@ def multiple_plot_kwarg_decorator(func):
                 va='center',
                 rotation='vertical'
             )
-        
+         
+        if "figsize" in kwargs:
+            fig.set_size_inches(kwargs["figsize"])
+        if "showfig" in kwargs and kwargs["showfig"]:
+            plt.show()
+        if "savefig" in kwargs and kwargs["savefig"]:
+            plt.savefig(kwargs["fname"])
+            plt.close()
+            
         return fig, ax
     
     return wrapper
