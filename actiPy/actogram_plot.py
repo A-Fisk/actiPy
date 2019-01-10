@@ -42,9 +42,10 @@ def actogram_plot_all_cols(data,
 
 
 def _actogram_plot_from_df(data,
-                           animal_number=0,
+                           animal_number,
                            LDR=-1,
                            period="24H",
+                           drop_level=True,
                            *args,
                            **kwargs):
     """
@@ -59,28 +60,29 @@ def _actogram_plot_from_df(data,
     """
     
     # remap the light data
-    data_LDR_remap = prep.remap_LDR(data)
+    data_LDR_remap = prep.remap_LDR(data, drop_level=drop_level, **kwargs)
     
-    # remove top level of the index
-    data_LDR_remap.index = data_LDR_remap.index.droplevel(0)
+    if drop_level:
+        # remove top level of the index
+        data_LDR_remap.index = data_LDR_remap.index.droplevel(0)
     
     # split the dfs
     split_df_list = prep.split_entire_dataframe(data_LDR_remap,
                                                 period=period)
     # plot with actogram
     _actogram_plot(split_df_list,
-                   animal_number,
+                   animal_number=animal_number,
                    LDR=LDR,
                    *args,
                    **kwargs)
 
 
 @set_title_decorator
-@show_savefig_decorator
 @multiple_plot_kwarg_decorator
 def _actogram_plot(data,
                    animal_number=0,
                    LDR=-1,
+                   ylim=[0, 120],
                    **kwargs):
     """
     Function to take in dataframe and plot a double-plotted actogram
@@ -98,7 +100,10 @@ def _actogram_plot(data,
 
     # set up some constants
     NUM_DAYS = len(data_to_plot.columns)
-
+    linewidth = 1
+    if "linewidth" in kwargs:
+        linewidth = kwargs["linewidth"]
+        
     # add in values at the start and end
     # to let us double plot effectively
     for data in data_to_plot, light_data:
@@ -115,21 +120,25 @@ def _actogram_plot(data,
         day_data = two_days(data_to_plot, day_label)
         day_light_data = two_days(light_data, day_label)
         
+        # create masked data for fill between to avoid horizontal lines
+        fill_data = day_data.where(day_data>0)
+        fill_ldr = day_light_data.where(day_light_data>0)
+
         # plot the data and LDR
-        axis.plot(day_data)
-        axis.fill_between(day_data.index,
-                          day_data)
-        axis.fill_between(day_light_data.index,
-                          day_light_data,
+        axis.fill_between(fill_ldr.index,
+                          fill_ldr,
                           alpha= 0.5,
                           facecolor= "grey")
-        
+        axis.plot(day_data, linewidth=linewidth)
+        axis.fill_between(fill_data.index,
+                          fill_data)
+          
         # need to hide all the axis to make visible
         axis.set(xticks=[],
                  xlim= [day_data.index[0],
                         day_data.index[-1]],
                  yticks=[],
-                 ylim=[0, 120],)
+                 ylim=ylim)
         spines = ["left", "right", "top", "bottom"]
         for pos in spines:
             axis.spines[pos].set_visible(False)
@@ -149,7 +158,7 @@ def _actogram_plot(data,
         "xlabel": "Time",
         "ylabel": "Days",
         "interval": 6,
-        "title": "Double Plotted Actogram"
+        "title": "Double Plotted Actogram",
     }
     
     return fig, ax[-1], params_dict
@@ -170,7 +179,7 @@ def pad_first_last_days(data):
     # create a day of 0s and put at the start and the end
     zeros = np.zeros(NUM_BINS)
     data.insert(0, -1, zeros)
-    data.insert((NUM_DAYS+1), (NUM_DAYS+1), zeros)
+    data.insert((NUM_DAYS+1), (NUM_DAYS), zeros)
     return data
    
 def convert_zeros(data, value):
@@ -200,9 +209,8 @@ def two_days(data, day_one_label):
     day_one = data.iloc[:,day_no]
     day_two = data.iloc[:,(day_no+1)]
     
-    # change day_two index so not overlapping
     day_two.index = day_one.index + pd.Timedelta("1D")
-
+    
     two_days = pd.concat([day_one, day_two])
     return two_days
 

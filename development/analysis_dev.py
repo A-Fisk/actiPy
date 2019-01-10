@@ -1,21 +1,54 @@
-import pathlib
-import sys
+# script to create actograms and save for all data files
+# in input dir
+
+import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
-sys.path.insert(0, "/Users/angusfisk/Documents/01_PhD_files/"
-                   "07_python_package/actigraphy_analysis")
-import actigraphy_analysis.preprocessing as prep
-import actigraphy_analysis.actogram_plot as act
-import actigraphy_analysis.analysis as actan
+import pathlib
+import seaborn as sns
+sns.set()
+import sys
+sys.path.insert(0, "/Users/angusfisk/Documents/01_PhD_files/07_python_package/"
+                   "actiPy")
+import actiPy.preprocessing as prep
+import actiPy.analysis as als
+from actiPy.plots import multiple_plot_kwarg_decorator, show_savefig_decorator
 
-# read the first file in from the input directory
-# into a dataframe then apply split function to
-# it then try and use actogram plotting
-input_dir = pathlib.Path("/Users/angusfisk/Documents/01_PhD_files/"
-                         "01_Projects/P2_Circ_Disruption_paper_chapt2"
-                         "/03_data_files")
-file_name = list(input_dir.glob("*.csv"))[0]
-data = prep.read_file_to_df(file_name)
-data_baseline = prep.separate_by_condition(data)[0]
-data_clean = prep.remove_object_col(data_baseline)
+input_directory = pathlib.Path("/Users/angusfisk/Documents/01_PhD_files/"
+                                "01_projects/P2_Circ_Disruption_paper_chapt2/"
+                                "01_data_files/00_clean/")
+save_directory = input_directory.parents[1] / "03_analysis_outputs"
+subdir_name = '05_count_per_day'
 
+init_kwargs = {
+    "input_directory": input_directory,
+    "save_directory": save_directory,
+    "subdir_name": subdir_name,
+    "func": (prep, "read_file_to_df"),
+    "index_col": [0, 1],
+    "header": [0]
+}
+test_object = prep.SaveObjectPipeline(**init_kwargs)
 
+process_kwargs = {
+    "function": (als, "count_per_day"),
+    "create_df": True,
+}
+test_object.process_file(**process_kwargs)
+
+plot_kwargs = {
+    "function": (als, "pointplot_from_df"),
+    "showfig": False,
+    "savefig": True,
+    "data_list": [test_object.processed_df],
+    "file_list": [test_object.subdir_path.stem],
+    "df": test_object.processed_df,
+    "xlevel": 'light_period',
+    "ylevel": "Activity_count_per_day",
+    "groups": 'group',
+    "dodge": True,
+    "capsize": 0.1,
+    "remove_col": False,
+    "figsize": (10,10)
+}
+test_object.create_plot(**plot_kwargs)

@@ -2,6 +2,100 @@ import pandas as pd
 # This script contains functions which are useful for preprocessing of
 # actigraphy data
 
+###### Decorators first #####
+def _drop_level_decorator(func):
+    """
+    removes top level before passing to function and re-indexes before returning
+    :param func:
+    :return:
+    """
+    def wrapper(data, drop_level=True, reset_level=True, **kwargs):
+        
+        # drop top level of axis if asked, save
+        if drop_level:
+            data_dropped = data.reset_index(0)
+            label_name = data_dropped.columns[0]
+            label_col = data_dropped.pop(label_name)
+        else:
+            data_dropped = data.copy()
+        
+        # call the function on the data
+        new_data = func(data_dropped, **kwargs)
+        
+        # re-index to original level
+        if reset_level:
+            new_data[label_name] = label_col
+            new_cols = [new_data.columns[-1], new_data.index]
+            new_data.set_index(new_cols, inplace=True)
+            
+        return new_data
+    
+    return wrapper
+
+
+def _name_decorator(func):
+    """
+    Copies metadata if present
+    :param func:
+    :return:
+    """
+    def wrapper(data, **kwargs):
+        
+        # call original function
+        new_data = func(data, **kwargs)
+
+        # append metadata if there
+        if hasattr(data, "name"):
+            new_data.name = data.name
+            
+        return new_data
+    
+    return wrapper
+
+
+def _remove_lights_decorator(func):
+    """
+    Removes light and reappends after called
+    """
+    def wrapper(data, ldr_col=-1, **kwargs):
+        
+        # remove ldr
+        ldr_label = data.columns[ldr_col]
+        ldr_data = data.pop(ldr_label)
+        
+        # call function
+        new_data = func(data, **kwargs)
+        
+        # reappend ldr
+        new_data[ldr_label] = ldr_data
+        
+        return new_data
+    
+    return wrapper
+    
+    
+def sep_by_index_decorator(func):
+    """
+    Separates into a list of dataframes by the given level of the index and
+    passes to the function
+    """
+    
+    def wrapper(data, level=0, **kwargs):
+        
+        vals = data.index.get_level_values(level).unique()
+        idx = pd.IndexSlice
+        list_by_vals = []
+        for val in vals:
+            temp_df = data.loc[idx[val, :], :]
+            temp_df.reset_index(0, drop=True, inplace=True)
+            temp_df.name = val
+            list_by_vals.append(temp_df)
+        
+        func(list_by_vals, **kwargs)
+        
+    return wrapper
+    
+    
 # function to remove column if object
 def remove_object_col(data, return_cols=False):
     """
@@ -173,6 +267,7 @@ class SaveObjectPipeline:
         self.subdir_name = subdir_name
         self.processed_list = []
         self.processed_file_list = []
+        self.processed_df = []
 
         # create the file list by globbing for the search suffix
         self.file_list = sorted(
@@ -202,6 +297,8 @@ class SaveObjectPipeline:
                      savecsv=False,
                      object_list=None,
                      file_list=None,
+                     create_df=False,
+                     savedfcsv=False,
                      **kwargs):
         """
         Method that applies a defined function to all the
@@ -234,9 +331,32 @@ class SaveObjectPipeline:
                 save_suffix
             )
             self.processed_file_list.append(file_name_path)
+            
             # save the csv to the subdirectory if asked to do so
             if savecsv:
                 temp_df.to_csv(file_name_path)
+
+        # create a dataframe from the processed files
+        if create_df:
+            keys = [x.stem for x in self.processed_file_list]
+            items = self.processed_list
+            dictionary = dict(zip(keys, items))
+            self.processed_df = pd.concat(dictionary)
+            self.processed_df.name = function[1]
+
+            # rename columns and axis
+            self.processed_df.index.rename('group', level=0, inplace=True)
+            self.processed_df.columns.name = 'animals'
+            
+            # save the csv to the function name
+            if savedfcsv:
+                file_name_path = create_file_name_path(
+                    self.subdir_path,
+                    function[1],
+                    save_suffix
+                )
+                self.processed_df.to_csv(file_name_path)
+
 
     # method for saving a plot
     def create_plot(self,
@@ -268,6 +388,8 @@ class SaveObjectPipeline:
         # define the lists to iterate through
         if data_list is None:
             data_list = self.object_list
+        elif "processed" in data_list:
+            data_list = self.processed_list
         if file_list is None:
             file_list = self.file_list
         if subdir_path is None:
@@ -284,7 +406,8 @@ class SaveObjectPipeline:
                 temp_df = remove_object_col(df, return_cols=False)
             else:
                 temp_df = df.copy()
-            temp_df.name = df.name
+            if isinstance(temp_df, pd.DataFrame):
+                temp_df.name = df.name
             func(temp_df,
                  fname=file_name_path,
                  **kwargs)
@@ -384,8 +507,10 @@ def create_ct_based_index(period_sliced_data, CT_period=None):
 
     return new_index
 
+@_drop_level_decorator
+@_remove_lights_decorator
 def split_dataframe_by_period(data,
-                              animal_number,
+                              animal_number: int=0,
                               period=None,
                               CT_period=None):
     """
@@ -448,7 +573,32 @@ def split_entire_dataframe(data,
         split_df_list.append(temp_split_df)
     return split_df_list
 
-def remap_LDR(data, LDR_col=-1, invert=True):
+
+def split_all_animals(df):
+    # get all animals in one big df
+    split_dict = {}
+    for no, col in enumerate(df.columns[:-1]):
+        # split by period, then plot mean +/- sem?
+        split_df = split_dataframe_by_period(df,
+                                             drop_level=True,
+                                             reset_level=False,
+                                             animal_number=no)
+        split_dict[col] = split_df
+        
+    all_df = pd.concat(split_dict, axis=1, ignore_index=True)
+
+    return all_df
+
+
+def remap_LDR(data,
+              ldr_col=-1,
+              test_col=1,
+              test_activ_value=10,
+              test_ldr_value=100,
+              max_ldr_value=150,
+              invert=True,
+              drop_level=True,
+              **kwargs):
     """
     Function to remap LDR values from light = high to
     light = low - allows easier plotting of actigraphy data
@@ -456,27 +606,52 @@ def remap_LDR(data, LDR_col=-1, invert=True):
     :param light_data:
     :return:
     """
-    # remap the LDR data to 150 as max then take 150
-    # from the values to code darkness
-    light_data = data.iloc[:,LDR_col].copy()
-    # select from the first value >1 and
-    # the last value > 1
-    high_light_index = light_data.loc[light_data>150].index
-    start = data.index.get_loc(high_light_index[0])
-    end = data.index.get_loc(high_light_index[-1])
-    light_data.loc[light_data>150] = 150
-    if invert:
-        light_data = 150 - light_data
-    data_new = data.iloc[:,:].copy()
-    data_new.iloc[start:end,LDR_col] = light_data
-    return data_new
+    # remap the LDR value
+    # Aim: remap all 0 values between start and end of light cycles
+    # to inverse so shows up as grey on the actogram
+    
+    # remove level if multi-index and save those values for later
+    if drop_level:
+        data = data.reset_index(0)
+        label_name = data.columns[0]
+        label_col = data.pop(label_name)
 
+    # Step one, select just the time of the activity cycles
+    test_data = data.iloc[:,test_col].copy()
+    mask = test_data > test_activ_value
+    start = test_data.where(mask).first_valid_index()
+    end = test_data.where(mask)[::-1].first_valid_index()
+
+    light_data = data.iloc[:,ldr_col].copy()
+    light_mask = light_data > test_ldr_value
+    # Set the high values to all be 150
+    light_data = light_data.mask(light_mask, other=max_ldr_value)
+
+    # Step two, invert the selected data
+    if invert:
+        light_data = max_ldr_value - light_data
+
+    # Step three, assign to a new dataframe and return
+    new_data = data.copy()
+    ldr_label = new_data.columns[ldr_col]
+    new_data.loc[start:end,ldr_label] = light_data.loc[start:end]
+
+    # return the label col and reindex
+    if drop_level:
+        new_data[label_name] = label_col
+        new_cols = [new_data.columns[-1], new_data.index]
+        new_data.set_index(new_cols, inplace=True)
+     
+    return new_data
+     
 
 def slice_by_label_col(data,
                        label_col=-1,
                        section_label="disrupted",
                        baseline_length="6D",
-                       post_length="16D"):
+                       post_length="15D",
+                       drop_level=True,
+                       **kwargs):
     """
     Function to slice the dataframe into a shorter period based on the
     label column. Primary use for defining times to use for
@@ -491,10 +666,73 @@ def slice_by_label_col(data,
     :return:
     """
     
+    name = data.name
+    # if multi-index then drop top level and use that as the index
+    if drop_level:
+        data = data.reset_index(0)
+        label_col = 0
+    
+    # select given time before and after the selected period
     start_timeshift = pd.Timedelta(baseline_length)
     end_timeshift = pd.Timedelta(post_length)
     disrupted_index = data[data.iloc[:,label_col]==section_label].index
     start = disrupted_index[0] - start_timeshift
     end = disrupted_index[-1] + end_timeshift
     data_new = data.loc[start:end].copy()
+    
+    data_new.name = name
+    if drop_level:
+        new_index = data_new.columns[0]
+        data_new.set_index(new_index, append=True, inplace=True)
+        data_new = data_new.reorder_levels([1,0])
     return data_new
+
+
+def clean_data(data,
+               append_post=True,
+               post_label='post_dd',
+               **kwargs):
+    """
+    Function to clean dataframe into given time before and after the
+    light period of interest, also append post_dd if asked
+    :param data:
+    :param post_label:
+    :param kwargs:
+    :return:
+    """
+    # Aim -> split by label col 6D baseline 15 d post baseline
+    # then append post_dd
+    sliced_data = slice_by_label_col(data,**kwargs)
+    
+    if append_post:
+        # create post-dd in same format
+        index_name = data.index.get_level_values(0).name
+        post_dd = pd.concat([data.loc[post_label]],
+                            keys=[post_label],
+                            names=[index_name])
+
+        # put post_dd back into the df
+        final_df = pd.concat([sliced_data, post_dd])
+    
+    else:
+        final_df = sliced_data
+
+    return final_df
+
+@_name_decorator
+def _convert_to_units(data,
+                      base_freq="10S",
+                      target_freq="1H",
+                      **kwargs):
+    """
+    Function to convert data from current frequency
+    :param data:
+    :param base_freq:
+    :param target_freq:
+    :return:
+    """
+    base_secs = pd.Timedelta(base_freq).total_seconds()
+    target_secs = pd.Timedelta(target_freq).total_seconds()
+    new_data = data.copy()
+    new_data = (new_data * base_secs) / target_secs
+    return new_data
