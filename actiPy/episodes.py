@@ -176,6 +176,8 @@ def _deprec_episode_histogram(data,
 @multiple_plot_kwarg_decorator
 def episode_histogram(data_list,
                       LDR: int=-1,
+                      logx: bool=True,
+                      clip: bool=True,
                       **kwargs):
     """
     Plotting function takes in df and separates into list and plots
@@ -195,6 +197,7 @@ def episode_histogram(data_list,
     bins = 10
     if "bins" in kwargs:
         bins = kwargs["bins"]
+        
     logy = False
     if "logy" in kwargs:
         logy = kwargs["logy"]
@@ -209,6 +212,8 @@ def episode_histogram(data_list,
         plotting_df = tidied_data_list[row]
         for col_plot, col_label in enumerate(plotting_df):
             plotting_col = plotting_df.loc[:,col_label].dropna()
+            if clip and "bins" in kwargs:
+                plotting_col = np.clip(plotting_col, 0, bins[-1])
             if no_animals > 1:
                 curr_axis = ax[row, col_plot]
             else:
@@ -221,6 +226,8 @@ def episode_histogram(data_list,
                 curr_axis.set_title(col_label)
             if col_plot == 0:
                 curr_axis.set_ylabel(condition)
+            if logx:
+                curr_axis.set_xscale('log')
     
     # tidy up the subplots
     fig.subplots_adjust(hspace=0,

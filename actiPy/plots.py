@@ -58,6 +58,17 @@ def multiple_plot_kwarg_decorator(func):
     , titles, and savefig/showfig functions
     Uses fig instead of ax as multiple ax parameters
     :param func:
+    Timeaxis: Bool
+    Interval: String for timeaxis
+    legend: bool
+    Legend_loc: string for location
+    xlim: tuple
+    title: string
+    xlabel: string
+    ylabel: string
+    figsize: tuple
+    showfig: bool
+    savefig: bool
     :return:
     """
     def wrapper(data, *args, **kwargs):
@@ -100,15 +111,16 @@ def multiple_plot_kwarg_decorator(func):
         if "title" in kwargs:
             title = kwargs["title"]
         fig.suptitle(title)
-        xlabel = params_dict["xlabel"]
-        if "xlabel" in kwargs:
-            xlabel = kwargs["xlabel"]
-        fig.text(0.5,
-                 0.05,
-                 xlabel,
-                 ha='center',
-                 va='center')
-        if "ylabel" in params_dict or "ylabel" in kwargs:
+        if params_dict["xlabel"] is not False:
+            xlabel = params_dict["xlabel"]
+            if "xlabel" in kwargs:
+                xlabel = kwargs["xlabel"]
+            fig.text(0.5,
+                     0.05,
+                     xlabel,
+                     ha='center',
+                     va='center')
+        if params_dict["ylabel"] is not False:
             if "ylabel" in params_dict:
                 ylabel = params_dict["ylabel"]
             if "ylabel" in kwargs:
@@ -122,7 +134,7 @@ def multiple_plot_kwarg_decorator(func):
                 va='center',
                 rotation='vertical'
             )
-         
+     
         if "figsize" in kwargs:
             fig.set_size_inches(kwargs["figsize"])
         if "showfig" in kwargs and kwargs["showfig"]:
@@ -177,3 +189,6 @@ def set_title_decorator(func):
         func(data, *args, **kwargs)
         
     return wrapper
+
+
+

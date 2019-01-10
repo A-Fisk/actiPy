@@ -176,4 +176,110 @@ def _point_plot(data,
     return fig, ax, params_dict
 
 
+# IV calculation
+@prep._groupby_decorator
+def intradayvar(data):
+    """
+    Calculates Intradayvariabaility
+    :param data:
+    :return:
+    """
+    
+    # variance of the first derivative
+    # calculate the first derivative
+    shift = data.shift(-1)
+    first_derivative = shift - data
+    first_der_mean = (first_derivative ** 2).mean()
+
+    # total variance
+    total_var = data.var()
+
+    # ratio of the two
+    iv = first_der_mean / total_var
+    
+    iv.name = "Intraday Variability"
+
+    return iv
+
+
+def iv_by_group(data,
+                level: int=0):
+    """
+    Finds iv by day for each level of axis
+    :param data:
+    :param level:
+    :return:
+    """
+    iv = data.groupby(level=level).apply(_intradayvar)
+    
+    return iv
+
+
+@set_title_decorator
+@multiple_plot_kwarg_decorator
+def catplot(data, **kwargs):
+    """
+    Function to flatten input data and plot with scatter and line plot
+    :param data:
+    :param kwargs:
+    :return:
+    """
+    fig, ax = plt.subplots()
+    
+    import seaborn as sns
+    sns.set()
+
+    plot = data.stack().reset_index()
+    plot.rename(columns={0: data.name}, inplace=True)
+    
+    xlevel = plot.columns[0]
+    ylevel = plot.columns[-1]
+
+    sns.stripplot(data=plot, x=xlevel, y=ylevel, color="k", ax=ax)
+    sns.pointplot(data=plot, x=xlevel, y=ylevel, color="k",
+                  capsize=0.2, join=False,
+                  errwidth=1, ax=ax)
+    
+    params_dict = {
+        "timeaxis": False,
+        "title": data.name,
+        "xlabel": False,
+        "ylabel": False,
+    }
+    
+    return fig, ax, params_dict
+
+
+@prep._name_decorator
+def normalise_to_baseline(data,
+                          level_conds: int=0,
+                          level_period: int=1,
+                          baseline_level: int=0,
+                          disrupted_level: int=1,
+                          ldr_col: int=-1):
+    """
+    Normalises each level of level_conds to it's own baseline
+    :param data:
+    :param level_conds:
+    :param level_period:
+    :return:
+    """
+    idx = pd.IndexSlice
+    vals = data.index.get_level_values(level_conds).unique()
+    cond_dict = {}
+    for val in vals:
+        temp_df = data.loc[val]
+        temp_norm = (temp_df / temp_df.iloc[baseline_level]) * 100
+        cond_dict[val] = temp_norm
+    norm_df = pd.concat(cond_dict)
+
+    cond_vals = data.index.get_level_values(level_period).unique()
+    disrupted_with_light = norm_df.loc[idx[:,cond_vals[disrupted_level],:],:]
+    disrupted_nolight = disrupted_with_light.iloc[:, :ldr_col]
+    
+    disrupted_nolight.index.rename("Condition", level=0, inplace=True)
+    
+    return disrupted_nolight
+
+    
 # TODO test for count per day

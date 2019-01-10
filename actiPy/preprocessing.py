@@ -23,7 +23,7 @@ def _drop_level_decorator(func):
         new_data = func(data_dropped, **kwargs)
         
         # re-index to original level
-        if reset_level:
+        if reset_level and drop_level:
             new_data[label_name] = label_col
             new_cols = [new_data.columns[-1], new_data.index]
             new_data.set_index(new_cols, inplace=True)
@@ -95,6 +95,25 @@ def sep_by_index_decorator(func):
         
     return wrapper
     
+
+def _groupby_decorator(func):
+    """
+    Returns grouped values for func
+    :param func:
+    :return:
+    """
+    def wrapper(data, group=True, level=0, **kwargs):
+        
+        if group:
+            new_data = data.groupby(level=level).apply(func)
+            
+        else:
+            new_data = func(data)
+            
+        return new_data
+    
+    return wrapper
+
     
 # function to remove column if object
 def remove_object_col(data, return_cols=False):
@@ -268,6 +287,7 @@ class SaveObjectPipeline:
         self.processed_list = []
         self.processed_file_list = []
         self.processed_df = []
+        self.processed_df_filename = []
 
         # create the file list by globbing for the search suffix
         self.file_list = sorted(
@@ -299,6 +319,7 @@ class SaveObjectPipeline:
                      file_list=None,
                      create_df=False,
                      savedfcsv=False,
+                     set_name: bool=True,
                      **kwargs):
         """
         Method that applies a defined function to all the
@@ -342,7 +363,10 @@ class SaveObjectPipeline:
             items = self.processed_list
             dictionary = dict(zip(keys, items))
             self.processed_df = pd.concat(dictionary)
-            self.processed_df.name = function[1]
+            if set_name:
+                self.processed_df.name = function[1]
+            else:
+                self.processed_df.name = items[0].columns.name
 
             # rename columns and axis
             self.processed_df.index.rename('group', level=0, inplace=True)
@@ -355,6 +379,7 @@ class SaveObjectPipeline:
                     function[1],
                     save_suffix
                 )
+                self.processed_df_filename = file_name_path
                 self.processed_df.to_csv(file_name_path)
 
 
@@ -574,7 +599,9 @@ def split_entire_dataframe(data,
     return split_df_list
 
 
-def split_all_animals(df):
+def split_all_animals(df,
+                      ignore_index: bool=True,
+                      **kwargs):
     # get all animals in one big df
     split_dict = {}
     for no, col in enumerate(df.columns[:-1]):
@@ -585,7 +612,7 @@ def split_all_animals(df):
                                              animal_number=no)
         split_dict[col] = split_df
         
-    all_df = pd.concat(split_dict, axis=1, ignore_index=True)
+    all_df = pd.concat(split_dict, axis=1, ignore_index=ignore_index)
 
     return all_df
 
@@ -735,4 +762,22 @@ def _convert_to_units(data,
     target_secs = pd.Timedelta(target_freq).total_seconds()
     new_data = data.copy()
     new_data = (new_data * base_secs) / target_secs
+    return new_data
+
+@_name_decorator
+@_groupby_decorator
+def _resample(data,
+              target_freq: str="1H",
+              level: int=1,
+              **kwargs):
+    """
+    resamples to the target frequency
+    :param data:
+    :param target_freq:
+    :param kwargs:
+    :return:
+    """
+    new_data = data.copy()
+    new_data = new_data.resample(target_freq, level=level).mean()
+    
     return new_data
