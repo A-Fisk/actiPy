@@ -23,7 +23,7 @@ def _drop_level_decorator(func):
         new_data = func(data_dropped, **kwargs)
         
         # re-index to original level
-        if reset_level:
+        if reset_level and drop_level:
             new_data[label_name] = label_col
             new_cols = [new_data.columns[-1], new_data.index]
             new_data.set_index(new_cols, inplace=True)
@@ -508,7 +508,6 @@ def create_ct_based_index(period_sliced_data, CT_period=None):
     return new_index
 
 @_drop_level_decorator
-@_remove_lights_decorator
 def split_dataframe_by_period(data,
                               animal_number: int=0,
                               period=None,
@@ -566,7 +565,8 @@ def split_entire_dataframe(data,
     split_df_list = []
     for num, column in enumerate(data.columns):
         temp_split_df = split_dataframe_by_period(data,
-                                                  num,
+                                                  drop_level=False,
+                                                  animal_number=num,
                                                   period=period,
                                                   CT_period=CT_period)
         temp_split_df.name = column
