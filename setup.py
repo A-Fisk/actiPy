@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setup(    
     name="actiPy",
-    version="0.0.2",
+    version="0.0.3",
     author="Angus Fisk", 
     author_email="angus_fisk@hotmail.com",
     description="Scripts for analysis of actigraphy data",
