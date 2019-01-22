@@ -1,4 +1,5 @@
 import pandas as pd
+idx = pd.IndexSlice
 # This script contains functions which are useful for preprocessing of
 # actigraphy data
 
