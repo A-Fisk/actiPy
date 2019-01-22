@@ -781,3 +781,57 @@ def _resample(data,
     new_data = new_data.resample(target_freq, level=level).mean()
     
     return new_data
+
+
+def split_list_with_periods(name_df: pd.DataFrame,
+                            df_list: list):
+    """
+    Function that takes in a list of dataframes and a separate dataframe with
+    all the internal periods in it.
+    Loops through the various levels to apply split_by_period to each
+    animal/section/condition in the list (assuming list is of different
+    conditions) as given by the name df
+    :param name_df:
+    :param df_list:
+    :return:
+    """
+    # get values of each level we will loop through to select right period
+    condition_names = name_df.index.get_level_values(0).unique()
+    light_periods = name_df.index.get_level_values(1).unique()
+    animal_numbers = name_df.columns
+
+    split_dict = {}
+    # loop through condition dfs
+    for condition_number, condition_name in enumerate(condition_names):
+        df = df_list[condition_number]
+        condition_dict = {}
+        
+        # loop through light periods
+        for section in light_periods:
+            section_data = df.loc[section]
+            section_dict = {}
+           
+            # need to loop through animal numbers
+            for animal_no, animal_label in enumerate(animal_numbers):
+                # select the period from period df and then split the
+                # section df by that period
+                period = name_df.loc[idx[condition_name, section], animal_label]
+                split_df = split_dataframe_by_period(section_data,
+                                                      drop_level=False,
+                                                      reset_level=False,
+                                                      animal_number=animal_no,
+                                                      period=period)
+            
+                # save into dictionaries and dfs labelled by animal
+                # / section / condition
+                section_dict[animal_label] = split_df
+                
+            section_df = pd.concat(section_dict)
+            condition_dict[section] = section_df
+        
+        condition_df = pd.concat(condition_dict)
+        split_dict[condition_name] = condition_df
+
+    split_all_condition_df = pd.concat(split_dict)
+    
+    return split_all_condition_df
