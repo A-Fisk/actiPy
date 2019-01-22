@@ -533,7 +533,6 @@ def create_ct_based_index(period_sliced_data, CT_period=None):
     return new_index
 
 @_drop_level_decorator
-@_remove_lights_decorator
 def split_dataframe_by_period(data,
                               animal_number: int=0,
                               period=None,
@@ -591,7 +590,8 @@ def split_entire_dataframe(data,
     split_df_list = []
     for num, column in enumerate(data.columns):
         temp_split_df = split_dataframe_by_period(data,
-                                                  num,
+                                                  drop_level=False,
+                                                  animal_number=num,
                                                   period=period,
                                                   CT_period=CT_period)
         temp_split_df.name = column
