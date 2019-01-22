@@ -57,6 +57,8 @@ def plot_wave_from_df(data,
     :return:
     """
 
-    grouped = data.groupby(level=level).apply(prep.split_all_animals)
+    grouped = data.groupby(level=level).apply(prep.split_all_animals, **kwargs)
     
-    plot_means(grouped, **kwargs)
+    grouped_cols = grouped.groupby(axis=1, level=level).mean()
+    
+    plot_means(grouped_cols, **kwargs)
