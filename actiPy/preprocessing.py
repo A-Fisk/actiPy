@@ -1,5 +1,6 @@
 import pandas as pd
 idx = pd.IndexSlice
+import pingouin as pg
 # This script contains functions which are useful for preprocessing of
 # actigraphy data
 
@@ -115,7 +116,18 @@ def _groupby_decorator(func):
     
     return wrapper
 
-    
+# assertion for split by dataframe to catch errors of removing too many levels
+import functools
+
+def assert_index_datetime(f):
+    @functools.wraps(f)
+    def wrapper(df, *args, **kwargs):
+        assert df.index.dtype == pd.to_datetime(['2013']).dtype, \
+            "Not a datetime index, check drop_levels"
+        return f(df, *args, **kwargs)
+    return wrapper
+
+
 # function to remove column if object
 def remove_object_col(data, return_cols=False):
     """
@@ -534,6 +546,7 @@ def create_ct_based_index(period_sliced_data, CT_period=None):
     return new_index
 
 @_drop_level_decorator
+@assert_index_datetime
 def split_dataframe_by_period(data,
                               animal_number: int=0,
                               period=None,
@@ -675,7 +688,7 @@ def remap_LDR(data,
 
 def slice_by_label_col(data,
                        label_col=-1,
-                       section_label="disrupted",
+                       section_label="Disrupted",
                        baseline_length="6D",
                        post_length="15D",
                        drop_level=True,
@@ -836,3 +849,41 @@ def split_list_with_periods(name_df: pd.DataFrame,
     split_all_condition_df = pd.concat(split_dict)
     
     return split_all_condition_df
+
+
+# function to label cols for stats
+def label_anim_cols(protocol_df,
+                    level_index: int=0):
+    no_cols = len(protocol_df.columns)
+    curr_protocol = protocol_df.index.get_level_values(level_index)[0]
+    protocol_col_names = [str(curr_protocol +
+                              str(x)
+                              ) for x in range(1,
+                                               (no_cols+1)
+                                               )]
+    protocol_df.columns = protocol_col_names
+    
+    return protocol_df
+
+
+def tukey_pairwise_ph(tidy_df,
+                      hour_col: str="Hour",
+                      dep_var: str="Value",
+                      protocol_col: str="Protocol"):
+    """
+
+    :type protocol_col: object
+    """
+    hours = tidy_df[hour_col].unique()
+    ph_dict = {}
+    for hour in hours:
+        print(hour)
+        hour_df = tidy_df.query("%s == '%s'"%(hour_col, hour))
+        ph = pg.pairwise_tukey(dv=dep_var,
+                               between=protocol_col,
+                               data=hour_df)
+        pg.print_table(ph)
+        ph_dict[hour] = ph
+    ph_df = pd.concat(ph_dict)
+
+    return ph_df

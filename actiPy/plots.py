@@ -107,10 +107,12 @@ def multiple_plot_kwarg_decorator(func):
             ax.set(xlim=xlim)
         
         # set the plot title, the x axis label and the y axis label
-        title = params_dict["title"]
-        if "title" in kwargs:
-            title = kwargs["title"]
-        fig.suptitle(title)
+        if "title" in params_dict or 'title' in kwargs:
+            if "title" in params_dict:
+                title = params_dict["title"]
+            if "title" in kwargs:
+                title = kwargs["title"]
+            fig.suptitle(title)
         if params_dict["xlabel"] is not False:
             xlabel = params_dict["xlabel"]
             if "xlabel" in kwargs:
@@ -186,8 +188,10 @@ def set_title_decorator(func):
             kwargs["title"] = kwargs["fname"].stem
         if set_name_title:
             kwargs["title"] = kwargs["fname"].stem + "_" + data.name
-        func(data, *args, **kwargs)
+        fig, ax = func(data, *args, **kwargs)
         
+        return fig, ax
+    
     return wrapper
 
 

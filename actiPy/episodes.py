@@ -101,14 +101,15 @@ def episode_find_df(data,
         check_episode_max(episode_df)
     except:
         episode_df = episode_df.iloc[:-1,:]
-    check_episode_max(episode_df)
+    check_episode_max(episode_df, **kwargs)
     
     return episode_df
 
 
 def check_episode_max(data,
                       max_time="6H",
-                      LDR=-1):
+                      LDR=-1,
+                      **kwargs):
     """
     Simple function to raise value error if any of the
     values are over 6 hours long

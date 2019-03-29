@@ -1,14 +1,21 @@
 name: actiPy_environment
 
+channels:
+- defaults
+- conda-forge
+
 dependencies:
 - python = 3.7
 - numpy == 1.15
 - pandas == 0.23.3
-- matplotlib == 2.2.3
+- matplotlib == 3.0.3
 - scipy == 1.1.0
 - cython == 0.29
 - seaborn == 0.9.0
 - astropy == 3.1
+- pingouin == 0.2.3
+- statsmodels == 0.9.0
+- pyqt == 5.9.2
 - pip
 - pip:
   - git+https://github.com/A-Fisk/actiPy.git@master
