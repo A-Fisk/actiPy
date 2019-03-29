@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.gridspec as gs
 import actiPy.preprocessing as prep
 from actiPy.plots import multiple_plot_kwarg_decorator, \
     show_savefig_decorator, set_title_decorator
@@ -70,12 +71,13 @@ def _actogram_plot_from_df(data,
     split_df_list = prep.split_entire_dataframe(data_LDR_remap,
                                                 period=period)
     # plot with actogram
-    _actogram_plot(split_df_list,
-                   animal_number=animal_number,
-                   LDR=LDR,
-                   *args,
-                   **kwargs)
+    fig, ax = _actogram_plot(split_df_list,
+                             animal_number=animal_number,
+                             LDR=LDR,
+                             *args,
+                             **kwargs)
 
+    return fig, ax
 
 @set_title_decorator
 @multiple_plot_kwarg_decorator
@@ -83,6 +85,10 @@ def _actogram_plot(data,
                    animal_number=0,
                    LDR=-1,
                    ylim=[0, 120],
+                   fig=False,
+                   subplot=False,
+                   ldralpha=0.5,
+                   start_day=0,
                    **kwargs):
     """
     Function to take in dataframe and plot a double-plotted actogram
@@ -111,8 +117,22 @@ def _actogram_plot(data,
         # set all 0 values to Nan
         data = convert_zeros(data, -100)
 
-    # create the axes
-    fig, ax = plt.subplots(nrows=(NUM_DAYS+1))
+    
+    # if not given a figure, just create the axes
+    if not fig:
+        fig, ax = plt.subplots(nrows=(NUM_DAYS+1))
+    # create the ax list if given a figure and subplot to do it in.
+    else:
+        subplot_grid = gs.GridSpecFromSubplotSpec(nrows=(NUM_DAYS+1),
+                                                  ncols=1,
+                                                  subplot_spec=subplot,
+                                                  wspace=0,
+                                                  hspace=0)
+        ax = []
+        for grid in subplot_grid:
+            sub_ax = plt.Subplot(fig, grid)
+            fig.add_subplot(sub_ax)
+            ax.append(sub_ax)
 
     # plot two days on each row
     for day_label, axis in zip(data_to_plot.columns[:-1], ax):
@@ -127,7 +147,7 @@ def _actogram_plot(data,
         # plot the data and LDR
         axis.fill_between(fill_ldr.index,
                           fill_ldr,
-                          alpha= 0.5,
+                          alpha=ldralpha,
                           facecolor= "grey")
         axis.plot(day_data, linewidth=linewidth)
         axis.fill_between(fill_data.index,
@@ -143,10 +163,12 @@ def _actogram_plot(data,
         for pos in spines:
             axis.spines[pos].set_visible(False)
     
-    fig.subplots_adjust(hspace=0)
+    if not fig:
+        fig.subplots_adjust(hspace=0)
     
     # create the y labels for every 10th row
     day_markers = np.arange(0,NUM_DAYS, 10)
+    day_markers = day_markers + start_day
     for axis, day in zip(ax[::10], day_markers):
         axis.set_ylabel(day,
                         rotation=0,
@@ -159,7 +181,12 @@ def _actogram_plot(data,
         "ylabel": "Days",
         "interval": 6,
         "title": "Double Plotted Actogram",
+        "timeaxis": True,
     }
+    
+    # put axis as a controllable parameter
+    if "timeaxis" in kwargs:
+        params_dict['timeaxis'] = kwargs["timeaxis"]
     
     return fig, ax[-1], params_dict
 
