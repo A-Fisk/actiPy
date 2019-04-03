@@ -89,6 +89,7 @@ def _actogram_plot(data,
                    subplot=False,
                    ldralpha=0.5,
                    start_day=0,
+                   day_label_size=5,
                    **kwargs):
     """
     Function to take in dataframe and plot a double-plotted actogram
@@ -173,7 +174,8 @@ def _actogram_plot(data,
         axis.set_ylabel(day,
                         rotation=0,
                         va='center',
-                        ha='right')
+                        ha='right',
+                        fontsize=day_label_size)
         
     # create defaults dict
     params_dict = {
