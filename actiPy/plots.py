@@ -117,8 +117,12 @@ def multiple_plot_kwarg_decorator(func):
             xlabel = params_dict["xlabel"]
             if "xlabel" in kwargs:
                 xlabel = kwargs["xlabel"]
-            fig.text(0.5,
-                     0.05,
+            if "xlabelpos" in kwargs:
+                xlabelpos = kwargs["xlabelpos"]
+            else:
+                xlabelpos = (0.5, 0.05)
+            fig.text(xlabelpos[0],
+                     xlabelpos[1],
                      xlabel,
                      ha='center',
                      va='center')
@@ -128,9 +132,13 @@ def multiple_plot_kwarg_decorator(func):
             if "ylabel" in kwargs:
                 ax.set_ylabel("")
                 ylabel = kwargs["ylabel"]
+            if "ylabelpos" in kwargs:
+                ylabelpos = kwargs["ylabelpos"]
+            else:
+                ylabelpos = (0.02, 0.5)
             fig.text(
-                0.02,
-                0.5,
+                ylabelpos[0],
+                ylabelpos[1],
                 ylabel,
                 ha="center",
                 va='center',
