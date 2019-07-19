@@ -19,7 +19,8 @@ def _period_df(data,
                low_time: str = "20H",
                high_time: str = "30H",
                base_time: str = "10S",
-               base_unit: str = "s"):
+               base_unit: str = "s",
+               **kwargs):
     """
     Applies Lombscargle periodogram for given data
     :param data:
@@ -31,7 +32,7 @@ def _period_df(data,
     
     # create x and y values of observations
     time = np.linspace(0, len(data), len(data))
-    y = data.iloc[:, animal_no]
+    y = data.iloc[:, animal_no].values
     
     # convert all times into the same units (seconds)
     base_secs = pd.Timedelta(base_time).total_seconds()
@@ -71,7 +72,9 @@ def idxmax_level(data,
 
 def get_period(data,
                return_power: bool = False,
-               drop_lastcol: bool = True):
+               return_periods: bool = True,
+               drop_lastcol: bool = True,
+               **kwargs):
     """
     Function to apply lombscargle periodogram then get the internal period
     for each animal
@@ -85,7 +88,8 @@ def get_period(data,
     for animal, label in enumerate(cols):
         grouped_periods = data.groupby(level=0).apply(_period_df,
                                                       animal_no=animal,
-                                                      reset_level=False)
+                                                      reset_level=False,
+                                                      **kwargs)
         grouped_dict[label] = grouped_periods
     
     power_df = pd.concat(grouped_dict, axis=1)
@@ -95,10 +99,11 @@ def get_period(data,
     periods.index = periods.index.droplevel(1)
     
     # implement bool statement so can get power df for all animals if required
+    if return_power and return_periods:
+        return periods, power_df
     if return_power:
         return power_df
-    
-    else:
+    if return_periods:
         return periods
 
 def _enright_periodogram(data,
@@ -120,4 +125,19 @@ def _enright_periodogram(data,
     
     return power_df
 
+
+def get_secs_mean_df(test_periods):
+    secs_values = test_periods.values.astype(np.int64)
+    secs_df = pd.DataFrame(
+        secs_values,
+        index=test_periods.index,
+        columns=test_periods.columns
+    )
+    secs_mean = secs_df.mean(axis=1)
+    secs_sem = secs_df.sem(axis=1)
+    secs_mean_df = pd.DataFrame(index=secs_mean.index)
+    secs_mean_df["Mean"] = pd.to_timedelta(secs_mean)
+    secs_mean_df["sem"] = pd.to_timedelta(secs_sem)
+    
+    return secs_mean_df
 

@@ -1,6 +1,7 @@
 # script for analysis of activity data
 
 import pandas as pd
+idx = pd.IndexSlice
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -283,3 +284,40 @@ def normalise_to_baseline(data,
 
     
 # TODO test for count per day
+def light_phase_activity_nfreerun(test_df,
+                                  ldr_label: str = "LDR",
+                                  ldr_val: float = 150 ):
+    light_mask = test_df.loc[:, ldr_label] > ldr_val
+    light_data = test_df[light_mask]
+    light_sum = light_data.sum()
+    total_sum = test_df.sum()
+    light_phase_activity = (light_sum / total_sum) * 100
+
+    return light_phase_activity
+
+def light_phase_activity_freerun(test_df,
+                                 start_light="2010-01-01 00:00:00",
+                                 end_light="2010-01-01 12:00:00"):
+    light_data = test_df.loc[idx[:, :, :, start_light:end_light], :]
+    light_sum = light_data.sum()
+    total_sum = test_df.sum()
+    light_phase_activity = light_sum / total_sum
+
+    return light_phase_activity
+
+
+def relative_amplitude(test_df):
+    hourly_max = test_df.max()
+    hourly_min = test_df.min()
+    hourly_diff = hourly_max - hourly_min
+    hourly_sum = hourly_max + hourly_min
+    relative_amplitude = hourly_diff / hourly_sum
+
+    return relative_amplitude
+
+
+def hist_vals(test_data, bins, hist_cols, **kwargs):
+    hist = np.histogram(test_data, bins, **kwargs)
+    hist_vals = pd.DataFrame(hist[0], index=hist_cols)
+    return hist_vals
+

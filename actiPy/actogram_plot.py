@@ -164,7 +164,7 @@ def _actogram_plot(data,
         for pos in spines:
             axis.spines[pos].set_visible(False)
     
-    if not fig:
+    if fig == False:
         fig.subplots_adjust(hspace=0)
     
     # create the y labels for every 10th row

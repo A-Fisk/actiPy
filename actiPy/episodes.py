@@ -69,6 +69,7 @@ def _episode_finder(data, *args, **kwargs):
 @_drop_level_decorator
 def episode_find_df(data,
                     LDR=-1,
+                    remove_lights=True,
                     *args,
                     **kwargs):
     """
@@ -82,8 +83,9 @@ def episode_find_df(data,
     # and find the episodes in that column
     
     # remove light column
-    ldr_data = data.iloc[:,LDR].copy()
-    ldr_label = data.columns[LDR]
+    if remove_lights:
+        ldr_data = data.iloc[:,LDR].copy()
+        ldr_label = data.columns[LDR]
     
     # find episodes for each animal
     episode_series_list = []
@@ -94,7 +96,8 @@ def episode_find_df(data,
     episode_df = pd.concat(episode_series_list, axis=1)
     
     # put light column back in
-    episode_df[ldr_label] = ldr_data
+    if remove_lights:
+        episode_df[ldr_label] = ldr_data
     
     # check that we are getting reasonable episode lengths
     try:

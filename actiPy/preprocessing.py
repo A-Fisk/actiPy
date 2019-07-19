@@ -587,7 +587,8 @@ def split_dataframe_by_period(data,
 
 def split_entire_dataframe(data,
                            period=None,
-                           CT_period=None):
+                           CT_period=None,
+                           **kwargs):
     """
     applies split_dataframe_by_period to each animal in turn in the dataframe
     :param data: dataframe
@@ -607,7 +608,8 @@ def split_entire_dataframe(data,
                                                   drop_level=False,
                                                   animal_number=num,
                                                   period=period,
-                                                  CT_period=CT_period)
+                                                  CT_period=CT_period,
+                                                  **kwargs)
         temp_split_df.name = column
         split_df_list.append(temp_split_df)
     return split_df_list
@@ -615,14 +617,16 @@ def split_entire_dataframe(data,
 
 def split_all_animals(df,
                       ignore_index: bool=True,
+                      drop_level=True,
+                      reset_level=False,
                       **kwargs):
     # get all animals in one big df
     split_dict = {}
     for no, col in enumerate(df.columns[:-1]):
         # split by period, then plot mean +/- sem?
         split_df = split_dataframe_by_period(df,
-                                             drop_level=True,
-                                             reset_level=False,
+                                             drop_level=drop_level,
+                                             reset_level=reset_level,
                                              animal_number=no)
         split_dict[col] = split_df
         
@@ -887,3 +891,44 @@ def tukey_pairwise_ph(tidy_df,
     ph_df = pd.concat(ph_dict)
 
     return ph_df
+
+
+
+def manual_resample_mean_groupby(curr_data,
+                                 periods_df,
+                                 mean: bool=True,
+                                 sum: bool=False):
+    types = curr_data.index.get_level_values(0).unique()
+    protocols = curr_data.index.get_level_values(1).unique()
+    times = curr_data.index.get_level_values(2).unique()
+    animals = curr_data.index.get_level_values(3).unique()
+    resampled_data_dict = {}
+    for type in types:
+        type_df = curr_data.loc[type]
+        type_periods = periods_df.loc[type]
+        type_dict = {}
+        for protocol in protocols:
+            protocol_df = type_df.loc[protocol]
+            protocol_periods = type_periods.loc[protocol]
+            protocol_dict = {}
+            for time in times:
+                time_df = protocol_df.loc[time]
+                time_periods = protocol_periods.loc[time]
+                time_dict = {}
+                for animal in animals:
+                    animal_df = time_df.loc[animal]
+                    animal_period = time_periods.loc[animal]
+                    if mean:
+                        anim_day_df = animal_df.resample(animal_period).mean()
+                    if sum:
+                        anim_day_df = animal_df.resample(animal_period).sum()
+                    time_dict[animal] = anim_day_df
+                time_df_resampled = pd.concat(time_dict)
+                protocol_dict[time] = time_df_resampled
+            protocol_df_resampled = pd.concat(protocol_dict)
+            type_dict[protocol] = protocol_df_resampled
+        type_df_resampled = pd.concat(type_dict)
+        resampled_data_dict[type] = type_df_resampled
+    resampled_data = pd.concat(resampled_data_dict)
+
+    return resampled_data
