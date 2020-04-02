@@ -4,6 +4,8 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from IPython.core.debugger import set_trace
+
 import actiPy.preprocessing as prep
 from actiPy.preprocessing import _drop_level_decorator, _name_decorator, \
     _remove_lights_decorator, sep_by_index_decorator
@@ -62,6 +64,7 @@ def _episode_finder(data, *args, **kwargs):
     # label it with the correct name
     name = data.name
     episode_lengths_filtered.name = name
+
     return episode_lengths_filtered
  
  

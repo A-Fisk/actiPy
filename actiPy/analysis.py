@@ -1,5 +1,7 @@
 # script for analysis of activity data
 
+# TODO: Figure out how to import docstrings
+
 import pandas as pd
 idx = pd.IndexSlice
 import numpy as np
@@ -202,7 +204,7 @@ def intradayvar(data):
 
     return iv
 
-
+# TODO: Remove redundant by group function
 def iv_by_group(data,
                 level: int=0):
     """
