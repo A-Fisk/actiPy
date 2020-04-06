@@ -138,7 +138,7 @@ def filter_episodes(
     # find where interruption value is below given value 
     max_values = [raw_data.loc[x:y].max() 
             for x, y in zip(start_index, start_index_next)]
-    max_mask = np.array([x < intensity_val for x in max_values])
+    max_mask = np.array([x > intensity_val for x in max_values])
 
     # filter for given length and intensity interruption 
     episodes_filtered = episode_data.iloc[
