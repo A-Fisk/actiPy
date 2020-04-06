@@ -151,7 +151,7 @@ def filter_episodes(
             x, y in zip(start_list, end_list)] 
     new_durations.append(episodes_filtered.iloc[-1])
     episodes_filtered.iloc[:] = new_durations
-
+    
     return episodes_filtered
  
  
@@ -164,11 +164,31 @@ def episode_find_df(data,
                     *args,
                     **kwargs):
     """
-    finds episodes for the entire dataframe given
-    by looping over each and saving them to a new
-    dataframe
-    :param data:
-    :return:
+    Episode_find_df
+
+    Returns a dataframe with found episodes for each column. 
+    Applies _episode_finder in turn to each column and then
+    concatenates them into a single dataframe
+
+    Params:
+    data:
+        pd.DataFrame. Dataframe of activity data to find 
+        episodes in
+    remove_lights:
+        Boolean. Default True. 
+        If true, drops the LDR column 
+    LDR: 
+        int, default -1. Column number to remove if lights 
+        included in dataframe and removing lights 
+    check_max:
+        Boolean, default True.
+        If true, passes to check_episode_max to see if any
+        episodes are longer than a given max
+
+    Returns:
+        pd.Dataframe
+        Dataframe with same columns as original, index indicates
+        start of episode and value indicates duration in seconds. 
     """
     # loop through each column
     # and find the episodes in that column
