@@ -140,6 +140,7 @@ def filter_episodes(
 def episode_find_df(data,
                     LDR=-1,
                     remove_lights=True,
+                    check_max=True,
                     *args,
                     **kwargs):
     """
@@ -170,11 +171,12 @@ def episode_find_df(data,
         episode_df[ldr_label] = ldr_data
     
     # check that we are getting reasonable episode lengths
-    try:
-        check_episode_max(episode_df)
-    except:
-        episode_df = episode_df.iloc[:-1,:]
-    check_episode_max(episode_df, **kwargs)
+    if check_max:
+        try:
+            check_episode_max(episode_df)
+        except:
+            episode_df = episode_df.iloc[:-1,:]
+        check_episode_max(episode_df, **kwargs)
     
     return episode_df
 
