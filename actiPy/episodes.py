@@ -22,7 +22,7 @@ from actiPy.plots import multiple_plot_kwarg_decorator,  \
 
 def _episode_finder(data, 
                     inactive_episodes=False,
-                    filter=False, 
+                    allow_interruptions=False, 
                     *args, 
                     **kwargs):
     """
@@ -39,7 +39,7 @@ def _episode_finder(data,
         Boolean, default False.
         If False, finds activity episodes (where value > 0)
         If True, finds inactive episodes (value == 0)
-    filter:
+    allow_interruptions:
         Boolean, default False
         Whether to filter for episode interruptions by calling 
         filter_episodes function
@@ -85,7 +85,7 @@ def _episode_finder(data,
     name = data.name
     episode_lengths_filtered.name = name
 
-    if filter:
+    if allow_interruptions:
         episode_lengths_filtered = filter_episodes(
                 data, episode_lengths_filtered, **kwargs)
 
