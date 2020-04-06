@@ -20,16 +20,33 @@ from actiPy.plots import multiple_plot_kwarg_decorator,  \
 # to loop over and do for everything in the
 # df
 
-def _episode_finder(data, filter=False, *args, **kwargs):
+def _episode_finder(data, 
+                    inactive_episodes=False,
+                    filter=False, 
+                    *args, 
+                    **kwargs):
     """
-    Function to find the episodes in the
-    series - defined as from 0 to another
-    0 point, must have non-0 between the two zero
-    values
-    Saves all in the value of total_seconds
-    :param data:
-    :param animal_number:
-    :return:
+    _episode_finder 
+    
+    Returns a Series containing all the episodes in the given 
+    data, with the index indicating start time and value indicating
+    duration. 
+    
+    Params:
+    data:
+        pd.Series. raw activity data to find episode in
+    inactive_episodes:
+        Boolean, default False.
+        If False, finds activity episodes (where value > 0)
+        If True, finds inactive episodes (value == 0)
+    filter:
+        Boolean, default False
+        Whether to filter for episode interruptions by calling 
+        filter_episodes function
+    
+    Returns:
+        pd.Series. Index is start of episode and value is duration 
+            
     """
 
     # find all the zeros in the data
@@ -42,6 +59,9 @@ def _episode_finder(data, filter=False, *args, **kwargs):
     
     # find all the zeros in the data
     data_zeros = data[data == 0]
+    if inactive_episodes:
+        data_zeros = data[data > 0]
+
     # get the timedeltas between them
     data_zeros_shift = data_zeros[1:]
     episode_lengths = (data_zeros_shift.index -
