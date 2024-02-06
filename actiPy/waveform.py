@@ -18,6 +18,8 @@ def plot_means(data, **kwargs):
     :return:
     """
     
+    ## TODO  Refactor so can plot mean of individual separately
+
     # find the conditions
     vals = data.index.get_level_values(0).unique()
     no_conditions = len(vals)
