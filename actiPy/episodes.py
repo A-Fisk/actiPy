@@ -20,16 +20,33 @@ from actiPy.plots import multiple_plot_kwarg_decorator,  \
 # to loop over and do for everything in the
 # df
 
-def _episode_finder(data, *args, **kwargs):
+def _episode_finder(data, 
+                    inactive_episodes=False,
+                    allow_interruptions=False, 
+                    *args, 
+                    **kwargs):
     """
-    Function to find the episodes in the
-    series - defined as from 0 to another
-    0 point, must have non-0 between the two zero
-    values
-    Saves all in the value of total_seconds
-    :param data:
-    :param animal_number:
-    :return:
+    _episode_finder 
+    
+    Returns a Series containing all the episodes in the given 
+    data, with the index indicating start time and value indicating
+    duration. 
+    
+    Params:
+    data:
+        pd.Series. raw activity data to find episode in
+    inactive_episodes:
+        Boolean, default False.
+        If False, finds activity episodes (where value > 0)
+        If True, finds inactive episodes (value == 0)
+    allow_interruptions:
+        Boolean, default False
+        Whether to filter for episode interruptions by calling 
+        filter_episodes function
+    
+    Returns:
+        pd.Series. Index is start of episode and value is duration 
+            
     """
 
     # find all the zeros in the data
@@ -42,6 +59,9 @@ def _episode_finder(data, *args, **kwargs):
     
     # find all the zeros in the data
     data_zeros = data[data == 0]
+    if inactive_episodes:
+        data_zeros = data[data > 0]
+
     # get the timedeltas between them
     data_zeros_shift = data_zeros[1:]
     episode_lengths = (data_zeros_shift.index -
@@ -65,7 +85,74 @@ def _episode_finder(data, *args, **kwargs):
     name = data.name
     episode_lengths_filtered.name = name
 
+    if allow_interruptions:
+        episode_lengths_filtered = filter_episodes(
+                data, episode_lengths_filtered, **kwargs)
+
     return episode_lengths_filtered
+
+
+def filter_episodes(
+        raw_data, 
+        episode_data, 
+        length_val:str ="10S", 
+        intensity_val:int = 30,
+        **kwargs):
+
+    '''
+    Episode filter  
+
+    Returns a dataframe of episodes where the duration and intensity 
+    of an interruption is shorter than and less than the given values 
+    respectively 
+
+    param:
+    raw_data: 
+        original activity dataframe
+    episode_data: 
+        raw episodes from activity dataframe 
+    length_val:str "10S" 
+        interruption time to allow, as a timedelta string
+    intensity_val:int 30 
+        max interruption intensity to allow 
+
+    returns:
+    pandas DataFrame
+        Index is start of episode and value is duration of episode 
+        in seconds 
+    '''
+
+    # find start of each episodes
+    start_index = episode_data.index[:-1]
+    start_index_next = episode_data.index[1:]
+
+    # find lengths of interruptions 
+    time_between_episodes = (start_index_next - start_index).total_seconds()
+    durations = episode_data.values[:-1]
+
+    # find locations where interruption is shorter than value 
+    filter_length = pd.Timedelta(length_val).total_seconds()
+    duration_plus_filter = durations + filter_length
+    locations = duration_plus_filter > time_between_episodes
+
+    # find where interruption value is below given value 
+    max_values = [raw_data.loc[x:y].max() 
+            for x, y in zip(start_index, start_index_next)]
+    max_mask = np.array([x > intensity_val for x in max_values])
+
+    # filter for given length and intensity interruption 
+    episodes_filtered = episode_data.iloc[
+            :-1][locations & max_mask]
+    
+    # Add the duration of skipped episode to the main episode 
+    start_list = episodes_filtered.index[0:-1]
+    end_list = episodes_filtered.index[1:] - pd.Timedelta("1S")
+    new_durations = [episode_data.loc[x:y].sum() for 
+            x, y in zip(start_list, end_list)] 
+    new_durations.append(episodes_filtered.iloc[-1])
+    episodes_filtered.iloc[:] = new_durations
+    
+    return episodes_filtered
  
  
 @_name_decorator
@@ -73,15 +160,37 @@ def _episode_finder(data, *args, **kwargs):
 def episode_find_df(data,
                     LDR=-1,
                     remove_lights=True,
+                    check_max=True,
                     *args,
                     **kwargs):
     """
-    finds episodes for the entire dataframe given
-    by looping over each and saving them to a new
-    dataframe
-    :param data:
-    :return:
+    Episode_find_df
+
+    Returns a dataframe with found episodes for each column. 
+    Applies _episode_finder in turn to each column and then
+    concatenates them into a single dataframe
+
+    Params:
+    data:
+        pd.DataFrame. Dataframe of activity data to find 
+        episodes in
+    remove_lights:
+        Boolean. Default True. 
+        If true, drops the LDR column 
+    LDR: 
+        int, default -1. Column number to remove if lights 
+        included in dataframe and removing lights 
+    check_max:
+        Boolean, default True.
+        If true, passes to check_episode_max to see if any
+        episodes are longer than a given max
+
+    Returns:
+        pd.Dataframe
+        Dataframe with same columns as original, index indicates
+        start of episode and value indicates duration in seconds. 
     """
+    
     # loop through each column
     # and find the episodes in that column
     
@@ -103,11 +212,12 @@ def episode_find_df(data,
         episode_df[ldr_label] = ldr_data
     
     # check that we are getting reasonable episode lengths
-    try:
-        check_episode_max(episode_df)
-    except:
-        episode_df = episode_df.iloc[:-1,:]
-    check_episode_max(episode_df, **kwargs)
+    if check_max:
+        try:
+            check_episode_max(episode_df)
+        except:
+            episode_df = episode_df.iloc[:-1,:]
+        check_episode_max(episode_df, **kwargs)
     
     return episode_df
 
