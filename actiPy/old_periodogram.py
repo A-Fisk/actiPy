@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from astropy.stats import LombScargle
+from astropy.timeseries import LombScargle
 import itertools
 
 class split_by_period:

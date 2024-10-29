@@ -1,7 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
-from astropy.stats import LombScargle
+from astropy.timeseries import LombScargle
 import pathlib
 import sys
 
