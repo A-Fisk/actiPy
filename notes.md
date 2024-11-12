@@ -20,14 +20,11 @@
 - lets do it all in dir - py file to create test_data, put in 
 - just do in test dir, and use to run tests?  
 
-### update environment 
-- for now stick with conda 
-- take from LL-
-- okay done but don't know if it has broken everything 
+### create test data 
+- k now problem with import pingouin as conflict with numpy 
+- problem incompatible with numpy 2.0
 
 ## TODO
-- Update environment 
-- update version number 
 - Create test data 
 - run on test data 
 - Write docstring +/- basic usage 
