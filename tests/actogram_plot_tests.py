@@ -1,9 +1,10 @@
 import unittest
 import sys
+import os
 import numpy as np
 import pandas as pd
-sys.path.insert(0, "/Users/angusfisk/Documents/01_PhD_files/"
-                   "07_python_package/actiPy")
+sys.path.insert(
+        0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import actiPy.preprocessing as prep
 import actiPy.actogram_plot as act
 
