@@ -22,6 +22,8 @@
 
 ### update environment 
 - for now stick with conda 
+- take from LL-
+- okay done but don't know if it has broken everything 
 
 ## TODO
 - Update environment 
@@ -73,3 +75,11 @@ Look at other functions and figure out what is actually needed
 
 - General
 - Write list of all functions in each file
+
+
+# Scripts 
+### Create environment
+CONDA_SUBDIR=osx-64 conda env create -f environment.yml
+
+### Update 
+CONDA_SUBDIR=osx-64 conda env update -f environment.yml
