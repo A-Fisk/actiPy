@@ -21,17 +21,6 @@
 - just do in test dir, and use to run tests?  
 
 ### create test data 
-- k now problem with import pingouin as conflict with numpy 
-- problem incompatible with numpy 2.0
-- sorted and it works by downgrading numpy env 
-- what test data do I want? and how use it? 
-- 10 days of data in single column with datetime index 
-- test splitting that into columns 
-- test plotting that? 
-- okay test plotting \_actogram_plot, what form does it want the data in?
-- I think it's single animal per col 
-- running into debug problem as len(data_to_plot.columns) <- suggests
-it is asking for each day to be separate column 
 - expecting a list of dataframes, organised by animal
 each is a df of that animal each col is diff day 
 
@@ -39,6 +28,15 @@ each is a df of that animal each col is diff day
 - Refactor so just does it in actogram_plot function? 
 - seems sensible, give DF then ask to plot this 
 - do we need to do the whole separate days thing at all? 
+
+- what does pad_first_last_days do? 
+    - adds 0s to get double plotting working well? 
+- running into problem with decorators because they expect a DataFrame not 
+a Series 
+- can just do padding in plotting function? - seems too trivial to 
+make whole new function for 
+- plus that function only really needed if plotting from columns? 
+
 
 - Current 
 - actogram_plot_all_cols
@@ -50,6 +48,14 @@ each is a df of that animal each col is diff day
             - applies split_dataframe_by_period
             - splits from long to single day per col 
         - \_actogram_plots 
+- don't need plot all cols if doing well, can just run loop easy.
+
+questions 
+- Is there any advantage in having wide dataframe with each day as a col ?
+    - can just split into days super easily right? 
+- okay if assuming adding in in a different way, do we want to alter the 
+period as part of plotting? - no that's a separate function 
+
 
 
 - how deal with start time? 

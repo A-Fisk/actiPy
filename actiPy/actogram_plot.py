@@ -1,3 +1,4 @@
+import pdb
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -102,18 +103,20 @@ def _actogram_plot(data,
     data : (pd.DataFrame)
         time-indexed pandas dataframe with activity values in
         columns for each subject and one column for the light levels.
+        WRONG - currently expecting list of dataframes, one for each animal
+        and single column for each day 
     animal_number : int
         which column number to plot, defaults to 0
     LDR : int
         which columns contains light information, defaults to -1
     ylim : list of two ints
         set the minimum and maximum values to plot
-    fig : boolean
-        Boolean over whether to create a new figure for this plot, used when
-        being passed a figure object as a kwarg to plot in larger figure.
-        Default False
-    subplot : boolean
-        Not sure what this is doing? defaults to False <-
+    fig : matplotlib figure object
+        Figure to create plot on, if not passed defaults to false and 
+        new figure is passed 
+    subplot : matplotlib subplot object 
+        Subplot from larger figure on which to draw actogram. If not passed
+        defaults to False, which requires a fig object to be provided 
     ldralpha : float
         Set the alpha level for how opaque to have the light shading, defaults
         to 0.5
@@ -131,34 +134,40 @@ def _actogram_plot(data,
     dict
         dict containing plotting kwargs
     """
-    
-    # check there are enough columns
-
-    # select the correct data
-    col_data = data.columns[animal_number]
-    ldr_col = data.columns[LDR]
-    data_to_plot = data.loc[:, col_data].copy()
-    light_data = data.loc[:, ldr_col].copy()
-
-    # set up some constants
-    NUM_DAYS = len(data_to_plot.columns)
+    # grab line plot constant 
     linewidth = 1
     if "linewidth" in kwargs:
         linewidth = kwargs["linewidth"]
 
-    # add in values at the start and end
-    # to let us double plot effectively
-    for data in data_to_plot, light_data:
-        data = pad_first_last_days(data)
-        # set all 0 values to Nan
-        data = convert_zeros(data, -100)
+    # select the correct data to plot for activity and light
+    col_data = data.columns[animal_number]
+    ldr_col = data.columns[LDR]
+    data_plot = data.loc[:, col_data].copy()
+    data_light = data.loc[:, ldr_col].copy()
 
-    # if not given a figure, just create the axes
+    pdb.set_trace()
+
+    # calculate number of days in the data
+    days = len(set(data_plot.index.date))
+    
+    # set all 0 values to be very low so not showing on y index starting at 0
+    for data in data_plot, data_light:
+        data[data == 0] = -100
+    
+
+    # Create figure and subplot for every day
+
+    # error check if not given fig OR subplot 
+    if not fig and not subplot:
+        raise ValueError("Either 'fig' or 'subplot' must be provided")
+
+    # create a new figure if not passed one when called 
     if not fig:
-        fig, ax = plt.subplots(nrows=(NUM_DAYS + 1))
-    # create the ax list if given a figure and subplot to do it in.
+        fig, ax = plt.subplots(nrows=(days + 1))
+
+    # add subplots to figure if passed when called 
     else:
-        subplot_grid = gs.GridSpecFromSubplotSpec(nrows=(NUM_DAYS + 1),
+        subplot_grid = gs.GridSpecFromSubplotSpec(nrows=(days + 1),
                                                   ncols=1,
                                                   subplot_spec=subplot,
                                                   wspace=0,
@@ -170,14 +179,14 @@ def _actogram_plot(data,
             ax.append(sub_ax)
 
     # plot two days on each row
-    for day_label, axis in zip(data_to_plot.columns[:-1], ax):
+    for day_label, axis in zip(data_plot.columns[:-1], ax):
         # get two days of data to plot
-        day_data = two_days(data_to_plot, day_label)
-        day_light_data = two_days(light_data, day_label)
+        day_data = two_days(data_plot, day_label)
+        day_data_light = two_days(data_light, day_label)
 
         # create masked data for fill between to avoid horizontal lines
         fill_data = day_data.where(day_data > 0)
-        fill_ldr = day_light_data.where(day_light_data > 0)
+        fill_ldr = day_data_light.where(day_data_light > 0)
 
         # plot the data and LDR
         axis.fill_between(fill_ldr.index,
@@ -202,7 +211,7 @@ def _actogram_plot(data,
         fig.subplots_adjust(hspace=0)
 
     # create the y labels for every 10th row
-    day_markers = np.arange(0, NUM_DAYS, 10)
+    day_markers = np.arange(0, days, 10)
     day_markers = day_markers + start_day
     for axis, day in zip(ax[::10], day_markers):
         axis.set_ylabel(day,
@@ -229,20 +238,30 @@ def _actogram_plot(data,
 
 def pad_first_last_days(data):
     """
-    Simple function to add a day to the start and end
-    of the dataset consisting entirely of 0s
-    Makes the actogram plots work as double plotted
-    and not cutting off first and last days or
-    stretching them
+    pad_first_last_days
+    Function to extend data by one day at the start and the end to help
+    with double plotting acotgram 
+
+    Parameters 
+    ----------
+    data : pd.Series
+        series with timeindex 
+
+    Returns 
+    -------
+    pd.Series
+        
+
+
     :param data:
     :return:
     """
     NUM_BINS = len(data)
-    NUM_DAYS = len(data.columns)
+    days = len(data.columns)
     # create a day of 0s and put at the start and the end
     zeros = np.zeros(NUM_BINS)
     data.insert(0, -1, zeros)
-    data.insert((NUM_DAYS + 1), (NUM_DAYS), zeros)
+    data.insert((days + 1), (days), zeros)
     return data
 
 
