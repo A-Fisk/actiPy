@@ -30,8 +30,27 @@
 - test plotting that? 
 - okay test plotting \_actogram_plot, what form does it want the data in?
 - I think it's single animal per col 
+- running into debug problem as len(data_to_plot.columns) <- suggests
+it is asking for each day to be separate column 
+- expecting a list of dataframes, organised by animal
+each is a df of that animal each col is diff day 
 
-- okay something reaaaally weird is going on with the debugger
+- okay how deal with this? 
+- Refactor so just does it in actogram_plot function? 
+- seems sensible, give DF then ask to plot this 
+- do we need to do the whole separate days thing at all? 
+
+- Current 
+- actogram_plot_all_cols
+    - goes through each column and calls 
+    - actogram_plot_from_df
+        - LDR remap
+        - prep. Split_entire_df (puts each day in a separate column by given period)
+            (have figured this out with EEG LL data?)
+            - applies split_dataframe_by_period
+            - splits from long to single day per col 
+        - \_actogram_plots 
+
 
 - how deal with start time? 
 - how deal with missing LDR data? 

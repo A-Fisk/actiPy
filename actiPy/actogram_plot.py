@@ -135,9 +135,10 @@ def _actogram_plot(data,
     # check there are enough columns
 
     # select the correct data
-    col_to_plot = data.columns[animal_number]
-    data_to_plot = data.loc[:, col_to_plot].copy()
-    light_data = data[LDR].copy()
+    col_data = data.columns[animal_number]
+    ldr_col = data.columns[LDR]
+    data_to_plot = data.loc[:, col_data].copy()
+    light_data = data.loc[:, ldr_col].copy()
 
     # set up some constants
     NUM_DAYS = len(data_to_plot.columns)
