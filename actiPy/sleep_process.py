@@ -4,6 +4,7 @@ import os
 import numpy as np
 import actiPy.preprocessing as prep
 
+
 def sleep_process(data, window=4):
     """
     Function to score activity data as sleep given
@@ -17,9 +18,10 @@ def sleep_process(data, window=4):
     """
     # score > window as inactivity score of 1
     rolling_sum_data = data.rolling(window).sum()
-    bool_scored_data = rolling_sum_data==0
+    bool_scored_data = rolling_sum_data == 0
     scored_data = bool_scored_data.astype(int)
     return scored_data
+
 
 def create_scored_df(data, **kwargs):
     """
@@ -52,14 +54,14 @@ def _score_active_times(data,
         data = data.reset_index(0)
         label_name = data.columns[0]
         label_col = data.pop(label_name)
-        
+
     # score the df minus the LDR
     ldr_label = data.columns[ldr_col]
     ldr_data = data.pop(ldr_label)
     scored_df = sleep_process(data)
 
     # find start and end of activity
-    mask = data.iloc[:,test_col] > threshold
+    mask = data.iloc[:, test_col] > threshold
     start = data.where(mask).first_valid_index()
     end = data.where(mask)[::-1].first_valid_index()
 
@@ -72,10 +74,10 @@ def _score_active_times(data,
         scored_df[label_name] = label_col
         new_cols = [scored_df.columns[-1], scored_df.index]
         scored_df.set_index(new_cols, inplace=True)
-    
+
     return scored_df
-    
-    
+
+
 def alter_file_name(file_name,
                     suffix,
                     remove_slice_after=-9):
@@ -88,7 +90,7 @@ def alter_file_name(file_name,
     :return:
     """
     new_file_name = file_name.stem[:remove_slice_after] + \
-                    suffix + \
-                    file_name.suffix
+        suffix + \
+        file_name.suffix
     new_file_path = file_name.parent / new_file_name
     os.rename(file_name, new_file_path)

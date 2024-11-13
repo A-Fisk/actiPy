@@ -8,6 +8,9 @@
 # Plan - try adding in false statement for * all * decorator kwargs
 
 # imports
+from actiPy.actogram_plot import *
+from actiPy.plots import multiple_plot_kwarg_decorator, set_title_decorator
+import actiPy.preprocessing as prep
 import pandas as pd
 import numpy as np
 import pathlib
@@ -16,9 +19,6 @@ import matplotlib.gridspec as gs
 import sys
 sys.path.insert(0, "/Users/angusfisk/Documents/01_PhD_files/07_python_package/"
                    "actiPy")
-import actiPy.preprocessing as prep
-from actiPy.plots import multiple_plot_kwarg_decorator, set_title_decorator
-from actiPy.actogram_plot import *
 
 
 # define the plotting functions
@@ -39,14 +39,14 @@ def _actogram_plot_from_df(data,
     :param kwargs:
     :return:
     """
-    
+
     # remap the light data
     data_LDR_remap = prep.remap_LDR(data, drop_level=drop_level, **kwargs)
-    
+
     if drop_level:
         # remove top level of the index
         data_LDR_remap.index = data_LDR_remap.index.droplevel(0)
-    
+
     # split the dfs
     split_df_list = prep.split_entire_dataframe(data_LDR_remap,
                                                 period=period)
@@ -86,7 +86,7 @@ def _actogram_plot(data,
     linewidth = 1
     if "linewidth" in kwargs:
         linewidth = kwargs["linewidth"]
-        
+
     # add in values at the start and end
     # to let us double plot effectively
     for data in data_to_plot, light_data:
@@ -94,13 +94,12 @@ def _actogram_plot(data,
         # set all 0 values to Nan
         data = convert_zeros(data, -100)
 
-    
     # if not given a figure, just create the axes
     if not fig:
-        fig, ax = plt.subplots(nrows=(NUM_DAYS+1))
+        fig, ax = plt.subplots(nrows=(NUM_DAYS + 1))
     # create the ax list if given a figure and subplot to do it in.
     else:
-        subplot_grid = gs.GridSpecFromSubplotSpec(nrows=(NUM_DAYS+1),
+        subplot_grid = gs.GridSpecFromSubplotSpec(nrows=(NUM_DAYS + 1),
                                                   ncols=1,
                                                   subplot_spec=subplot,
                                                   wspace=0,
@@ -116,41 +115,41 @@ def _actogram_plot(data,
         # get two days of data to plot
         day_data = two_days(data_to_plot, day_label)
         day_light_data = two_days(light_data, day_label)
-        
+
         # create masked data for fill between to avoid horizontal lines
-        fill_data = day_data.where(day_data>0)
-        fill_ldr = day_light_data.where(day_light_data>0)
+        fill_data = day_data.where(day_data > 0)
+        fill_ldr = day_light_data.where(day_light_data > 0)
 
         # plot the data and LDR
         axis.fill_between(fill_ldr.index,
                           fill_ldr,
-                          alpha= 0.5,
-                          facecolor= "grey")
+                          alpha=0.5,
+                          facecolor="grey")
         axis.plot(day_data, linewidth=linewidth)
         axis.fill_between(fill_data.index,
                           fill_data)
-          
+
         # need to hide all the axis to make visible
         axis.set(xticks=[],
-                 xlim= [day_data.index[0],
-                        day_data.index[-1]],
+                 xlim=[day_data.index[0],
+                       day_data.index[-1]],
                  yticks=[],
                  ylim=ylim)
         spines = ["left", "right", "top", "bottom"]
         for pos in spines:
             axis.spines[pos].set_visible(False)
-    
+
     if not fig:
         fig.subplots_adjust(hspace=0)
-    
+
     # create the y labels for every 10th row
-    day_markers = np.arange(0,NUM_DAYS, 10)
+    day_markers = np.arange(0, NUM_DAYS, 10)
     for axis, day in zip(ax[::10], day_markers):
         axis.set_ylabel(day,
                         rotation=0,
                         va='center',
                         ha='right')
-        
+
     # create defaults dict
     params_dict = {
         "xlabel": "Time",
@@ -158,7 +157,7 @@ def _actogram_plot(data,
         "interval": 6,
         "title": "Double Plotted Actogram",
     }
-    
+
     return fig, ax[-1], params_dict
 
 

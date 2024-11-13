@@ -1,24 +1,24 @@
 # scripts to plot mean activity +/- sem
 
+from actiPy.plots import multiple_plot_kwarg_decorator, set_title_decorator
+import actiPy.preprocessing as prep
+import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 idx = pd.IndexSlice
-import numpy as np
-import matplotlib.pyplot as plt
-import actiPy.preprocessing as prep
-from actiPy.plots import multiple_plot_kwarg_decorator, set_title_decorator
+
 
 @set_title_decorator
 @multiple_plot_kwarg_decorator
 def plot_means(data, **kwargs):
-    
     """
     Function to plot the mean wave form from a split df
     :param grouped:
     :param kwargs:
     :return:
     """
-    
-    ## TODO  Refactor so can plot mean of individual separately
+
+    # TODO  Refactor so can plot mean of individual separately
 
     # find the conditions
     vals = data.index.get_level_values(0).unique()
@@ -34,12 +34,12 @@ def plot_means(data, **kwargs):
         sem = df.sem(axis=1)
 
         axis.plot(mean)
-        axis.fill_between(df.index, mean-sem, mean+sem, alpha=0.5)
-        
+        axis.fill_between(df.index, mean - sem, mean + sem, alpha=0.5)
+
         axis.set_ylabel(val)
 
     fig.subplots_adjust(hspace=0)
-    
+
     params_dict = {
         "timeaxis": True,
         "interval": 6,
@@ -48,11 +48,12 @@ def plot_means(data, **kwargs):
         "xlabel": "Circadian Time",
         "xlim": [df.index[0], (df.index[0] + pd.Timedelta('24H'))]
     }
-    
+
     return fig, axis, params_dict
 
+
 def plot_wave_from_df(data,
-                      level: int=0,
+                      level: int = 0,
                       **kwargs):
     """
     Takes input, groupsby values of level and passes split df to plot_means
@@ -62,14 +63,14 @@ def plot_wave_from_df(data,
     """
 
     grouped = data.groupby(level=level).apply(prep.split_all_animals, **kwargs)
-    
+
     grouped_cols = grouped.groupby(axis=1, level=level).mean()
-    
+
     plot_means(grouped_cols, **kwargs)
 
 
 def group_mean_df(df: pd.DataFrame,
-                  col_name: str="Individual means"):
+                  col_name: str = "Individual means"):
     """
     Takes in a long form dataframe with 4 level multiindex
     takes individual means of all columns
@@ -87,24 +88,26 @@ def group_mean_df(df: pd.DataFrame,
     mean_df = pd.DataFrame(index=df.index,
                            columns=[col_name])
 
-    # loop through all the parts and get the individual means and put in new mean df
+    # loop through all the parts and get the individual means and put in new
+    # mean df
     for condition in condition_names:
         for section in light_periods:
             for animal in animal_numbers:
-                temp_mean = df.loc[idx[condition, section, animal]].mean(axis=1)
+                temp_mean = df.loc[idx[condition,
+                                       section, animal]].mean(axis=1)
                 mean_df.loc[idx[condition, section, animal], col_name] = \
                     temp_mean.values
-     
+
     mean_df = mean_df.astype(np.float64)
 
     # swap the animal level to the columns, then take the group means and sems
     # from there
     mean_swap = mean_df.unstack(level=2)
     mean_swap.columns = mean_swap.columns.droplevel(0)
-    mean_swap_hourly = mean_swap.groupby(level=[0,1]
+    mean_swap_hourly = mean_swap.groupby(level=[0, 1]
                                          ).resample("H", level=2,
-                                                   loffset=pd.Timedelta("30M")
-                                                   ).mean()
+                                                    loffset=pd.Timedelta("30M")
+                                                    ).mean()
     mean_animals = mean_swap_hourly.mean(axis=1)
     sem_animals = mean_swap_hourly.sem(axis=1)
 
@@ -112,5 +115,5 @@ def group_mean_df(df: pd.DataFrame,
     group_mean_df = pd.DataFrame(mean_animals)
     group_mean_df.columns = ['Group mean']
     group_mean_df["sem"] = sem_animals
-    
+
     return group_mean_df

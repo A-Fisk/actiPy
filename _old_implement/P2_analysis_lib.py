@@ -3,7 +3,6 @@ import numpy as np
 import pathlib
 
 
-
 # TODO Actogram
 # TODO
 
@@ -83,7 +82,7 @@ def sleep_create_file(file_path, index_col=0):
 
 # function to remove column if object
 
-def remove_object_col(data, return_cols = False):
+def remove_object_col(data, return_cols=False):
     """
     Function to check the data type in each column and drop it if it is an object
     Does not distinguish between float, int, strings
@@ -105,7 +104,7 @@ def remove_object_col(data, return_cols = False):
 
         if column_data.dtype == 'O':
 
-            current_col = data.loc[:,column]
+            current_col = data.loc[:, column]
 
             dropped_cols.append(current_col)
 
@@ -118,7 +117,6 @@ def remove_object_col(data, return_cols = False):
     else:
 
         return data
-
 
 
 # Function to split dataframe into periods based on label_column
@@ -146,8 +144,6 @@ def separate_by_condition(data, label_col=-1):
         list_of_dataframes_by_condition.append(temporary_sliced_data)
 
     return list_of_dataframes_by_condition
-
-
 
 
 ######################################################################
@@ -188,7 +184,8 @@ def split_data_by_period(data, animal_number, period=None):
 
     animal_label = data.columns[animal_number]
 
-    for day_start, day_end in zip(list_of_days_index[:-1], list_of_days_index[1:]):
+    for day_start, day_end in zip(
+            list_of_days_index[:-1], list_of_days_index[1:]):
 
         day_data = data.loc[day_start:day_end, animal_label]
 
@@ -208,7 +205,7 @@ def split_data_by_period(data, animal_number, period=None):
 
     for day in data_by_day_list:
 
-        values = day.reset_index().iloc[:,1]
+        values = day.reset_index().iloc[:, 1]
 
         values_by_day_list.append(values)
 
@@ -225,11 +222,11 @@ def split_data_by_period(data, animal_number, period=None):
 
     new_index_frequency = str(int_seconds) + "S " + str(miliseconds) + "ms"
 
-    new_index = pd.timedelta_range(start = '0S',
+    new_index = pd.timedelta_range(start='0S',
                                    freq=new_index_frequency,
                                    periods=len(split_dataframe))
 
-    split_dataframe.index=new_index
+    split_dataframe.index = new_index
 
     # Now to set the column numbers to be subsequent days
 
@@ -243,13 +240,14 @@ def split_data_by_period(data, animal_number, period=None):
 
     return split_dataframe
 
-###########################################################################################
+##########################################################################
 
 # Sleep analysing functions
 
 # TODO total sleep count
 # TODO Sleep in active and inactive half separately
 # TODO
+
 
 def sleep_count(data):
     """

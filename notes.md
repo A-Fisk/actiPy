@@ -23,13 +23,31 @@
 ### create test data 
 - k now problem with import pingouin as conflict with numpy 
 - problem incompatible with numpy 2.0
+- sorted and it works by downgrading numpy env 
+- what test data do I want? and how use it? 
+- 10 days of data in single column with datetime index 
+- test splitting that into columns 
+- test plotting that? 
+- okay test plotting \_actogram_plot, what form does it want the data in?
+- I think it's single animal per col 
+
+- okay something reaaaally weird is going on with the debugger
+
+- how deal with start time? 
+- how deal with missing LDR data? 
+
 
 ## TODO
-- Create test data 
 - run on test data 
 - Write docstring +/- basic usage 
 - update .gitignore 
 - switch to venv 
+- update/create make file 
+- remove bash scripts to create env <- put in makefile
+- rename variables to remove animal - put in subject instead 
+    - animal_number is \_actogram_plot etc
+- remove subplot kwarg from \_actogram_plot
+- move day_label_size to decorator 
 
 ## What do we want 
 

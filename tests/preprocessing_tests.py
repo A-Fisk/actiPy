@@ -11,6 +11,7 @@ np.random.seed(42)
 
 # define my test class
 
+
 class tests_preprocessing(unittest.TestCase):
     """
     Class to test preprocessing
@@ -38,11 +39,11 @@ class tests_preprocessing(unittest.TestCase):
                            col_4_list]
 
         # assigning the names and data types to use
-        dtypes_to_use = {"0":"float",
-                         "1":"int",
-                         "2":"object",
-                         "3":"object",
-                         "periods":"object"}
+        dtypes_to_use = {"0": "float",
+                         "1": "int",
+                         "2": "object",
+                         "3": "object",
+                         "periods": "object"}
         col_names = ["0", "1", "2", "3", "index"]
 
         # create the index
@@ -57,14 +58,15 @@ class tests_preprocessing(unittest.TestCase):
         test_data_df.index = index_1
         test_data_df.columns = col_names[:-1]
 
-        # create the final index column as different values for sep condition test
+        # create the final index column as different values for sep condition
+        # test
         test_data_df["periods"] = 100
-        test_data_df.iloc[:31,-1] = 5
+        test_data_df.iloc[:31, -1] = 5
         test_data_df.iloc[31:61, -1] = 50
         test_data_df.iloc[61:, -1] = 75
 
         # set the data types
-        test_data_df_typed = test_data_df.astype(dtype = dtypes_to_use)
+        test_data_df_typed = test_data_df.astype(dtype=dtypes_to_use)
         self.test_data_df = test_data_df_typed
 
         # save it to a csv file.
@@ -93,7 +95,7 @@ class tests_preprocessing(unittest.TestCase):
         """
 
         separated_list = preprocessing.separate_by_condition(self.test_data_df,
-                                                                label_col=-1)
+                                                             label_col=-1)
         number_of_separate_conditions = len(separated_list)
         self.assertEqual(3, number_of_separate_conditions)
 
@@ -126,6 +128,7 @@ class tests_preprocessing(unittest.TestCase):
         import os
         os.remove(str(self.save_str))
 
+
 class test_split_by_period_functions(unittest.TestCase):
     """
     test class
@@ -149,7 +152,7 @@ class test_split_by_period_functions(unittest.TestCase):
                             columns=self.test_col_name)
         self.data = data
         self.test_period_index = preprocessing.create_period_index(
-                                    self.data)
+            self.data)
 
     def test_create_period_index(self):
         # should return value of 3
@@ -158,24 +161,25 @@ class test_split_by_period_functions(unittest.TestCase):
     def test_slice_by_index(self):
         # should have 3 columns = len is 3
         # select the series then pass to the function
-        data_series = self.data.iloc[:,0]
+        data_series = self.data.iloc[:, 0]
         period_sliced_df = preprocessing.slice_dataframe_by_index(
-                            data_series,
-                            self.test_period_index)
+            data_series,
+            self.test_period_index)
         self.assertEqual(len(period_sliced_df.columns), 3)
-        
+
     def test_integrated_slice_function(self):
         # call slice function
         sliced_df = preprocessing.split_dataframe_by_period(self.data,
-                                                               0)
+                                                            0)
         # assert name is correct
         self.assertEqual(sliced_df.name, self.test_col_name[0])
         # assert number of columns is correct, 3 days
         self.assertEqual(len(sliced_df.columns), 3)
         # assert length of df is correct 86401 for 24 hours of data
         self.assertEqual(len(sliced_df), 86401)
-        
+
 #     TODO create test for ct based index
+
 
 if __name__ == "__main__":
     unittest.main()

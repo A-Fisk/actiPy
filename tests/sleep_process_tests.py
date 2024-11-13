@@ -7,6 +7,7 @@ import actiPy.episodes as ep
 
 # test sleep processing
 
+
 class testSleepProcessing(unittest.TestCase):
 
     def setUp(self):
@@ -25,7 +26,7 @@ class testSleepProcessing(unittest.TestCase):
         self.test_data_series[201:204] = 10
         self.sleep_scored_data = sleep.sleep_process(
             self.test_data_series)
-        
+
     def test_sleep_processing(self):
         # test whether picks up correct number of sleep episodes
         # by finding total score of sleep
@@ -37,13 +38,12 @@ class testSleepProcessing(unittest.TestCase):
         # finder function
         episodes = ep.episode_finder(self.sleep_scored_data)
         no_episodes = len(episodes)
-        self.assertEqual(no_episodes,4)
-        
+        self.assertEqual(no_episodes, 4)
+
+
 if __name__ == "__main__":
     unittest.main()
 
 
-
 # TODO Implement tests for following functions:
 # TODO sleep create df
-

@@ -2,16 +2,18 @@
 
 # TODO: Figure out how to import docstrings
 
+from actiPy.plots import show_savefig_decorator, \
+    multiple_plot_kwarg_decorator, set_title_decorator
+import actiPy.preprocessing as prep
+import seaborn as sns
+import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 idx = pd.IndexSlice
-import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
-import actiPy.preprocessing as prep
-from actiPy.plots import show_savefig_decorator, \
-multiple_plot_kwarg_decorator, set_title_decorator
 
 # function for mean waveform
+
+
 def mean_activity(data,
                   period="24H",
                   *args,
@@ -24,7 +26,7 @@ def mean_activity(data,
     :param kwargs:
     :return:
     """
-    
+
     # use split function to split into columns
     # get the mean and sem of the df
     # save as a new df
@@ -35,7 +37,8 @@ def mean_activity(data,
         mean_df = create_mean_df(df)
         mean_df_list.append(mean_df)
     return mean_df_list
-        
+
+
 def create_mean_df(data):
     """
     Simple function to create new df out of mean and sem of input data
@@ -44,8 +47,8 @@ def create_mean_df(data):
     """
     mean = data.mean(axis=1)
     sem = data.sem(axis=1)
-    mean_df = pd.DataFrame({"mean":mean,
-                            "sem":sem},
+    mean_df = pd.DataFrame({"mean": mean,
+                            "sem": sem},
                            index=data.index)
     mean_df.name = data.name
     return mean_df
@@ -58,16 +61,16 @@ def _drop_ldr_decorator(func, ldr_col=-1):
     :return:
     """
     def wrapper(data, **kwargs):
-        
+
         # call function
         new_data = func(data, **kwargs)
-        
+
         # remove ldr values
         ldr_label = new_data.columns[ldr_col]
         new_data.drop(ldr_label, axis=1, inplace=True)
-    
+
         return new_data
-    
+
     return wrapper
 
 
@@ -76,12 +79,12 @@ def _day_count(data):
     data = data.reset_index(0, drop=True)
     time_of_data = (data.index[-1] - data.index[0])
     day_count = time_of_data.days
-    
+
     # if over 20 hours, count as another full day
     hours = time_of_data.components.hours
     if hours > 20:
         day_count = day_count + 1
-        
+
     return day_count
 
 
@@ -95,7 +98,7 @@ def sum_per_day(data,
     days = data.groupby(label).apply(_day_count)
     sum = data.groupby(label).sum()
     sum_per_day = sum.div(days, axis=0)
-    
+
     return sum_per_day
 
 
@@ -105,20 +108,21 @@ def count_per_day(data,
                   convert=True,
                   **kwargs):
     """ Function to count number of active bins - gives time per day """
-    
+
     # divide acitivity *count* by number of days
     days = data.groupby(label).apply(_day_count)
-    
+
     # need to count number of non-0 values
     bool_df = data.fillna(0).astype(bool)
     count = bool_df.groupby(label).sum()
     count_per_day = count.div(days, axis=0)
-    
+
     # convert to hours if asked
     if convert:
         count_per_day = prep._convert_to_units(count_per_day, **kwargs)
-        
+
     return count_per_day
+
 
 def pointplot_from_df(data,
                       groups='',
@@ -130,22 +134,22 @@ def pointplot_from_df(data,
     :param kwargs:
     :return:
     """
-    
+
     # turn into longform data
     longform_df = _longform_data(data)
-    longform_df.rename(columns={0:data.name}, inplace=True)
-    
+    longform_df.rename(columns={0: data.name}, inplace=True)
+
     # pointplot
     _point_plot(longform_df,
                 groups='group',
                 ylevel=data.name,
                 **kwargs)
-    
+
 
 def _longform_data(data, **kwargs):
-    
-    plotting_data = data.iloc[:,:-1].stack().reset_index()
-    
+
+    plotting_data = data.iloc[:, :-1].stack().reset_index()
+
     return plotting_data
 
 
@@ -158,7 +162,7 @@ def _point_plot(data,
                 groups='',
                 **kwargs):
     """
-    
+
     :param data:
     :param xlevel:
     :param ylevel:
@@ -169,7 +173,7 @@ def _point_plot(data,
     fig, ax = plt.subplots()
     sns.pointplot(x=xlevel, y=ylevel, hue=groups, data=data, ax=ax,
                   **kwargs)
-    
+
     params_dict = {
         "timeaxis": False,
         "title": ylevel,
@@ -187,7 +191,7 @@ def intradayvar(data):
     :param data:
     :return:
     """
-    
+
     # variance of the first derivative
     # calculate the first derivative
     shift = data.shift(-1)
@@ -199,14 +203,16 @@ def intradayvar(data):
 
     # ratio of the two
     iv = first_der_mean / total_var
-    
+
     iv.name = "Intraday Variability"
 
     return iv
 
 # TODO: Remove redundant by group function
+
+
 def iv_by_group(data,
-                level: int=0):
+                level: int = 0):
     """
     Finds iv by day for each level of axis
     :param data:
@@ -214,7 +220,7 @@ def iv_by_group(data,
     :return:
     """
     iv = data.groupby(level=level).apply(_intradayvar)
-    
+
     return iv
 
 
@@ -228,13 +234,13 @@ def catplot(data, **kwargs):
     :return:
     """
     fig, ax = plt.subplots()
-    
+
     import seaborn as sns
     sns.set()
 
     plot = data.stack().reset_index()
     plot.rename(columns={0: data.name}, inplace=True)
-    
+
     xlevel = plot.columns[0]
     ylevel = plot.columns[-1]
 
@@ -242,24 +248,24 @@ def catplot(data, **kwargs):
     sns.pointplot(data=plot, x=xlevel, y=ylevel, color="k",
                   capsize=0.2, join=False,
                   errwidth=1, ax=ax)
-    
+
     params_dict = {
         "timeaxis": False,
         "title": data.name,
         "xlabel": False,
         "ylabel": False,
     }
-    
+
     return fig, ax, params_dict
 
 
 @prep._name_decorator
 def normalise_to_baseline(data,
-                          level_conds: int=0,
-                          level_period: int=1,
-                          baseline_level: int=0,
-                          disrupted_level: int=1,
-                          ldr_col: int=-1):
+                          level_conds: int = 0,
+                          level_period: int = 1,
+                          baseline_level: int = 0,
+                          disrupted_level: int = 1,
+                          ldr_col: int = -1):
     """
     Normalises each level of level_conds to it's own baseline
     :param data:
@@ -277,18 +283,19 @@ def normalise_to_baseline(data,
     norm_df = pd.concat(cond_dict)
 
     cond_vals = data.index.get_level_values(level_period).unique()
-    disrupted_with_light = norm_df.loc[idx[:,cond_vals[disrupted_level],:],:]
+    disrupted_with_light = norm_df.loc[idx[:,
+                                           cond_vals[disrupted_level], :], :]
     disrupted_nolight = disrupted_with_light.iloc[:, :ldr_col]
-    
+
     disrupted_nolight.index.rename("Condition", level=0, inplace=True)
-    
+
     return disrupted_nolight
 
-    
+
 # TODO test for count per day
 def light_phase_activity_nfreerun(test_df,
                                   ldr_label: str = "LDR",
-                                  ldr_val: float = 150 ):
+                                  ldr_val: float = 150):
     light_mask = test_df.loc[:, ldr_label] > ldr_val
     light_data = test_df[light_mask]
     light_sum = light_data.sum()
@@ -296,6 +303,7 @@ def light_phase_activity_nfreerun(test_df,
     light_phase_activity = (light_sum / total_sum) * 100
 
     return light_phase_activity
+
 
 def light_phase_activity_freerun(test_df,
                                  start_light="2010-01-01 00:00:00",
@@ -322,4 +330,3 @@ def hist_vals(test_data, bins, hist_cols, **kwargs):
     hist = np.histogram(test_data, bins, **kwargs)
     hist_vals = pd.DataFrame(hist[0], index=hist_cols)
     return hist_vals
-

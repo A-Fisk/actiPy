@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import pathlib
 from actigraphy_analysis.preprocessing import remove_object_col, read_file_to_df
 
+
 def sleep_process(data, window=4):
     """
     Function to score the PIR based activity data as sleep
@@ -23,6 +24,8 @@ def sleep_process(data, window=4):
     return scored_data.astype(int)
 
 # Function to take input file name and save sleep_df in the same directory
+
+
 def sleep_create_df(data):
     """
     Function to take dataframe as input, remove object columns, sleep process the rest, then reattach the object
@@ -55,6 +58,8 @@ def sleep_create_df(data):
     return sleep_df
 
 # Function to get hourly sum of sleep data
+
+
 def create_hourly_sum(data, index_col=-1):
     """
     function that takes in a datetimeindex indexed pandas dataframe of PIR sleep scored data
@@ -83,6 +88,8 @@ def create_hourly_sum(data, index_col=-1):
     return df_hourly_sum
 
 # Function to plot data and save to file
+
+
 def simple_plot(data, save_path, dpi=300, savefig=False, showfig=True):
     """
     Function take in pandas dataframe, plot it as subplots, and then save to specified place

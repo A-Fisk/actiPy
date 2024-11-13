@@ -1,11 +1,12 @@
-#script to demonstrate multiple figures on subplot problem
+# script to demonstrate multiple figures on subplot problem
 
+import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 
 x = np.linspace(0, 1, 100)
-y = np.sin(2*np.pi*x)
+y = np.sin(2 * np.pi * x)
 
 fig, ax = plt.subplots(nrows=100)
 
@@ -23,14 +24,13 @@ fig.subplots_adjust(hspace=0)
 
 plt.show()
 
-import matplotlib.pyplot as plt
 
 fig1, ax = plt.subplots()
 ax.plot(range(10))
 ax.remove()
 
 fig2 = plt.figure()
-ax.figure=fig2
+ax.figure = fig2
 fig2.axes.append(ax)
 fig2.add_axes(ax)
 
@@ -41,7 +41,6 @@ plt.close(fig1)
 
 plt.show()
 
-import matplotlib.gridspec as gridspec
 
 fig = plt.figure()
 gs0 = fig.add_gridspec(3, 1)
@@ -50,5 +49,3 @@ ax2 = fig.add_subplot(gs0[1])
 gssub = gs0[2].subgridspec(1, 3)
 for i in range(3):
     fig.add_subplot(gssub[0, i])
-    
-    
