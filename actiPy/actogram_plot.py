@@ -8,6 +8,7 @@ from actiPy.plots import multiple_plot_kwarg_decorator, \
 
 # function to create actogram plot
 
+
 def actogram_plot_all_cols(data,
                            fname,
                            LDR=-1,
@@ -29,17 +30,17 @@ def actogram_plot_all_cols(data,
     # and create new file name for each
     data_with_ldr = data.copy()
     ldr_data = data.pop(data.columns[LDR])
-    
+
     for animal_no, label in enumerate(data.columns):
         file_name = fname.parent / (fname.stem +
                                     str(animal_no) +
                                     fname.suffix)
         _actogram_plot_from_df(data_with_ldr,
-                              animal_number=animal_no,
-                              period=period,
-                              fname=file_name,
-                              *args,
-                              **kwargs)
+                               animal_number=animal_no,
+                               period=period,
+                               fname=file_name,
+                               *args,
+                               **kwargs)
 
 
 def _actogram_plot_from_df(data,
@@ -59,14 +60,14 @@ def _actogram_plot_from_df(data,
     :param kwargs:
     :return:
     """
-    
+
     # remap the light data
     data_LDR_remap = prep.remap_LDR(data, drop_level=drop_level, **kwargs)
-    
+
     if drop_level:
         # remove top level of the index
         data_LDR_remap.index = data_LDR_remap.index.droplevel(0)
-    
+
     # split the dfs
     split_df_list = prep.split_entire_dataframe(data_LDR_remap,
                                                 period=period)
@@ -78,6 +79,7 @@ def _actogram_plot_from_df(data,
                              **kwargs)
 
     return fig, ax
+
 
 @set_title_decorator
 @multiple_plot_kwarg_decorator
@@ -92,17 +94,49 @@ def _actogram_plot(data,
                    day_label_size=5,
                    **kwargs):
     """
-    Function to take in dataframe and plot a double-plotted actogram
-    with lights shaded in
-    :param data:
-    :param animal_number:
-    :param LDR:
-    :param kwargs:
-    :return:
+    Plot an double plotted actogram of activity data over several days
+    with background shading set by the lights
+
+    Parameters:
+    ----------
+    data : (pd.DataFrame)
+        time-indexed pandas dataframe with activity values in
+        columns for each subject and one column for the light levels.
+    animal_number : int
+        which column number to plot, defaults to 0
+    LDR : int
+        which columns contains light information, defaults to -1
+    ylim : list of two ints
+        set the minimum and maximum values to plot
+    fig : boolean
+        Boolean over whether to create a new figure for this plot, used when
+        being passed a figure object as a kwarg to plot in larger figure.
+        Default False
+    subplot : boolean
+        Not sure what this is doing? defaults to False <-
+    ldralpha : float
+        Set the alpha level for how opaque to have the light shading, defaults
+        to 0.5
+    startday : int
+        sets which day to start as day 0 in plot, defaults to 0
+    day_label_size : int
+        sets size of labels on bottom x axis, defaults to 5
+
+    Returns
+    -------
+    matplotlib.pyplot.figure
+        instance containing overall figure
+    matplotlib.pyplot.subplot
+        the final subplot so can manipulate for xaxis
+    dict
+        dict containing plotting kwargs
     """
+    
+    # check there are enough columns
 
     # select the correct data
-    data_to_plot = data[animal_number].copy()
+    col_to_plot = data.columns[animal_number]
+    data_to_plot = data.loc[:, col_to_plot].copy()
     light_data = data[LDR].copy()
 
     # set up some constants
@@ -110,7 +144,7 @@ def _actogram_plot(data,
     linewidth = 1
     if "linewidth" in kwargs:
         linewidth = kwargs["linewidth"]
-        
+
     # add in values at the start and end
     # to let us double plot effectively
     for data in data_to_plot, light_data:
@@ -118,13 +152,12 @@ def _actogram_plot(data,
         # set all 0 values to Nan
         data = convert_zeros(data, -100)
 
-    
     # if not given a figure, just create the axes
     if not fig:
-        fig, ax = plt.subplots(nrows=(NUM_DAYS+1))
+        fig, ax = plt.subplots(nrows=(NUM_DAYS + 1))
     # create the ax list if given a figure and subplot to do it in.
     else:
-        subplot_grid = gs.GridSpecFromSubplotSpec(nrows=(NUM_DAYS+1),
+        subplot_grid = gs.GridSpecFromSubplotSpec(nrows=(NUM_DAYS + 1),
                                                   ncols=1,
                                                   subplot_spec=subplot,
                                                   wspace=0,
@@ -140,35 +173,35 @@ def _actogram_plot(data,
         # get two days of data to plot
         day_data = two_days(data_to_plot, day_label)
         day_light_data = two_days(light_data, day_label)
-        
+
         # create masked data for fill between to avoid horizontal lines
-        fill_data = day_data.where(day_data>0)
-        fill_ldr = day_light_data.where(day_light_data>0)
+        fill_data = day_data.where(day_data > 0)
+        fill_ldr = day_light_data.where(day_light_data > 0)
 
         # plot the data and LDR
         axis.fill_between(fill_ldr.index,
                           fill_ldr,
                           alpha=ldralpha,
-                          facecolor= "grey")
+                          facecolor="grey")
         axis.plot(day_data, linewidth=linewidth)
         axis.fill_between(fill_data.index,
                           fill_data)
-          
+
         # need to hide all the axis to make visible
         axis.set(xticks=[],
-                 xlim= [day_data.index[0],
-                        day_data.index[-1]],
+                 xlim=[day_data.index[0],
+                       day_data.index[-1]],
                  yticks=[],
                  ylim=ylim)
         spines = ["left", "right", "top", "bottom"]
         for pos in spines:
             axis.spines[pos].set_visible(False)
-    
-    if fig == False:
+
+    if not fig:
         fig.subplots_adjust(hspace=0)
-    
+
     # create the y labels for every 10th row
-    day_markers = np.arange(0,NUM_DAYS, 10)
+    day_markers = np.arange(0, NUM_DAYS, 10)
     day_markers = day_markers + start_day
     for axis, day in zip(ax[::10], day_markers):
         axis.set_ylabel(day,
@@ -176,7 +209,7 @@ def _actogram_plot(data,
                         va='center',
                         ha='right',
                         fontsize=day_label_size)
-        
+
     # create defaults dict
     params_dict = {
         "xlabel": "Time",
@@ -185,11 +218,11 @@ def _actogram_plot(data,
         "title": "Double Plotted Actogram",
         "timeaxis": True,
     }
-    
+
     # put axis as a controllable parameter
     if "timeaxis" in kwargs:
         params_dict['timeaxis'] = kwargs["timeaxis"]
-    
+
     return fig, ax[-1], params_dict
 
 
@@ -208,9 +241,10 @@ def pad_first_last_days(data):
     # create a day of 0s and put at the start and the end
     zeros = np.zeros(NUM_BINS)
     data.insert(0, -1, zeros)
-    data.insert((NUM_DAYS+1), (NUM_DAYS), zeros)
+    data.insert((NUM_DAYS + 1), (NUM_DAYS), zeros)
     return data
-   
+
+
 def convert_zeros(data, value):
     """
     Simple function to turn 0s into nans
@@ -219,8 +253,9 @@ def convert_zeros(data, value):
     :param data:
     :return:
     """
-    data[data==0] = value
+    data[data == 0] = value
     return data
+
 
 def two_days(data, day_one_label):
     """
@@ -232,14 +267,14 @@ def two_days(data, day_one_label):
     :return:
     """
     # get two days as a dataframe
-    
+
     # grab the values of the first two days
     day_no = data.columns.get_loc(day_one_label)
-    day_one = data.iloc[:,day_no]
-    day_two = data.iloc[:,(day_no+1)]
-    
+    day_one = data.iloc[:, day_no]
+    day_two = data.iloc[:, (day_no + 1)]
+
     day_two.index = day_one.index + pd.Timedelta("1D")
-    
+
     two_days = pd.concat([day_one, day_two])
     return two_days
 
@@ -254,9 +289,7 @@ def two_days(data, day_one_label):
 # select based on the number in the list
 
 
-
 # Function to plot actogram
 # want to create split dataframe
 # then try imshow?
 # or plot.subplots?
-
