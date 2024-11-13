@@ -942,3 +942,58 @@ def manual_resample_mean_groupby(curr_data,
     resampled_data = pd.concat(resampled_data_dict)
 
     return resampled_data
+
+
+
+
+# function to set data by circadian period 
+def set_circadian_time(
+        data,
+        base_freq=4,
+        period=24):
+    """
+    set_circadian_time
+    Reindexes current data to 24 hours CT instead of ZT by setting 
+    frequency to the ratio of 24hrs/new period 
+
+    Parameters 
+    ----------
+    data : pd.DataFrame
+        Dataframe with a pandas timeindex 
+    base_freq : int
+        sampling frequency of the data in seconds 
+    period : float
+        new period to set the data to, in hours 
+
+    Returns 
+    -------
+    pd.DataFrame
+        original data but with new datetimeindex, starting at same time as 
+        original but now 24 hours is equal to the given period instead 
+        of real time.
+
+
+    """
+    # calculate what new frequency is
+    freq_ratio = 24 / curr_period
+    new_freq = base_freq * freq_ratio
+    new_freq_str = str(np.round(new_freq * 1000)) + "ms"
+
+    # create new index based on this
+    start_time = data.index[0]
+    data_length = len(data)
+    new_index = pd.date_range(
+        start=start_time,
+        periods=data_length,
+        freq=new_freq_str
+    )
+
+    # reindex the data
+    reindexed_data = pd.DataFrame(
+        data=data.values,
+        index=new_index,
+        columns=data.columns
+    )
+
+    return reindexed_data
+
