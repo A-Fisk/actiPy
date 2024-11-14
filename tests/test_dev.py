@@ -39,4 +39,5 @@ print(df.head())
 
 
 # okay so now ... test that?
-act._actogram_plot(df, set_file_title=False)
+actogram, ax = act._actogram_plot(df, set_file_title=False)
+actogram.show()

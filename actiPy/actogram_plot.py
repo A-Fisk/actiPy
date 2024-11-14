@@ -145,10 +145,8 @@ def _actogram_plot(data,
     data_plot = data.loc[:, col_data].copy()
     data_light = data.loc[:, ldr_col].copy()
 
-    pdb.set_trace()
-
-    # calculate number of days in the data
-    days = len(set(data_plot.index.date))
+    # select just the days 
+    days = data_plot.index.normalize().unique()
     
     # set all 0 values to be very low so not showing on y index starting at 0
     for data in data_plot, data_light:
@@ -156,18 +154,13 @@ def _actogram_plot(data,
     
 
     # Create figure and subplot for every day
-
-    # error check if not given fig OR subplot 
-    if not fig and not subplot:
-        raise ValueError("Either 'fig' or 'subplot' must be provided")
-
     # create a new figure if not passed one when called 
     if not fig:
-        fig, ax = plt.subplots(nrows=(days + 1))
+        fig, ax = plt.subplots(nrows=(len(days) + 1))
 
     # add subplots to figure if passed when called 
     else:
-        subplot_grid = gs.GridSpecFromSubplotSpec(nrows=(days + 1),
+        subplot_grid = gs.GridSpecFromSubplotSpec(nrows=(len(days) + 1),
                                                   ncols=1,
                                                   subplot_spec=subplot,
                                                   wspace=0,
@@ -178,29 +171,32 @@ def _actogram_plot(data,
             fig.add_subplot(sub_ax)
             ax.append(sub_ax)
 
+    # select each day to then plot on separate axis 
     # plot two days on each row
-    for day_label, axis in zip(data_plot.columns[:-1], ax):
+    for day_label, axis in zip(days, ax):
         # get two days of data to plot
-        day_data = two_days(data_plot, day_label)
-        day_data_light = two_days(data_light, day_label)
+        curr_day = str(day_label.date())
+        next_day = str(day_label.date() + pd.Timedelta("1d"))
+        curr_data = data_plot.loc[curr_day:next_day]
+        curr_data_light = data_light.loc[curr_day:next_day]
 
         # create masked data for fill between to avoid horizontal lines
-        fill_data = day_data.where(day_data > 0)
-        fill_ldr = day_data_light.where(day_data_light > 0)
+        fill_data = curr_data.where(curr_data > 0)
+        fill_ldr = curr_data_light.where(curr_data_light > 0)
 
         # plot the data and LDR
         axis.fill_between(fill_ldr.index,
                           fill_ldr,
                           alpha=ldralpha,
                           facecolor="grey")
-        axis.plot(day_data, linewidth=linewidth)
+        axis.plot(curr_data, linewidth=linewidth)
         axis.fill_between(fill_data.index,
                           fill_data)
 
         # need to hide all the axis to make visible
         axis.set(xticks=[],
-                 xlim=[day_data.index[0],
-                       day_data.index[-1]],
+                 xlim=[curr_data.index[0],
+                       curr_data.index[-1]],
                  yticks=[],
                  ylim=ylim)
         spines = ["left", "right", "top", "bottom"]
@@ -211,7 +207,7 @@ def _actogram_plot(data,
         fig.subplots_adjust(hspace=0)
 
     # create the y labels for every 10th row
-    day_markers = np.arange(0, days, 10)
+    day_markers = np.arange(0, len(days), 10)
     day_markers = day_markers + start_day
     for axis, day in zip(ax[::10], day_markers):
         axis.set_ylabel(day,
@@ -232,7 +228,8 @@ def _actogram_plot(data,
     # put axis as a controllable parameter
     if "timeaxis" in kwargs:
         params_dict['timeaxis'] = kwargs["timeaxis"]
-
+    
+    pdb.set_trace()
     return fig, ax[-1], params_dict
 
 

@@ -21,22 +21,6 @@
 - just do in test dir, and use to run tests?  
 
 ### create test data 
-- expecting a list of dataframes, organised by animal
-each is a df of that animal each col is diff day 
-
-- okay how deal with this? 
-- Refactor so just does it in actogram_plot function? 
-- seems sensible, give DF then ask to plot this 
-- do we need to do the whole separate days thing at all? 
-
-- what does pad_first_last_days do? 
-    - adds 0s to get double plotting working well? 
-- running into problem with decorators because they expect a DataFrame not 
-a Series 
-- can just do padding in plotting function? - seems too trivial to 
-make whole new function for 
-- plus that function only really needed if plotting from columns? 
-
 
 - Current 
 - actogram_plot_all_cols
@@ -48,13 +32,14 @@ make whole new function for
             - applies split_dataframe_by_period
             - splits from long to single day per col 
         - \_actogram_plots 
-- don't need plot all cols if doing well, can just run loop easy.
 
-questions 
-- Is there any advantage in having wide dataframe with each day as a col ?
-    - can just split into days super easily right? 
-- okay if assuming adding in in a different way, do we want to alter the 
-period as part of plotting? - no that's a separate function 
+
+- need to add first and lastr days of 0s 
+- one days is very weird and only showing 1 day not 2 
+- x axis is also weird and final plot not showing anything 
+
+- why do we have 11 ax with only 10 days?
+- how we want it but hmm 
 
 
 
