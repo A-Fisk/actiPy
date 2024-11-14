@@ -171,11 +171,11 @@ def _actogram_plot(data,
     # Create figure and subplot for every day
     # create a new figure if not passed one when called 
     if not fig:
-        fig, ax = plt.subplots(nrows=(len(days)))
+        fig, ax = plt.subplots(nrows=(len(days)-1))
 
     # add subplots to figure if passed when called 
     else:
-        subplot_grid = gs.GridSpecFromSubplotSpec(nrows=(len(days)),
+        subplot_grid = gs.GridSpecFromSubplotSpec(nrows=(len(days)-1),
                                                   ncols=1,
                                                   subplot_spec=subplot,
                                                   wspace=0,
@@ -244,7 +244,6 @@ def _actogram_plot(data,
     if "timeaxis" in kwargs:
         params_dict['timeaxis'] = kwargs["timeaxis"]
     
-    pdb.set_trace()
     return fig, ax[-1], params_dict
 
 

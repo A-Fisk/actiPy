@@ -21,8 +21,6 @@
 - just do in test dir, and use to run tests?  
 
 ## Current todo 
-### fix actogram_plot
-
 
 
 - Current 
