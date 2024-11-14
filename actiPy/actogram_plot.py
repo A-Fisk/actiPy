@@ -118,8 +118,8 @@ def _actogram_plot(data,
         Subplot from larger figure on which to draw actogram. If not passed
         defaults to False, which requires a fig object to be provided 
     ldralpha : float
-        Set the alpha level for how opaque to have the light shading, defaults
-        to 0.5
+        Set the alpha level for how opaque to have the light shading, 
+        defaults to 0.5
     startday : int
         sets which day to start as day 0 in plot, defaults to 0
     day_label_size : int
@@ -145,6 +145,21 @@ def _actogram_plot(data,
     data_plot = data.loc[:, col_data].copy()
     data_light = data.loc[:, ldr_col].copy()
 
+    # add entire day of 0s at start and end by extending index 
+    # grab values from current index 
+    freq = pd.infer_freq(data_plot.index)
+    start = data_plot.index.min()
+    end = data_plot.index.max()
+    
+    # Extend the range by 24 hours on either side
+    extended_start = start - pd.Timedelta(hours=24)
+    extended_end = end + pd.Timedelta(hours=24)
+    
+    # create new index and set data to it 
+    extended_index = pd.date_range(
+            start=extended_start, end=extended_end, freq=freq)
+    data_plot = data_plot.reindex(extended_index)
+
     # select just the days 
     days = data_plot.index.normalize().unique()
     
@@ -156,11 +171,11 @@ def _actogram_plot(data,
     # Create figure and subplot for every day
     # create a new figure if not passed one when called 
     if not fig:
-        fig, ax = plt.subplots(nrows=(len(days) + 1))
+        fig, ax = plt.subplots(nrows=(len(days)))
 
     # add subplots to figure if passed when called 
     else:
-        subplot_grid = gs.GridSpecFromSubplotSpec(nrows=(len(days) + 1),
+        subplot_grid = gs.GridSpecFromSubplotSpec(nrows=(len(days)),
                                                   ncols=1,
                                                   subplot_spec=subplot,
                                                   wspace=0,
