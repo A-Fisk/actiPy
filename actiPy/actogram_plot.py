@@ -7,84 +7,10 @@ import actiPy.preprocessing as prep
 from actiPy.plots import multiple_plot_kwarg_decorator, \
     show_savefig_decorator, set_title_decorator
 
-# function to create actogram plot
-
-
-def actogram_plot_all_cols(data,
-                           fname,
-                           LDR=-1,
-                           period="24H",
-                           *args,
-                           **kwargs):
-    """
-    Function to loop through each column of activity data
-    and plot every column except for the LDR
-    :param data:
-    :param LDR:
-    :param period: default "24H"
-    :param args:
-    :param kwargs: savefig, showfig, fname mainly
-    :return:
-    """
-    # remove LDR column then call actogram plot from
-    # df on each remaining column
-    # and create new file name for each
-    data_with_ldr = data.copy()
-    ldr_data = data.pop(data.columns[LDR])
-
-    for animal_no, label in enumerate(data.columns):
-        file_name = fname.parent / (fname.stem +
-                                    str(animal_no) +
-                                    fname.suffix)
-        _actogram_plot_from_df(data_with_ldr,
-                               animal_number=animal_no,
-                               period=period,
-                               fname=file_name,
-                               *args,
-                               **kwargs)
-
-
-def _actogram_plot_from_df(data,
-                           animal_number,
-                           LDR=-1,
-                           period="24H",
-                           drop_level=True,
-                           *args,
-                           **kwargs):
-    """
-    Function to apply LDR remap, then split the dataframe
-    according to the given period, then plot the actogram
-    :param data: dataframe of activity data
-    :param animal_number: which column to plot
-    :param LDR: which column has the light data
-    :param args:
-    :param kwargs:
-    :return:
-    """
-
-    # remap the light data
-    data_LDR_remap = prep.remap_LDR(data, drop_level=drop_level, **kwargs)
-
-    if drop_level:
-        # remove top level of the index
-        data_LDR_remap.index = data_LDR_remap.index.droplevel(0)
-
-    # split the dfs
-    split_df_list = prep.split_entire_dataframe(data_LDR_remap,
-                                                period=period)
-    # plot with actogram
-    fig, ax = _actogram_plot(split_df_list,
-                             animal_number=animal_number,
-                             LDR=LDR,
-                             *args,
-                             **kwargs)
-
-    return fig, ax
-
 
 @set_title_decorator
 @multiple_plot_kwarg_decorator
-def _actogram_plot(data,
+def plot_actogram(data,
                    animal_number=0,
                    LDR=-1,
                    ylim=[0, 120],
@@ -247,67 +173,7 @@ def _actogram_plot(data,
     return fig, ax[-1], params_dict
 
 
-def pad_first_last_days(data):
-    """
-    pad_first_last_days
-    Function to extend data by one day at the start and the end to help
-    with double plotting acotgram 
 
-    Parameters 
-    ----------
-    data : pd.Series
-        series with timeindex 
-
-    Returns 
-    -------
-    pd.Series
-        
-
-
-    :param data:
-    :return:
-    """
-    NUM_BINS = len(data)
-    days = len(data.columns)
-    # create a day of 0s and put at the start and the end
-    zeros = np.zeros(NUM_BINS)
-    data.insert(0, -1, zeros)
-    data.insert((days + 1), (days), zeros)
-    return data
-
-
-def convert_zeros(data, value):
-    """
-    Simple function to turn 0s into nans
-    to make plotting look better
-    as no line running along x axis
-    :param data:
-    :return:
-    """
-    data[data == 0] = value
-    return data
-
-
-def two_days(data, day_one_label):
-    """
-    gets column of day label and day
-    label plus one and returns the values
-    as an array
-    :param data:
-    :param day_one_label:
-    :return:
-    """
-    # get two days as a dataframe
-
-    # grab the values of the first two days
-    day_no = data.columns.get_loc(day_one_label)
-    day_one = data.iloc[:, day_no]
-    day_two = data.iloc[:, (day_no + 1)]
-
-    day_two.index = day_one.index + pd.Timedelta("1D")
-
-    two_days = pd.concat([day_one, day_two])
-    return two_days
 
 #     How is this going to work? Needs the full df
 #  so can take in the LDR data as well so
