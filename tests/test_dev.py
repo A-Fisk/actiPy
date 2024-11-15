@@ -16,7 +16,7 @@ freq = '10s'
 time_index = pd.date_range(start='2000-01-01', periods=8640 * days, freq=freq)
 
 # Create an empty DataFrame
-df = pd.DataFrame(index=time_index, columns=['value'])
+df = pd.DataFrame(index=time_index)
 
 # Function to assign values based on time of day
 def assign_values(hour, night, day):
@@ -27,7 +27,7 @@ def assign_values(hour, night, day):
 
 # create activity columns 
 act_night = [0,10]
-act_day = [50, 100]
+act_day = [10, 100]
 light_night = [0,1]
 light_day = [500,501]
 df['sensor1'] = df.index.hour.map(

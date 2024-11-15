@@ -2,17 +2,8 @@
 
 ## Current todo 
 ### test LDR values 
+- okay how do I actually test this? 
 
-- Current 
-- actogram_plot_all_cols
-    - goes through each column and calls 
-    - actogram_plot_from_df
-        - LDR remap
-        - prep. Split_entire_df (puts each day in a separate column by given period)
-            (have figured this out with EEG LL data?)
-            - applies split_dataframe_by_period
-            - splits from long to single day per col 
-        - \_actogram_plots 
 
 ## TODO
 - run on test data 
@@ -25,11 +16,15 @@
     - animal_number is \_actogram_plot etc
 - remove subplot kwarg from \_actogram_plot
 - move day_label_size to decorator 
+- test subplots generation 
+- remove other actogram_plot functions 
+- combine waveform into actogram_plot?
 
-### Questions
+## Questions
 - how deal with start time? 
 - how deal with missing LDR data? 
 
+# Planning 
 ## What do we want 
 
 - Actigraphy function
@@ -71,6 +66,11 @@ Look at other functions and figure out what is actually needed
 
 - General
 - Write list of all functions in each file
+
+# Resources 
+
+- Example of how to structure repo 
+https://github.com/navdeep-G/samplemod/tree/master 
 
 
 # Scripts 

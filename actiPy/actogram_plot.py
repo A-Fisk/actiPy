@@ -158,14 +158,14 @@ def _actogram_plot(data,
     # create new index and set data to it 
     extended_index = pd.date_range(
             start=extended_start, end=extended_end, freq=freq)
-    data_plot = data_plot.reindex(extended_index)
+    data_plot = data_plot.reindex(extended_index, fill_value=-100)
 
     # select just the days 
     days = data_plot.index.normalize().unique()
     
     # set all 0 values to be very low so not showing on y index starting at 0
-    for data in data_plot, data_light:
-        data[data == 0] = -100
+    for mask in data_plot, data_light:
+        mask[mask == 0] = -100
     
 
     # Create figure and subplot for every day
@@ -198,7 +198,7 @@ def _actogram_plot(data,
         # create masked data for fill between to avoid horizontal lines
         fill_data = curr_data.where(curr_data > 0)
         fill_ldr = curr_data_light.where(curr_data_light > 0)
-
+        
         # plot the data and LDR
         axis.fill_between(fill_ldr.index,
                           fill_ldr,
