@@ -40,7 +40,7 @@ def plot_actogram(data,
         new figure is passed
     subplot : matplotlib subplotspec object
         Subplotspec from larger figure on which to draw actogram. 
-        Must be created from GridSpec
+        Must be created from gridspec
         If not passed
         defaults to False, which requires a fig object to be provided
     ldralpha : float

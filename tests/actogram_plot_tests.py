@@ -150,5 +150,22 @@ class TestPlotActogram(unittest.TestCase):
             plt.Figure,
             "Subplots test failed to produce a valid figure.")
 
+    def test_plot_actogram_frequencies(self):
+        """Test that can handle different frequencies"""
+        data = self.test_data
+        data_mins = data.resample("1min").mean()
+        data_hours = data.resample("1h").mean()
+
+        for curr_data in data_mins, data_hours: 
+            fix, ax, params_dict = act.plot_actogram(
+                    curr_data, animal_number=0, LDR=-1) 
+
+            days_count = len(curr_data.index.normalize().unique()) + 1
+            self.assertEqual(
+                len(ax),
+                days_count,
+                "Number of axes does not match expected number of days.")
+
+
 if __name__ == "__main__":
     unittest.main()
