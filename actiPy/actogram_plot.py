@@ -4,22 +4,20 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gs
 import actiPy.preprocessing as prep
-from actiPy.plots import multiple_plot_kwarg_decorator, \
-    show_savefig_decorator, set_title_decorator
 
 
-@set_title_decorator
-@multiple_plot_kwarg_decorator
+@prep.plot_kwarg_decorator
 def plot_actogram(data,
-                   animal_number=0,
-                   LDR=-1,
-                   ylim=[0, 120],
-                   fig=False,
-                   subplot=False,
-                   ldralpha=0.5,
-                   start_day=0,
-                   day_label_size=5,
-                   **kwargs):
+                  animal_number=0,
+                  LDR=-1,
+                  ylim=[0, 120],
+                  fig=False,
+                  subplot=False,
+                  ldralpha=0.5,
+                  start_day=0,
+                  day_label_size=5,
+                  linewidth=0.5,
+                  **kwargs):
     """
     Plot an double plotted actogram of activity data over several days
     with background shading set by the lights
@@ -30,7 +28,7 @@ def plot_actogram(data,
         time-indexed pandas dataframe with activity values in
         columns for each subject and one column for the light levels.
         WRONG - currently expecting list of dataframes, one for each animal
-        and single column for each day 
+        and single column for each day
     animal_number : int
         which column number to plot, defaults to 0
     LDR : int
@@ -38,13 +36,13 @@ def plot_actogram(data,
     ylim : list of two ints
         set the minimum and maximum values to plot
     fig : matplotlib figure object
-        Figure to create plot on, if not passed defaults to false and 
-        new figure is passed 
-    subplot : matplotlib subplot object 
+        Figure to create plot on, if not passed defaults to false and
+        new figure is passed
+    subplot : matplotlib subplot object
         Subplot from larger figure on which to draw actogram. If not passed
-        defaults to False, which requires a fig object to be provided 
+        defaults to False, which requires a fig object to be provided
     ldralpha : float
-        Set the alpha level for how opaque to have the light shading, 
+        Set the alpha level for how opaque to have the light shading,
         defaults to 0.5
     startday : int
         sets which day to start as day 0 in plot, defaults to 0
@@ -60,10 +58,13 @@ def plot_actogram(data,
     dict
         dict containing plotting kwargs
     """
-    # grab line plot constant 
-    linewidth = 1
+    # grab line plot constant
     if "linewidth" in kwargs:
         linewidth = kwargs["linewidth"]
+
+    # check if data is empty 
+    if data.empty:
+        raise ValueError("Input Dataframe is empty. Cannot plot actogram")
 
     # select the correct data to plot for activity and light
     col_data = data.columns[animal_number]
@@ -71,37 +72,36 @@ def plot_actogram(data,
     data_plot = data.loc[:, col_data].copy()
     data_light = data.loc[:, ldr_col].copy()
 
-    # add entire day of 0s at start and end by extending index 
-    # grab values from current index 
+    # add entire day of 0s at start and end by extending index
+    # grab values from current index
     freq = pd.infer_freq(data_plot.index)
     start = data_plot.index.min()
     end = data_plot.index.max()
-    
+
     # Extend the range by 24 hours on either side
     extended_start = start - pd.Timedelta(hours=24)
     extended_end = end + pd.Timedelta(hours=24)
-    
-    # create new index and set data to it 
+
+    # create new index and set data to it
     extended_index = pd.date_range(
-            start=extended_start, end=extended_end, freq=freq)
+        start=extended_start, end=extended_end, freq=freq)
     data_plot = data_plot.reindex(extended_index, fill_value=-100)
 
-    # select just the days 
+    # select just the days
     days = data_plot.index.normalize().unique()
-    
+
     # set all 0 values to be very low so not showing on y index starting at 0
     for mask in data_plot, data_light:
         mask[mask == 0] = -100
-    
 
     # Create figure and subplot for every day
-    # create a new figure if not passed one when called 
+    # create a new figure if not passed one when called
     if not fig:
-        fig, ax = plt.subplots(nrows=(len(days)-1))
+        fig, ax = plt.subplots(nrows=(len(days) - 1))
 
-    # add subplots to figure if passed when called 
+    # add subplots to figure if passed when called
     else:
-        subplot_grid = gs.GridSpecFromSubplotSpec(nrows=(len(days)-1),
+        subplot_grid = gs.GridSpecFromSubplotSpec(nrows=(len(days) - 1),
                                                   ncols=1,
                                                   subplot_spec=subplot,
                                                   wspace=0,
@@ -112,7 +112,7 @@ def plot_actogram(data,
             fig.add_subplot(sub_ax)
             ax.append(sub_ax)
 
-    # select each day to then plot on separate axis 
+    # select each day to then plot on separate axis
     # plot two days on each row
     for day_label, axis in zip(days, ax):
         # get two days of data to plot
@@ -124,7 +124,7 @@ def plot_actogram(data,
         # create masked data for fill between to avoid horizontal lines
         fill_data = curr_data.where(curr_data > 0)
         fill_ldr = curr_data_light.where(curr_data_light > 0)
-        
+
         # plot the data and LDR
         axis.fill_between(fill_ldr.index,
                           fill_ldr,
@@ -169,24 +169,5 @@ def plot_actogram(data,
     # put axis as a controllable parameter
     if "timeaxis" in kwargs:
         params_dict['timeaxis'] = kwargs["timeaxis"]
-    
-    return fig, ax[-1], params_dict
 
-
-
-
-#     How is this going to work? Needs the full df
-#  so can take in the LDR data as well so
-# then add in a day of 0s at the start and the end
-# to make the first and the final day tidy
-# then plot two days at a time
-
-# Alternative is to take in the split list - and make sure t
-# that the LDR is also split
-# select based on the number in the list
-
-
-# Function to plot actogram
-# want to create split dataframe
-# then try imshow?
-# or plot.subplots?
+    return fig, ax, params_dict

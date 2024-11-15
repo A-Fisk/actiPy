@@ -1,8 +1,13 @@
 # Plan for actipy
 
+## Overall plans
+- Get individual functions working as wanted
+- combine files later 
+
 ## Current todo 
-### test LDR values 
-- okay how do I actually test this? 
+
+### test plot_actogram
+- what happens with animal numbers outside normal range? 
 
 
 ## TODO
@@ -19,6 +24,8 @@
 - test subplots generation 
 - remove other actogram_plot functions 
 - combine waveform into actogram_plot?
+- Combine decorators 
+- test different frequencies 
 
 ## Questions
 - how deal with start time? 

@@ -1,57 +1,138 @@
-import actiPy.actogram_plot as act
-import actiPy.preprocessing as prep
 import unittest
 import sys
 import os
 import pdb
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 sys.path.insert(
     0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
-# developing actogram scripting
+import actiPy.actogram_plot as act
 
 np.random.seed(42)
 
+class TestPlotActogram(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        """Set up test data for all tests."""
+        # Create time index for 10 days with 10-second intervals
+        days = 10
+        freq = "10s"
+        time_index = pd.date_range(
+            start="2000-01-01",
+            periods=8640 * days,
+            freq=freq)
 
-class tests_actogram_plot_support_functions(unittest.TestCase):
-    """
-    test for peripheral functions for actogram plot
-    """
+        # Create an empty DataFrame
+        df = pd.DataFrame(index=time_index)
 
-    def setUp(self):
-        # create two days of data
-        day_one = np.random.randint(0, 100, 100)
-        day_two = np.random.randint(0, 100, 100)
-        day_three = np.zeros(100)
-        data = pd.DataFrame({"1": day_one,
-                             "2": day_two,
-                             "3": day_three})
-        pdb.breakpoint()
-        self.test_data = data
+        # Function to assign values based on time of day
+        def assign_values(hour, night, day):
+            if 6 <= hour < 18:  # Between 06:00 and 18:00
+                return np.random.randint(night[0], night[1])
+            else:  # Between 18:00 and 06:00
+                return np.random.randint(day[0], day[1])
 
-    def test_pad_first_last_day(self):
-        data_padded = act.pad_first_last_days(self.test_data)
-        no_days = len(data_padded.columns)
-        self.assertEqual(no_days, 5)
+        # Create activity and light columns
+        act_night = [0, 10]
+        act_day = [10, 100]
+        light_night = [0, 1]
+        light_day = [500, 501]
+        df["sensor1"] = df.index.hour.map(
+            lambda x: assign_values(x, act_night, act_day)
+        )
+        df["sensor2"] = df.index.hour.map(
+            lambda x: assign_values(x, act_night, act_day)
+        )
+        df["lights"] = df.index.hour.map(
+            lambda x: assign_values(x, light_night, light_day)
+        )
+        cls.test_data = df
 
-    def test_convert_zeros(self):
-        # check whether any zeros are left
-        data_nozero = act.convert_zeros(self.test_data, 10)
-        check_zeros = ((data_nozero == 0).any()).any()
-        self.assertFalse(check_zeros)
+    def test_plot_actogram_basic(self):
+        """Test that plot_actogram runs without errors on valid input."""
+        data = self.test_data
+        fig, ax, params_dict = act.plot_actogram(data, animal_number=0, LDR=-1)
 
-    def test_get_two_days_as_array(self):
-        # get first two days and check length of df
-        # umm this function doesn't seem to exist?
-        # has been replaced with just two_days and does as just df?
-        length_day = len(self.test_data.iloc[:, 0])
-        length_two_days = length_day + len(self.test_data.iloc[:, 1])
-        day_one_label = self.test_data.columns[0]
-        two_days = act.get_two_days_as_array(self.test_data,
-                                             day_one_label)
-        self.assertEqual(len(two_days), length_two_days)
+        self.assertIsInstance(
+            fig,
+            plt.Figure,
+            "Returned fig is not a matplotlib Figure.")
+        self.assertIsInstance(
+            ax[-1], plt.Axes, "Returned ax is not a matplotlib Axes.")
+        self.assertIsInstance(
+            params_dict,
+            dict,
+            "Returned params_dict is not a dictionary.")
+
+    def test_plot_actogram_edge_cases(self):
+        """Test edge cases for the plot_actogram function."""
+        # Empty DataFrame
+        empty_data = pd.DataFrame(
+            columns=[
+                "sensor1",
+                "lights"],
+            index=pd.date_range(
+                "2000-01-01",
+                periods=0,
+                freq="10min"))
+        with self.assertRaises(ValueError):
+            act.plot_actogram(empty_data, animal_number=0, LDR=-1)
+
+        # Single-day DataFrame
+        # First day's worth of data (10s intervals)
+        start = self.test_data.index[0]
+        end = start + pd.Timedelta("24h")
+        single_day_data = self.test_data.loc[start:end]
+        fig, ax, params_dict = act.plot_actogram(
+            single_day_data, animal_number=0, LDR=-1)
+        self.assertIsInstance(
+            fig,
+            plt.Figure,
+            "Single-day test failed to produce a valid figure.")
+
+    def test_plot_actogram_invalid_params(self):
+        """Test invalid parameter inputs."""
+        data = self.test_data
+
+        with self.assertRaises(IndexError):
+            # Invalid animal_number
+            act.plot_actogram(data, animal_number=10, LDR=-1)
+
+        with self.assertRaises(IndexError):
+            # Invalid LDR
+            act.plot_actogram(data, animal_number=0, LDR=10)
+
+    def test_plot_actogram_output_labels(self):
+        """Test that the plot includes expected labels and titles."""
+        data = self.test_data
+        fig, ax, params_dict = act.plot_actogram(data, animal_number=0, LDR=-1)
+
+        # Check defaults in params_dict
+        self.assertEqual(
+            params_dict["xlabel"],
+            "Time",
+            "X-axis label mismatch.")
+        self.assertEqual(
+            params_dict["ylabel"],
+            "Days",
+            "Y-axis label mismatch.")
+        self.assertIn(
+            "Double Plotted Actogram",
+            params_dict["title"],
+            "Title mismatch.")
+
+    def test_plot_actogram_multiple_days(self):
+        """Test that plotting works for multiple days."""
+        data = self.test_data
+        fig, ax, params_dict = act.plot_actogram(data, animal_number=0, LDR=-1)
+        
+        days_count = len(data.index.normalize().unique()) + 1
+        self.assertEqual(
+            len(ax),
+            days_count,
+            "Number of axes does not match expected number of days.")
 
 
-if __name__ == "main":
+if __name__ == "__main__":
     unittest.main()

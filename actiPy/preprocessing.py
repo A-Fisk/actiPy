@@ -2,11 +2,85 @@
 import functools
 import pingouin as pg
 import pandas as pd
+import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
 idx = pd.IndexSlice
 # This script contains functions which are useful for preprocessing of
 # actigraphy data
 
 ###### Decorators first #####
+
+def plot_kwarg_decorator(func):
+    """
+    Universal decorator for plot formatting and configuration.
+    Handles xlabels, ylabels, titles, legends, time formatting, saving, and showing plots.
+    :param func: The plotting function to decorate.
+    :return: A decorated function that applies plot configurations.
+    """
+    def wrapper(data, *args, **kwargs):
+        # Call the original plotting function
+        fig, ax, params_dict = func(data, *args, **kwargs)
+        
+        final_ax = ax[-1]
+        # Configure x-axis time formatting
+        if "timeaxis" in params_dict and params_dict["timeaxis"]:
+            xfmt = kwargs.get("xfmt", mdates.DateFormatter("%H:%M"))
+            final_ax.xaxis.set_major_formatter(xfmt)
+            interval = kwargs.get("interval", params_dict.get("interval", 1))
+            final_ax.xaxis.set_major_locator(mdates.HourLocator(interval=interval))
+            fig.autofmt_xdate()
+
+        # Set x-axis label
+        xlabel = kwargs.get("xlabel", params_dict.get("xlabel", ""))
+        xlabelpos = kwargs.get("xlabelpos", (0.5, 0.05))
+        if xlabel:
+            fig.text(xlabelpos[0], xlabelpos[1], xlabel, ha="center", va="center")
+
+        # Set y-axis label
+        ylabel = kwargs.get("ylabel", params_dict.get("ylabel", ""))
+        ylabelpos = kwargs.get("ylabelpos", (0.02, 0.5))
+        if ylabel:
+            fig.text(
+                ylabelpos[0],
+                ylabelpos[1],
+                ylabel,
+                ha="center",
+                va="center",
+                rotation="vertical"
+            )
+
+        # Set plot title
+        title = kwargs.get("title", params_dict.get("title", ""))
+        if title:
+            fig.suptitle(title)
+
+        # Configure legend
+        if kwargs.get("legend", False):
+            legend_loc = kwargs.get("legend_loc", 1)
+            handles, labels = final_ax.get_legend_handles_labels()
+            fig.legend(handles, labels, loc=legend_loc)
+
+        # Configure x-axis limits
+        if "xlim" in kwargs or "xlim" in params_dict:
+            xlim = kwargs.get("xlim", params_dict.get("xlim", None))
+            if xlim:
+                final_ax.set_xlim(xlim)
+
+        # Configure figure size
+        if "figsize" in kwargs:
+            fig.set_size_inches(kwargs["figsize"])
+
+        # Save or show the plot
+        if kwargs.get("savefig", False):
+            fname = kwargs.get("fname", "plot.png")
+            plt.savefig(fname)
+            plt.close()
+        if kwargs.get("showfig", False):
+            plt.show()
+
+        return fig, ax, params_dict
+
+    return wrapper
 
 
 def _drop_level_decorator(func):
@@ -944,32 +1018,30 @@ def manual_resample_mean_groupby(curr_data,
     return resampled_data
 
 
-
-
-# function to set data by circadian period 
+# function to set data by circadian period
 def set_circadian_time(
         data,
         base_freq=4,
         period=24):
     """
     set_circadian_time
-    Reindexes current data to 24 hours CT instead of ZT by setting 
-    frequency to the ratio of 24hrs/new period 
+    Reindexes current data to 24 hours CT instead of ZT by setting
+    frequency to the ratio of 24hrs/new period
 
-    Parameters 
+    Parameters
     ----------
     data : pd.DataFrame
-        Dataframe with a pandas timeindex 
+        Dataframe with a pandas timeindex
     base_freq : int
-        sampling frequency of the data in seconds 
+        sampling frequency of the data in seconds
     period : float
-        new period to set the data to, in hours 
+        new period to set the data to, in hours
 
-    Returns 
+    Returns
     -------
     pd.DataFrame
-        original data but with new datetimeindex, starting at same time as 
-        original but now 24 hours is equal to the given period instead 
+        original data but with new datetimeindex, starting at same time as
+        original but now 24 hours is equal to the given period instead
         of real time.
 
 
@@ -996,4 +1068,3 @@ def set_circadian_time(
     )
 
     return reindexed_data
-
