@@ -38,8 +38,10 @@ def plot_actogram(data,
     fig : matplotlib figure object
         Figure to create plot on, if not passed defaults to false and
         new figure is passed
-    subplot : matplotlib subplot object
-        Subplot from larger figure on which to draw actogram. If not passed
+    subplot : matplotlib subplotspec object
+        Subplotspec from larger figure on which to draw actogram. 
+        Must be created from GridSpec
+        If not passed
         defaults to False, which requires a fig object to be provided
     ldralpha : float
         Set the alpha level for how opaque to have the light shading,

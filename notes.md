@@ -7,8 +7,9 @@
 ## Current todo 
 
 ### test plot_actogram
-- what happens with animal numbers outside normal range? 
-
+- index error, fine passes!
+- test subplots passed 
+- test different frequency
 
 ## TODO
 - run on test data 

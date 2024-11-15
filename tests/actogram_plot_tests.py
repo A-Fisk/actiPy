@@ -5,6 +5,7 @@ import pdb
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib.gridspec as gs 
 sys.path.insert(
     0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import actiPy.actogram_plot as act
@@ -65,8 +66,8 @@ class TestPlotActogram(unittest.TestCase):
             dict,
             "Returned params_dict is not a dictionary.")
 
-    def test_plot_actogram_edge_cases(self):
-        """Test edge cases for the plot_actogram function."""
+    def test_plot_actogram_empty_data(self):
+        """Test empty data"""
         # Empty DataFrame
         empty_data = pd.DataFrame(
             columns=[
@@ -79,6 +80,8 @@ class TestPlotActogram(unittest.TestCase):
         with self.assertRaises(ValueError):
             act.plot_actogram(empty_data, animal_number=0, LDR=-1)
 
+    def test_plot_actogram_single_day(self):
+        """Test for single day of data""" 
         # Single-day DataFrame
         # First day's worth of data (10s intervals)
         start = self.test_data.index[0]
@@ -133,6 +136,19 @@ class TestPlotActogram(unittest.TestCase):
             days_count,
             "Number of axes does not match expected number of days.")
 
+    def test_plot_actogram_subplotting(self):
+        """Test that can plot on subplot"""
+        data = self.test_data
+        fig = plt.figure()
+        ax = fig.add_gridspec(ncols=2, nrows=2)
+        fig, ax, params_dict = act.plot_actogram(
+                data, animal_number=0, LDR=-1, fig=fig, subplot=ax[0], 
+                title="subplots test")
+        
+        self.assertIsInstance(
+            fig,
+            plt.Figure,
+            "Subplots test failed to produce a valid figure.")
 
 if __name__ == "__main__":
     unittest.main()
