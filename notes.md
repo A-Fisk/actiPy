@@ -15,16 +15,18 @@ each timepoint
 - normalise to baseline
 - light phase activity
 - relative amplitude 
-- maaaybe mean? 
 - combine waveform into plotting script?
 - look through analysis to figure out what want to keep
 - write test for intradayvariability
+- write test for mean_activity
+- test mean activity not 24 hours 
 
 ### TODO later/maybe
 - Write documentation
 - switch to venv 
 - move day_label_size to decorator 
 - rename analysis? 
+- write what expected in docstring parameters 
 
 ## Questions
 - how deal with start time? 

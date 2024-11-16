@@ -13,7 +13,6 @@ sys.path.insert(
 np.random.seed(42)
 
 
-
 class TestActivityAnalaysis(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -51,7 +50,6 @@ class TestActivityAnalaysis(unittest.TestCase):
             lambda x: assign_values(x, light_night, light_day)
         )
         cls.test_data = df
-
 
     def test_calculate_mean_activity(self):
         """ Tests calculation of mean activity """

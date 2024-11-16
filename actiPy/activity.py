@@ -1,4 +1,4 @@
-import pdb 
+import pdb
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -14,36 +14,36 @@ def calculate_IV(data):
     Calculates intradayvariabaility according to the equation set out in
     van Someren et al 1996, a ratio of variance of the first derivative
     to overall variance of the data.
-    IV = n * sum{i=2 -> n}(x{i} - x{i-1})**2 
-                        / 
+    IV = n * sum{i=2 -> n}(x{i} - x{i-1})**2
+                        /
         (n-1) * sum{i=1 -> n}(x{i} - x{bar})**2
 
     Parameters
     ----------
-    data : array or dataframe 
-        Timeseries data to calculate.     
+    data : array or dataframe
+        Timeseries data to calculate.
 
-    Returns 
+    Returns
     -------
-    array or dataframe with calculated IV variables  
+    array or dataframe with calculated IV variables
     """
     # Convert to numpy array for convenience
     x = np.array(data)
     n = len(x)
-    
+
     if n < 2:
         raise ValueError(
-                "At least two data points are required to compute IV.")
-    
+            "At least two data points are required to compute IV.")
+
     # Calculate mean of x
     x_mean = np.mean(x)
-    
+
     # Calculate numerator
     numerator = n * np.sum((x[1:] - x[:-1])**2)
-    
+
     # Calculate denominator
     denominator = (n - 1) * np.sum((x - x_mean)**2)
-    
+
     # Compute IV
     IV = numerator / denominator
     return IV
@@ -53,60 +53,37 @@ def calculate_mean_activity(data):
     """
     Mean activity calculation
 
-    Calculates the mean activity at each time point for all days
+    Calculates the mean activity at each time point for all days.
 
-    Parameters 
+    Parameters
     ----------
     data : pd.DataFrame
+        A DataFrame with a datetime index and activity values for each time 
+        point.
 
     Returns
     -------
-    dataframe 
+    pd.DataFrame
+        A DataFrame containing the mean activity at each time point across all 
+        days.
     """
-    
+    if data.empty:
+        raise ValueError("The input DataFrame is empty.")
+
+    if not isinstance(data.index, pd.DatetimeIndex):
+        raise TypeError("The DataFrame must have a DatetimeIndex.")
+
+    # Group data by time of day (ignoring the date) and calculate the mean for
+    # each time point
+    mean_activity = data.groupby(data.index.time).mean()
+
+    # Convert the time index back to datetime for clarity
+    mean_activity.index = pd.to_datetime(
+        mean_activity.index, format="%H:%M:%S").time
+
+    return mean_activity
 
 
-# function for mean waveform
-
-
-def mean_activity(data,
-                  period="24H",
-                  *args,
-                  **kwargs):
-    """
-    Function to return average daily activity given a certain period
-    :param data:
-    :param period:
-    :param args:
-    :param kwargs:
-    :return:
-    """
-
-    # use split function to split into columns
-    # get the mean and sem of the df
-    # save as a new df
-    split_data_list = prep.split_entire_dataframe(data,
-                                                  period)
-    mean_df_list = []
-    for df in split_data_list:
-        mean_df = create_mean_df(df)
-        mean_df_list.append(mean_df)
-    return mean_df_list
-
-
-def create_mean_df(data):
-    """
-    Simple function to create new df out of mean and sem of input data
-    :param data:
-    :return:
-    """
-    mean = data.mean(axis=1)
-    sem = data.sem(axis=1)
-    mean_df = pd.DataFrame({"mean": mean,
-                            "sem": sem},
-                           index=data.index)
-    mean_df.name = data.name
-    return mean_df
 
 
 def _drop_ldr_decorator(func, ldr_col=-1):
@@ -208,9 +185,6 @@ def _longform_data(data, **kwargs):
     return plotting_data
 
 
-@set_title_decorator
-@show_savefig_decorator
-@multiple_plot_kwarg_decorator
 def _point_plot(data,
                 xlevel='',
                 ylevel='',
@@ -238,7 +212,6 @@ def _point_plot(data,
     return fig, ax, params_dict
 
 
-
 # TODO: Remove redundant by group function
 
 
@@ -255,8 +228,6 @@ def iv_by_group(data,
     return iv
 
 
-@set_title_decorator
-@multiple_plot_kwarg_decorator
 def catplot(data, **kwargs):
     """
     Function to flatten input data and plot with scatter and line plot
@@ -290,7 +261,6 @@ def catplot(data, **kwargs):
     return fig, ax, params_dict
 
 
-@prep._name_decorator
 def normalise_to_baseline(data,
                           level_conds: int = 0,
                           level_period: int = 1,

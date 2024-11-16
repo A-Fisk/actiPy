@@ -1,5 +1,6 @@
-import actiPy.actogram_plot as act
+import actiPy.activity as act
 import actiPy.preprocessing as prep
+import actiPy.actogram_plot as actp
 import unittest
 import sys
 import os
@@ -44,4 +45,4 @@ print(df.head())
 
 
 # okay so now ... test that?
-fig, ax, params_dict = act.plot_actogram(df, animal_number=10, showfig=True)
+mean_data = act.calculate_mean_activity(df)
