@@ -9,7 +9,6 @@ idx = pd.IndexSlice
 # fig and ax and params dict
 
 
-
 def draw_sighlines(yval: float,
                    sig_list: list,
                    label_loc_dict: dict,

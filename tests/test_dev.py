@@ -44,4 +44,4 @@ print(df.head())
 
 
 # okay so now ... test that?
-fig, ax, params_dict  = act.plot_actogram(df, animal_number=10, showfig=True)
+fig, ax, params_dict = act.plot_actogram(df, animal_number=10, showfig=True)

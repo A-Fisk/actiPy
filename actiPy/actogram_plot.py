@@ -39,7 +39,7 @@ def plot_actogram(data,
         Figure to create plot on, if not passed defaults to false and
         new figure is passed
     subplot : matplotlib subplotspec object
-        Subplotspec from larger figure on which to draw actogram. 
+        Subplotspec from larger figure on which to draw actogram.
         Must be created from gridspec
         If not passed
         defaults to False, which requires a fig object to be provided
@@ -64,7 +64,7 @@ def plot_actogram(data,
     if "linewidth" in kwargs:
         linewidth = kwargs["linewidth"]
 
-    # check if data is empty 
+    # check if data is empty
     if data.empty:
         raise ValueError("Input Dataframe is empty. Cannot plot actogram")
 

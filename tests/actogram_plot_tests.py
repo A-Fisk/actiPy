@@ -1,3 +1,4 @@
+import actiPy.actogram_plot as act
 import unittest
 import sys
 import os
@@ -5,12 +6,12 @@ import pdb
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import matplotlib.gridspec as gs 
+import matplotlib.gridspec as gs
 sys.path.insert(
     0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-import actiPy.actogram_plot as act
 
 np.random.seed(42)
+
 
 class TestPlotActogram(unittest.TestCase):
     @classmethod
@@ -81,7 +82,7 @@ class TestPlotActogram(unittest.TestCase):
             act.plot_actogram(empty_data, subject_no=0, LDR=-1)
 
     def test_plot_actogram_single_day(self):
-        """Test for single day of data""" 
+        """Test for single day of data"""
         # Single-day DataFrame
         # First day's worth of data (10s intervals)
         start = self.test_data.index[0]
@@ -129,7 +130,7 @@ class TestPlotActogram(unittest.TestCase):
         """Test that plotting works for multiple days."""
         data = self.test_data
         fig, ax, params_dict = act.plot_actogram(data, subject_no=0, LDR=-1)
-        
+
         days_count = len(data.index.normalize().unique()) + 1
         self.assertEqual(
             len(ax),
@@ -142,9 +143,9 @@ class TestPlotActogram(unittest.TestCase):
         fig = plt.figure()
         ax = fig.add_gridspec(ncols=2, nrows=2)
         fig, ax, params_dict = act.plot_actogram(
-                data, subject_no=0, LDR=-1, fig=fig, subplot=ax[0], 
-                title="subplots test")
-        
+            data, subject_no=0, LDR=-1, fig=fig, subplot=ax[0],
+            title="subplots test")
+
         self.assertIsInstance(
             fig,
             plt.Figure,
@@ -156,9 +157,9 @@ class TestPlotActogram(unittest.TestCase):
         data_mins = data.resample("1min").mean()
         data_hours = data.resample("1h").mean()
 
-        for curr_data in data_mins, data_hours: 
+        for curr_data in data_mins, data_hours:
             fix, ax, params_dict = act.plot_actogram(
-                    curr_data, subject_no=0, LDR=-1) 
+                curr_data, subject_no=0, LDR=-1)
 
             days_count = len(curr_data.index.normalize().unique()) + 1
             self.assertEqual(

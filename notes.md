@@ -6,16 +6,33 @@
 
 ## Current todo 
 
-### test plot_actogram
+### Rewrite intradayvariability
+- what?
+- does van someren equation make sense
+- does my equation calculate that
+- is this what I actually want? 
+
+- old notebook does not have anything on IV
+- so if wanted to look at variance of data point to point how would I do that? 
+
+- is fine variance denominator usually n so being in numerator makes sense
+
 
 ## TODO
+- intradayvariability
+- normalise to baseline
+- light phase activity
+- relative amplitude 
+- maaaybe mean? 
 - combine waveform into plotting script?
 - look through analysis to figure out what want to keep
+- write test for intradayvariability
 
 ### TODO later/maybe
 - Write documentation
 - switch to venv 
 - move day_label_size to decorator 
+- rename analysis? 
 
 ## Questions
 - how deal with start time? 

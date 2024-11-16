@@ -1,15 +1,56 @@
-# script for analysis of activity data
-
-# TODO: Figure out how to import docstrings
-
-from actiPy.plots import show_savefig_decorator, \
-    multiple_plot_kwarg_decorator, set_title_decorator
-import actiPy.preprocessing as prep
-import seaborn as sns
-import matplotlib.pyplot as plt
+import pdb 
 import numpy as np
 import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+import actiPy.preprocessing as prep
 idx = pd.IndexSlice
+
+
+def calculate_IV(data):
+    """
+    Intradavariability calculation.
+
+    Calculates intradayvariabaility according to the equation set out in
+    van Someren et al 1996, a ratio of variance of the first derivative
+    to overall variance of the data.
+    IV = n * sum{i=2 -> n}(x{i} - x{i-1})**2 
+                        / 
+        (n-1) * sum{i=1 -> n}(x{i} - x{bar})**2
+
+    Parameters
+    ----------
+    data : array or dataframe 
+        Timeseries data to calculate.     
+
+    Returns 
+    -------
+    array or dataframe with calculated IV variables  
+    """
+    # Convert to numpy array for convenience
+    x = np.array(data)
+    n = len(x)
+    
+    if n < 2:
+        raise ValueError(
+                "At least two data points are required to compute IV.")
+    
+    # Calculate mean of x
+    x_mean = np.mean(x)
+    
+    # Calculate numerator
+    numerator = n * np.sum((x[1:] - x[:-1])**2)
+    
+    # Calculate denominator
+    denominator = (n - 1) * np.sum((x - x_mean)**2)
+    
+    # Compute IV
+    IV = numerator / denominator
+    return IV
+
+
+
+
 
 # function for mean waveform
 
@@ -183,30 +224,6 @@ def _point_plot(data,
     return fig, ax, params_dict
 
 
-# IV calculation
-@prep._groupby_decorator
-def intradayvar(data):
-    """
-    Calculates Intradayvariabaility
-    :param data:
-    :return:
-    """
-
-    # variance of the first derivative
-    # calculate the first derivative
-    shift = data.shift(-1)
-    first_derivative = shift - data
-    first_der_mean = (first_derivative ** 2).mean()
-
-    # total variance
-    total_var = data.var()
-
-    # ratio of the two
-    iv = first_der_mean / total_var
-
-    iv.name = "Intraday Variability"
-
-    return iv
 
 # TODO: Remove redundant by group function
 

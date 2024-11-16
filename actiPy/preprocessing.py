@@ -10,6 +10,7 @@ idx = pd.IndexSlice
 
 ###### Decorators first #####
 
+
 def plot_kwarg_decorator(func):
     """
     Universal decorator for plot formatting and configuration.
@@ -20,21 +21,27 @@ def plot_kwarg_decorator(func):
     def wrapper(data, *args, **kwargs):
         # Call the original plotting function
         fig, ax, params_dict = func(data, *args, **kwargs)
-        
+
         final_ax = ax[-1]
         # Configure x-axis time formatting
         if "timeaxis" in params_dict and params_dict["timeaxis"]:
             xfmt = kwargs.get("xfmt", mdates.DateFormatter("%H:%M"))
             final_ax.xaxis.set_major_formatter(xfmt)
             interval = kwargs.get("interval", params_dict.get("interval", 1))
-            final_ax.xaxis.set_major_locator(mdates.HourLocator(interval=interval))
+            final_ax.xaxis.set_major_locator(
+                mdates.HourLocator(interval=interval))
             fig.autofmt_xdate()
 
         # Set x-axis label
         xlabel = kwargs.get("xlabel", params_dict.get("xlabel", ""))
         xlabelpos = kwargs.get("xlabelpos", (0.5, 0.05))
         if xlabel:
-            fig.text(xlabelpos[0], xlabelpos[1], xlabel, ha="center", va="center")
+            fig.text(
+                xlabelpos[0],
+                xlabelpos[1],
+                xlabel,
+                ha="center",
+                va="center")
 
         # Set y-axis label
         ylabel = kwargs.get("ylabel", params_dict.get("ylabel", ""))
