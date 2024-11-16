@@ -1,7 +1,7 @@
 # makefile 
 
 .PHONY: all
-all: format
+all: format test
 
 
 .PHONY: format
@@ -14,3 +14,5 @@ format:
 test:
 	@echo "running tests"
 	python -m unittest tests/actogram_plot_tests.py
+
+
