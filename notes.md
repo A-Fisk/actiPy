@@ -6,20 +6,12 @@
 
 ## Current todo 
 
-### Rewrite intradayvariability
-- what?
-- does van someren equation make sense
-- does my equation calculate that
-- is this what I actually want? 
-
-- old notebook does not have anything on IV
-- so if wanted to look at variance of data point to point how would I do that? 
-
-- is fine variance denominator usually n so being in numerator makes sense
+### rewrite mean activity 
+- want to take length of n and calculate the mean activity at 
+each timepoint 
 
 
 ## TODO
-- intradayvariability
 - normalise to baseline
 - light phase activity
 - relative amplitude 

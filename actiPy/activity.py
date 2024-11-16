@@ -49,7 +49,21 @@ def calculate_IV(data):
     return IV
 
 
+def calculate_mean_activity(data):
+    """
+    Mean activity calculation
 
+    Calculates the mean activity at each time point for all days
+
+    Parameters 
+    ----------
+    data : pd.DataFrame
+
+    Returns
+    -------
+    dataframe 
+    """
+    
 
 
 # function for mean waveform
