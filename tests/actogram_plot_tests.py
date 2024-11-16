@@ -53,7 +53,7 @@ class TestPlotActogram(unittest.TestCase):
     def test_plot_actogram_basic(self):
         """Test that plot_actogram runs without errors on valid input."""
         data = self.test_data
-        fig, ax, params_dict = act.plot_actogram(data, animal_number=0, LDR=-1)
+        fig, ax, params_dict = act.plot_actogram(data, subject_no=0, LDR=-1)
 
         self.assertIsInstance(
             fig,
@@ -78,7 +78,7 @@ class TestPlotActogram(unittest.TestCase):
                 periods=0,
                 freq="10min"))
         with self.assertRaises(ValueError):
-            act.plot_actogram(empty_data, animal_number=0, LDR=-1)
+            act.plot_actogram(empty_data, subject_no=0, LDR=-1)
 
     def test_plot_actogram_single_day(self):
         """Test for single day of data""" 
@@ -88,7 +88,7 @@ class TestPlotActogram(unittest.TestCase):
         end = start + pd.Timedelta("24h")
         single_day_data = self.test_data.loc[start:end]
         fig, ax, params_dict = act.plot_actogram(
-            single_day_data, animal_number=0, LDR=-1)
+            single_day_data, subject_no=0, LDR=-1)
         self.assertIsInstance(
             fig,
             plt.Figure,
@@ -99,17 +99,17 @@ class TestPlotActogram(unittest.TestCase):
         data = self.test_data
 
         with self.assertRaises(IndexError):
-            # Invalid animal_number
-            act.plot_actogram(data, animal_number=10, LDR=-1)
+            # Invalid subject_no
+            act.plot_actogram(data, subject_no=10, LDR=-1)
 
         with self.assertRaises(IndexError):
             # Invalid LDR
-            act.plot_actogram(data, animal_number=0, LDR=10)
+            act.plot_actogram(data, subject_no=0, LDR=10)
 
     def test_plot_actogram_output_labels(self):
         """Test that the plot includes expected labels and titles."""
         data = self.test_data
-        fig, ax, params_dict = act.plot_actogram(data, animal_number=0, LDR=-1)
+        fig, ax, params_dict = act.plot_actogram(data, subject_no=0, LDR=-1)
 
         # Check defaults in params_dict
         self.assertEqual(
@@ -128,7 +128,7 @@ class TestPlotActogram(unittest.TestCase):
     def test_plot_actogram_multiple_days(self):
         """Test that plotting works for multiple days."""
         data = self.test_data
-        fig, ax, params_dict = act.plot_actogram(data, animal_number=0, LDR=-1)
+        fig, ax, params_dict = act.plot_actogram(data, subject_no=0, LDR=-1)
         
         days_count = len(data.index.normalize().unique()) + 1
         self.assertEqual(
@@ -142,7 +142,7 @@ class TestPlotActogram(unittest.TestCase):
         fig = plt.figure()
         ax = fig.add_gridspec(ncols=2, nrows=2)
         fig, ax, params_dict = act.plot_actogram(
-                data, animal_number=0, LDR=-1, fig=fig, subplot=ax[0], 
+                data, subject_no=0, LDR=-1, fig=fig, subplot=ax[0], 
                 title="subplots test")
         
         self.assertIsInstance(
@@ -158,7 +158,7 @@ class TestPlotActogram(unittest.TestCase):
 
         for curr_data in data_mins, data_hours: 
             fix, ax, params_dict = act.plot_actogram(
-                    curr_data, animal_number=0, LDR=-1) 
+                    curr_data, subject_no=0, LDR=-1) 
 
             days_count = len(curr_data.index.normalize().unique()) + 1
             self.assertEqual(

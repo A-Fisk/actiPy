@@ -8,7 +8,7 @@ import actiPy.preprocessing as prep
 
 @prep.plot_kwarg_decorator
 def plot_actogram(data,
-                  animal_number=0,
+                  subject_no=0,
                   LDR=-1,
                   ylim=[0, 120],
                   fig=False,
@@ -29,7 +29,7 @@ def plot_actogram(data,
         columns for each subject and one column for the light levels.
         WRONG - currently expecting list of dataframes, one for each animal
         and single column for each day
-    animal_number : int
+    subject_no : int
         which column number to plot, defaults to 0
     LDR : int
         which columns contains light information, defaults to -1
@@ -69,7 +69,7 @@ def plot_actogram(data,
         raise ValueError("Input Dataframe is empty. Cannot plot actogram")
 
     # select the correct data to plot for activity and light
-    col_data = data.columns[animal_number]
+    col_data = data.columns[subject_no]
     ldr_col = data.columns[LDR]
     data_plot = data.loc[:, col_data].copy()
     data_light = data.loc[:, ldr_col].copy()

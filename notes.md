@@ -9,16 +9,13 @@
 ### test plot_actogram
 
 ## TODO
-- remove bash scripts to create env <- put in makefile
-- rename variables to remove animal - put in subject instead 
-    - animal_number is \_actogram_plot etc
-- move day_label_size to decorator 
 - combine waveform into plotting script?
 - look through analysis to figure out what want to keep
 
-### TODO later?
+### TODO later/maybe
 - Write documentation
 - switch to venv 
+- move day_label_size to decorator 
 
 ## Questions
 - how deal with start time? 
