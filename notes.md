@@ -20,13 +20,10 @@
 - remove bash scripts to create env <- put in makefile
 - rename variables to remove animal - put in subject instead 
     - animal_number is \_actogram_plot etc
-- remove subplot kwarg from \_actogram_plot
 - move day_label_size to decorator 
-- test subplots generation 
-- remove other actogram_plot functions 
-- combine waveform into actogram_plot?
-- Combine decorators 
-- test different frequencies 
+- combine waveform into plotting script?
+- look through analysis to figure out what want to keep
+
 
 ## Questions
 - how deal with start time? 
