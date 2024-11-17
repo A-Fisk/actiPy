@@ -14,9 +14,6 @@
 - light phase activity
 - relative amplitude 
 - combine waveform into plotting script?
-- look through analysis to figure out what want to keep
-- write test for intradayvariability
-- write test for mean_activity
 - test mean activity not 24 hours 
 
 ### TODO later/maybe
@@ -29,6 +26,8 @@
 ## Questions
 - how deal with start time? 
 - how deal with missing LDR data? 
+
+
 
 # Planning 
 ## What do we want 
