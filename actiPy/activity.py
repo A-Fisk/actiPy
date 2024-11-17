@@ -58,13 +58,13 @@ def calculate_mean_activity(data):
     Parameters
     ----------
     data : pd.DataFrame
-        A DataFrame with a datetime index and activity values for each time 
+        A DataFrame with a datetime index and activity values for each time
         point.
 
     Returns
     -------
     pd.DataFrame
-        A DataFrame containing the mean activity at each time point across all 
+        A DataFrame containing the mean activity at each time point across all
         days.
     """
     if data.empty:
@@ -82,8 +82,6 @@ def calculate_mean_activity(data):
         mean_activity.index, format="%H:%M:%S").time
 
     return mean_activity
-
-
 
 
 def _drop_ldr_decorator(func, ldr_col=-1):

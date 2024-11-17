@@ -1,4 +1,3 @@
-import actiPy.actogram_plot as act
 import unittest
 import sys
 import os
@@ -9,6 +8,8 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gs
 sys.path.insert(
     0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+if True:  # noqa E402
+    import actiPy.actogram_plot as act
 
 np.random.seed(42)
 

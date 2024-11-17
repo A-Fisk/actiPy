@@ -1,15 +1,16 @@
-import actiPy.activity as act
-import actiPy.preprocessing as prep
-import actiPy.actogram_plot as actp
 import unittest
 import sys
 import os
 import pdb
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 sys.path.insert(
     0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
+if True:  # noqa E402
+    import actiPy.activity as act
+    import actiPy.preprocessing as prep
+    import actiPy.actogram_plot as actp
 
 # Create time index for 10 days with 10-second intervals
 days = 10
@@ -46,3 +47,8 @@ print(df.head())
 
 # okay so now ... test that?
 mean_data = act.calculate_mean_activity(df)
+
+# look at?
+fig, ax = plt.subplots()
+ax.plot(mean_data)
+fig.show()

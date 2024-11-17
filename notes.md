@@ -31,6 +31,7 @@ each timepoint
 ## Questions
 - how deal with start time? 
 - how deal with missing LDR data? 
+- does autopep8 break import order?
 
 # Planning 
 ## What do we want 

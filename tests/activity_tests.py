@@ -1,4 +1,3 @@
-import actiPy.activity as act
 import unittest
 import sys
 import os
@@ -7,13 +6,17 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gs
+from datetime import datetime
 sys.path.insert(
     0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+if True:  # noqa E402
+    import actiPy.activity as act
+
 
 np.random.seed(42)
 
 
-class TestActivityAnalaysis(unittest.TestCase):
+class TestCalculateMeanActivity(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """Set up test data for all tests."""
@@ -52,4 +55,27 @@ class TestActivityAnalaysis(unittest.TestCase):
         cls.test_data = df
 
     def test_calculate_mean_activity(self):
-        """ Tests calculation of mean activity """
+        """Test mean activity calculation."""
+        result = calculate_mean_activity(self.test_data)
+        self.assertIsInstance(
+            result,
+            pd.DataFrame,
+            "The result should be a DataFrame.")
+        self.assertFalse(result.empty, "The result should not be empty.")
+        self.assertTrue(
+                all(isinstance(i, datetime.time) for i in result.index),
+                "The index of the result should be times (ignoring dates).")
+
+    def test_invalid_index(self):
+        """Test the function with a non-DatetimeIndex."""
+        invalid_data = pd.DataFrame({'activity': [1, 2, 3]}, index=[1, 2, 3])
+        with self.assertRaises(TypeError):
+            calculate_mean_activity(invalid_data)
+
+    def test_empty_dataframe(self):
+        """Test the function with an empty DataFrame."""
+        empty_data = pd.DataFrame({'activity': []}, index=pd.DatetimeIndex([]))
+        with self.assertRaises(ValueError):
+            calculate_mean_activity(empty_data)
+
+
