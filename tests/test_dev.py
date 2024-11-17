@@ -45,10 +45,5 @@ df['lights'] = df.index.hour.map(
 print(df.head())
 
 
-# okay so now ... test that?
-mean_data = act.calculate_mean_activity(df)
-
-# look at?
-fig, ax = plt.subplots()
-ax.plot(mean_data)
-fig.show()
+data = [5] * 100  # All values are the same
+result = act.calculate_IV(data)

@@ -6,9 +6,7 @@
 
 ## Current todo 
 
-### rewrite mean activity 
-- want to take length of n and calculate the mean activity at 
-each timepoint 
+### 
 
 
 ## TODO
@@ -31,7 +29,6 @@ each timepoint
 ## Questions
 - how deal with start time? 
 - how deal with missing LDR data? 
-- does autopep8 break import order?
 
 # Planning 
 ## What do we want 
