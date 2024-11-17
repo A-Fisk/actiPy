@@ -122,6 +122,14 @@ def normalise_to_baseline(data, baseline_data):
 
     return norm_series
 
+def light_phase_activity(data, light_col, light_val):
+    """
+    Light_phase_activity
+    Calculates the amount of activity occuring in the light and dark 
+
+    """
+
+
 
 # TODO test for count per day
 def light_phase_activity_nfreerun(test_df,

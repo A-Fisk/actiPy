@@ -6,14 +6,12 @@
 
 ## Current todo 
 
-### normalise to baseline
-- testing 
-- identical data causing divide by zero? 
+### light_phase_activity
+- do we want each day? or summary of total? 
 
 
 
 ## TODO
-- normalise to baseline
 - light phase activity
 - relative amplitude 
 - combine waveform into plotting script?
@@ -21,6 +19,7 @@
 - testing normalise activity move baseline/test to setup function/
 class attribute 
 - write decorator to check if dataframes are empty 
+- invert light values actogram so shades dark not light
 
 
 ### TODO later/maybe

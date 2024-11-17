@@ -1,5 +1,3 @@
-
-
 from functools import wraps 
 import pingouin as pg
 import pandas as pd
@@ -199,8 +197,6 @@ def sep_by_index_decorator(func):
     def wrapper(data, level=0, **kwargs):
 
         vals = data.index.get_level_values(level).unique()
-        idx = pd.IndexSlice
-        list_by_vals = []
         for val in vals:
             temp_df = data.loc[idx[val, :], :]
             temp_df.reset_index(0, drop=True, inplace=True)
