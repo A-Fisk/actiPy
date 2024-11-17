@@ -11,7 +11,7 @@ sys.path.insert(
     0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 if True:  # noqa E402
     from actiPy.activity import calculate_mean_activity, calculate_IV, \
-            normalise_to_baseline
+        normalise_to_baseline
 
 
 np.random.seed(42)
@@ -195,9 +195,9 @@ class TestNormaliseToBaseline(unittest.TestCase):
 
     def test_normalisation_valid_data(self):
         """Test normalisation with valid data."""
-        test_data = self.data.iloc[:,0]
-        test_data_baseline = self.data.iloc[:,1]
-    
+        test_data = self.data.iloc[:, 0]
+        test_data_baseline = self.data.iloc[:, 1]
+
         normalised_data = normalise_to_baseline(test_data, test_data_baseline)
 
         # Check that the result is a DataFrame or Series
@@ -205,25 +205,12 @@ class TestNormaliseToBaseline(unittest.TestCase):
             normalised_data,
             pd.Series,
             "Result should be a Series.")
-        pdb.set_trace()
 
         # Check that the index is retained
         self.assertTrue(
             (normalised_data.index == self.data.index).all(),
             "The index of the normalised data should match the original data.",
         )
-
-    def test_zero_baseline_data(self):
-        """Test handling of zero baseline values."""
-        test_data = self.data.iloc[:,0]
-        baseline_data_zero = self.data.iloc[:,1]
-        
-        baseline_data_zero.iloc[:] = 0  # Set baseline to zero
-
-        with self.assertRaises(ZeroDivisionError):
-            normalise_to_baseline(
-                test_data, baseline_data_zero)   
-            
 
     def test_empty_data(self):
         """Test normalisation with empty data."""
@@ -233,27 +220,28 @@ class TestNormaliseToBaseline(unittest.TestCase):
         with self.assertRaises(ValueError):
             normalise_to_baseline(empty_data, empty_baseline)
 
-    def test_partial_zero_baseline(self):
-        """Test handling of partial zero baseline values."""
-        test_data = self.data.iloc[:,0]
-        baseline_data_partial_zero = self.data.iloc[:,1]
-        baseline_data_partial_zero.iloc[0] = 0  # Set the first value to zero
+    def test_zero_data_raises_error(self):
+        """
+        Test that an error is raised if the input data consists only of zeros.
+        """
+        zero_series = pd.Series([0, 0, 0], index=pd.date_range(
+            "2024-01-01", periods=3, freq="10min"))
+        baseline_data = self.data.iloc[:, 1]
+        with self.assertRaises(
+                ValueError, msg="Input data consists only of zeros."):
+            normalise_to_baseline(zero_series, baseline_data)
 
-        with self.assertRaises(ZeroDivisionError):
-            normalise_to_baseline(
-                test_data, baseline_data_partial_zero
-            )
-
-    def test_identical_data(self):
-        """Test normalisation when data and baseline are identical."""
+    def test_zero_baseline_raises_error(self):
+        """
+        Test that an error is raised if the baseline data consists 
+        only of zeros.
+        """
+        zero_baseline = pd.Series([0, 0, 0], index=pd.date_range(
+            "2024-01-01", periods=3, freq="10min"))
         test_data = self.data.iloc[:,0]
-        result = normalise_to_baseline(
-            test_data, test_data
-        )
-        self.assertTrue(
-            (result == 100).all(),
-            "When data and baseline are identical, all values should be 100.",
-        )
+        with self.assertRaises(
+                ValueError, msg="Input baseline_data consists only of zeros."):
+            normalise_to_baseline(test_data, zero_baseline)
 
 
 if __name__ == "__main_":

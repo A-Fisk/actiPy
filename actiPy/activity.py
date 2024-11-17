@@ -7,6 +7,7 @@ import actiPy.preprocessing as prep
 idx = pd.IndexSlice
 
 
+@prep.validate_non_zero
 def calculate_IV(data):
     """
     Intradavariability calculation.
@@ -52,6 +53,7 @@ def calculate_IV(data):
     return IV
 
 
+@prep.validate_non_zero
 def calculate_mean_activity(data):
     """
     Mean activity calculation
@@ -87,6 +89,7 @@ def calculate_mean_activity(data):
     return mean_activity
 
 
+@prep.validate_non_zero
 def normalise_to_baseline(data, baseline_data):
     """
     normalise_to_baseline
@@ -115,7 +118,7 @@ def normalise_to_baseline(data, baseline_data):
 
     # calculate normalised values
     normalised = (data.values / baseline_mean_values) * 100
-    norm_series = pd.Series(normalised, index=time_index, name=data.name)
+    norm_series = pd.Series(normalised, index=data.index, name=data.name)
 
     return norm_series
 

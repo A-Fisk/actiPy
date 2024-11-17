@@ -7,9 +7,8 @@
 ## Current todo 
 
 ### normalise to baseline
-- testing
-- index not the same as original test fail ? 
-- coming back as just times not dates? - hmmm
+- testing 
+- identical data causing divide by zero? 
 
 
 
@@ -21,6 +20,8 @@
 - test mean activity not 24 hours 
 - testing normalise activity move baseline/test to setup function/
 class attribute 
+- write decorator to check if dataframes are empty 
+
 
 ### TODO later/maybe
 - Write documentation
