@@ -44,6 +44,9 @@ def calculate_IV(data):
     # Calculate denominator
     denominator = (n - 1) * np.sum((x - x_mean)**2)
 
+    if numerator == 0 and denominator == 0:
+        return 0
+
     # Compute IV
     IV = numerator / denominator
     return IV
@@ -84,40 +87,37 @@ def calculate_mean_activity(data):
     return mean_activity
 
 
-
-
-
-
-def normalise_to_baseline(data,
-                          level_conds: int = 0,
-                          level_period: int = 1,
-                          baseline_level: int = 0,
-                          disrupted_level: int = 1,
-                          ldr_col: int = -1):
+def normalise_to_baseline(data, baseline_data):
     """
-    Normalises each level of level_conds to it's own baseline
-    :param data:
-    :param level_conds:
-    :param level_period:
-    :return:
+    normalise_to_baseline
+    Takes two dataframes and expresses the data as a percentage of the
+    baseline_data.
+
+    Parameters
+    ----------
+    data : pd.Series
+        Timeindexed data to be normalised
+    baseline_data : pd.Series
+        Timeindexed data to be normalised against
+
+    returns
+    -------
+    dataframe
+        Timeindexed dataframe with original data as a percentage of
+        baseline_data
     """
-    idx = pd.IndexSlice
-    vals = data.index.get_level_values(level_conds).unique()
-    cond_dict = {}
-    for val in vals:
-        temp_df = data.loc[val]
-        temp_norm = (temp_df / temp_df.iloc[baseline_level]) * 100
-        cond_dict[val] = temp_norm
-    norm_df = pd.concat(cond_dict)
+    # calculate mean activity for baseline
+    baseline_mean = calculate_mean_activity(baseline_data)
 
-    cond_vals = data.index.get_level_values(level_period).unique()
-    disrupted_with_light = norm_df.loc[idx[:,
-                                           cond_vals[disrupted_level], :], :]
-    disrupted_nolight = disrupted_with_light.iloc[:, :ldr_col]
+    # map the mean values to each timepoint
+    time_index = data.index.time
+    baseline_mean_values = baseline_mean.loc[time_index].values
 
-    disrupted_nolight.index.rename("Condition", level=0, inplace=True)
+    # calculate normalised values
+    normalised = (data.values / baseline_mean_values) * 100
+    norm_series = pd.Series(normalised, index=time_index, name=data.name)
 
-    return disrupted_nolight
+    return norm_series
 
 
 # TODO test for count per day

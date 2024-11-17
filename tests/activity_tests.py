@@ -10,7 +10,8 @@ import datetime
 sys.path.insert(
     0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 if True:  # noqa E402
-    from actiPy.activity import calculate_mean_activity, calculate_IV
+    from actiPy.activity import calculate_mean_activity, calculate_IV, \
+            normalise_to_baseline
 
 
 np.random.seed(42)
@@ -183,6 +184,76 @@ class TestCalculateIV(unittest.TestCase):
             iv_lights,
             0,
             "IV result for lights should be positive.")
+
+
+class TestNormaliseToBaseline(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        """Set up test data for all tests."""
+        # Generate test data for multiple days
+        cls.data = generate_test_data(days=10, freq="10s")
+
+    def test_normalisation_valid_data(self):
+        """Test normalisation with valid data."""
+        test_data = self.data.iloc[:,0]
+        test_data_baseline = self.data.iloc[:,1]
+    
+        normalised_data = normalise_to_baseline(test_data, test_data_baseline)
+
+        # Check that the result is a DataFrame or Series
+        self.assertIsInstance(
+            normalised_data,
+            pd.Series,
+            "Result should be a Series.")
+        pdb.set_trace()
+
+        # Check that the index is retained
+        self.assertTrue(
+            (normalised_data.index == self.data.index).all(),
+            "The index of the normalised data should match the original data.",
+        )
+
+    def test_zero_baseline_data(self):
+        """Test handling of zero baseline values."""
+        test_data = self.data.iloc[:,0]
+        baseline_data_zero = self.data.iloc[:,1]
+        
+        baseline_data_zero.iloc[:] = 0  # Set baseline to zero
+
+        with self.assertRaises(ZeroDivisionError):
+            normalise_to_baseline(
+                test_data, baseline_data_zero)   
+            
+
+    def test_empty_data(self):
+        """Test normalisation with empty data."""
+        empty_data = pd.Series(dtype=float, name="sensor1")
+        empty_baseline = pd.Series(dtype=float, name="sensor1")
+
+        with self.assertRaises(ValueError):
+            normalise_to_baseline(empty_data, empty_baseline)
+
+    def test_partial_zero_baseline(self):
+        """Test handling of partial zero baseline values."""
+        test_data = self.data.iloc[:,0]
+        baseline_data_partial_zero = self.data.iloc[:,1]
+        baseline_data_partial_zero.iloc[0] = 0  # Set the first value to zero
+
+        with self.assertRaises(ZeroDivisionError):
+            normalise_to_baseline(
+                test_data, baseline_data_partial_zero
+            )
+
+    def test_identical_data(self):
+        """Test normalisation when data and baseline are identical."""
+        test_data = self.data.iloc[:,0]
+        result = normalise_to_baseline(
+            test_data, test_data
+        )
+        self.assertTrue(
+            (result == 100).all(),
+            "When data and baseline are identical, all values should be 100.",
+        )
 
 
 if __name__ == "__main_":
