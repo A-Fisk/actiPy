@@ -6,11 +6,11 @@
 
 ## Current todo 
 
-### Documentation write 
-- README actually want to install as package so no to repo?
-
+### mean wave / activity profile 
+- do we want to resample to hourly?
 
 ## TODO
+- add lights to mean 
 - combine waveform into plotting script?
 - test mean activity not 24 hours 
 - testing normalise activity move baseline/test to setup function/

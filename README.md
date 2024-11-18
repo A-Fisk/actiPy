@@ -41,7 +41,7 @@ values = np.random.randint(0, 100, size=(len(index),2))
 df = pd.DataFrame(values, index=index)
 ``` 
 
-# Calculate IV 
+Calculate IV 
 ```
 # Use actiPy's calculate_IV function to compute Interdaily Variability
 iv = act.calculate_IV(df)
@@ -50,7 +50,7 @@ iv = act.calculate_IV(df)
 print(f"Interdaily Variability (IV): {iv:.4f}")
 ```
 
-# Plot actogram 
+Plot actogram 
 ```
 # Use actiPy plot_actogram
 import actiPy.actogram_plot as actp

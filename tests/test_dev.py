@@ -36,7 +36,7 @@ act_day = [10, 100]
 light_night = [0, 1]
 light_day = [500, 501]
 df['sensor1'] = df.index.hour.map(
-    lambda x: assign_values(x, act_day, act_day))
+    lambda x: assign_values(x, act_day, act_night))
 df['sensor2'] = df.index.hour.map(
     lambda x: assign_values(x, act_night, act_day))
 df['lights'] = df.index.hour.map(
@@ -44,14 +44,6 @@ df['lights'] = df.index.hour.map(
 # Display the first few rows of the DataFrame
 print(df.head())
 
-# Sample data for testing
-index = pd.date_range("2024-01-01", "2024-01-02", freq="h")
-test_data = pd.DataFrame({
-    # Linearly increasing activity
-    "Activity1": np.linspace(1, 24, len(index)),
-    # Linearly decreasing activity
-    "Activity2": np.linspace(24, 1, len(index)),
-    "Light": np.random.randint(0, 100, len(index))  # Random activity
-}, index=index)
 
-rel_amp = act.relative_amplitude(test_data)
+actp.plot_activity_profile(df, showfig=True, resample=True,
+                           resample_freq="h")

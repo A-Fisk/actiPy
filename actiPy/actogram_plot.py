@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gs
+import actiPy.activity as act
 import actiPy.preprocessing as prep
 
 
@@ -175,6 +176,109 @@ def plot_actogram(data,
     return fig, ax, params_dict
 
 
+@prep.validate_input
+@prep.plot_kwarg_decorator  
+def plot_activity_profile(data, col=0, subplot=None, resample=False,
+                          resample_freq="h", *args, **kwargs):
+    def plot_activity_profile(data, col=0, subplot=None, resample=False,
+                          resample_freq="h", *args, **kwargs):
+    """
+    Plot the activity profile with mean and SEM (Standard Error of the Mean).
+    Optionally resample the data before plotting.
 
-def plot_activity_profile():
-    return None
+    Parameters
+    ----------
+    data : pd.DataFrame or pd.Series
+        Activity data indexed by time. If `data` is a DataFrame, the 
+        function uses the column specified by `col` (default is the 
+        first column).
+    col : int, optional
+        The index of the column to plot, used when `data` is a 
+        DataFrame (default is 0).
+    subplot : matplotlib.axes._axes.Axes, optional
+        Subplot to plot on. If None, a new figure and axis are 
+        created (default is None).
+    resample : bool, optional
+        Whether to resample the data before plotting. 
+        If `True`, the data will be resampled to the frequency 
+        specified by `resample_freq` (default is `False`).
+    resample_freq : str, optional
+        The frequency to resample the data to. 
+        This can be any valid pandas offset string 
+        (e.g., "h" for hourly, "T" for minutely).
+        The default is "h" (hourly).
+    *args, **kwargs : additional arguments
+        These are passed to the plotting function,
+        such as `timeaxis` to control the appearance of the x-axis.
+
+    Returns
+    -------
+    fig : matplotlib.figure.Figure
+        The figure containing the plot.
+    ax : matplotlib.axes._axes.Axes
+        The axis with the plot.
+    params_dict : dict
+        A dictionary containing the plot's parameters,
+        including labels, title, and xlim.
+    """
+    # ability to resample if required 
+    if resample:
+        data = data.resample(resample_freq).mean()
+    # select just the subject 
+    curr_data = data.iloc[:,col]
+
+    # Calculate mean activity and SEM
+    mean, sem = act.calculate_mean_activity(curr_data, sem=True)
+
+    # Convert the index of mean and sem to a DatetimeIndex starting 2001-01-01
+    start_date = "2001-01-01"
+    freq = pd.infer_freq(data.index)
+    datetime_index = pd.date_range(
+            start=start_date, periods=len(mean), freq=freq)
+    mean.index = datetime_index
+    sem.index = datetime_index
+
+    # Create plot if no subplot is provided
+    if subplot is None:
+        fig, ax = plt.subplots(figsize=(10, 6))
+    else:
+        ax = subplot
+
+    # Plot the mean line
+    ax.plot(
+        mean.index, mean, label="Mean Activity", color="blue", linewidth=2)
+
+    # Add shaded SEM region
+    ax.fill_between(
+        mean.index,
+        mean - sem,
+        mean + sem,
+        color="blue",
+        alpha=0.3,
+        label="± SEM"
+    )
+
+    # Add labels, legend, and title
+    ax.set_xlabel("Time")
+    ax.set_ylabel("Activity")
+    ax.set_title("Activity Profile with Mean and SEM")
+    ax.legend()
+
+    # create defaults dict
+    xlim = [mean.index[0], (mean.index[0] + pd.Timedelta("24h"))]
+    params_dict = {
+        "xlabel": "Time",
+        "ylabel": "Activity",
+        "interval": 6,
+        "title": "Mean activity profile",
+        "timeaxis": True,
+        "xlim": xlim,
+    }
+
+    # put axis as a controllable parameter
+    if "timeaxis" in kwargs:
+        params_dict['timeaxis'] = kwargs["timeaxis"]
+
+    return fig, ax, params_dict 
+
+

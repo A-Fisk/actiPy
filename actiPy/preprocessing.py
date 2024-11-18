@@ -1,6 +1,8 @@
+import pdb
 from functools import wraps
 import pingouin as pg
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 idx = pd.IndexSlice
@@ -22,8 +24,19 @@ def plot_kwarg_decorator(func):
     def wrapper(data, *args, **kwargs):
         # Call the original plotting function
         fig, ax, params_dict = func(data, *args, **kwargs)
+        
+        # check if multiple subplots or not 
+        if isinstance(ax, np.ndarray):
+            final_ax = ax[-1]
+        else:
+            final_ax = ax
 
-        final_ax = ax[-1]
+        # Configure x-axis limits
+        if "xlim" in kwargs or "xlim" in params_dict:
+            xlim = kwargs.get("xlim", params_dict.get("xlim", None))
+            if xlim:
+                final_ax.set_xlim(xlim)
+
         # Configure x-axis time formatting
         if "timeaxis" in params_dict and params_dict["timeaxis"]:
             xfmt = kwargs.get("xfmt", mdates.DateFormatter("%H:%M"))
@@ -68,11 +81,6 @@ def plot_kwarg_decorator(func):
             handles, labels = final_ax.get_legend_handles_labels()
             fig.legend(handles, labels, loc=legend_loc)
 
-        # Configure x-axis limits
-        if "xlim" in kwargs or "xlim" in params_dict:
-            xlim = kwargs.get("xlim", params_dict.get("xlim", None))
-            if xlim:
-                final_ax.set_xlim(xlim)
 
         # Configure figure size
         if "figsize" in kwargs:

@@ -53,7 +53,7 @@ def calculate_IV(data):
 
 
 @prep.validate_input
-def calculate_mean_activity(data):
+def calculate_mean_activity(data, sem=False):
     """
     Mean activity calculation
 
@@ -64,6 +64,9 @@ def calculate_mean_activity(data):
     data : pd.DataFrame
         A DataFrame with a datetime index and activity values for each time
         point.
+    sem: Boolean
+        Whether to return standard error of the mean as well, defaults 
+        to False 
 
     Returns
     -------
@@ -71,12 +74,6 @@ def calculate_mean_activity(data):
         A DataFrame containing the mean activity at each time point across all
         days.
     """
-    if data.empty:
-        raise ValueError("The input DataFrame is empty.")
-
-    if not isinstance(data.index, pd.DatetimeIndex):
-        raise TypeError("The DataFrame must have a DatetimeIndex.")
-
     # Group data by time of day (ignoring the date) and calculate the mean for
     # each time point
     mean_activity = data.groupby(data.index.time).mean()
@@ -84,6 +81,13 @@ def calculate_mean_activity(data):
     # Convert the time index back to datetime for clarity
     mean_activity.index = pd.to_datetime(
         mean_activity.index, format="%H:%M:%S").time
+   
+    if sem:
+        sem_activity = data.groupby(data.index.time).sem()
+        sem_activity.index = pd.to_datetime(
+                sem_activity.index, format="%H:%M:%S").time
+        
+        return mean_activity, sem_activity
 
     return mean_activity
 
