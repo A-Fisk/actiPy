@@ -173,3 +173,7 @@ def plot_actogram(data,
         params_dict['timeaxis'] = kwargs["timeaxis"]
 
     return fig, ax, params_dict
+
+
+
+def plot_activity_profile():

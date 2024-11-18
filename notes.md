@@ -6,10 +6,9 @@
 
 ## Current todo 
 
-### 
+### Plot waveform
 
 ## TODO
-- relative amplitude 
 - combine waveform into plotting script?
 - test mean activity not 24 hours 
 - testing normalise activity move baseline/test to setup function/
@@ -21,6 +20,7 @@ period of day we want)
 - calculate interdaily stability
 - Calculate period 
 - update check datetime index decorator - add to non zero values?
+- episode finding 
 
 ### TODO later/maybe
 - Write documentation
