@@ -24,9 +24,9 @@ def plot_kwarg_decorator(func):
     def wrapper(data, *args, **kwargs):
         # Call the original plotting function
         fig, ax, params_dict = func(data, *args, **kwargs)
-        
-        # check if multiple subplots or not 
-        if isinstance(ax, np.ndarray):
+
+        # check if multiple subplots or not
+        if isinstance(ax, (np.ndarray, list)):
             final_ax = ax[-1]
         else:
             final_ax = ax
@@ -80,7 +80,6 @@ def plot_kwarg_decorator(func):
             legend_loc = kwargs.get("legend_loc", 1)
             handles, labels = final_ax.get_legend_handles_labels()
             fig.legend(handles, labels, loc=legend_loc)
-
 
         # Configure figure size
         if "figsize" in kwargs:

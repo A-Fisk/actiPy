@@ -177,10 +177,8 @@ def plot_actogram(data,
 
 
 @prep.validate_input
-@prep.plot_kwarg_decorator  
+@prep.plot_kwarg_decorator
 def plot_activity_profile(data, col=0, subplot=None, resample=False,
-                          resample_freq="h", *args, **kwargs):
-    def plot_activity_profile(data, col=0, subplot=None, resample=False,
                           resample_freq="h", *args, **kwargs):
     """
     Plot the activity profile with mean and SEM (Standard Error of the Mean).
@@ -189,23 +187,23 @@ def plot_activity_profile(data, col=0, subplot=None, resample=False,
     Parameters
     ----------
     data : pd.DataFrame or pd.Series
-        Activity data indexed by time. If `data` is a DataFrame, the 
-        function uses the column specified by `col` (default is the 
+        Activity data indexed by time. If `data` is a DataFrame, the
+        function uses the column specified by `col` (default is the
         first column).
     col : int, optional
-        The index of the column to plot, used when `data` is a 
+        The index of the column to plot, used when `data` is a
         DataFrame (default is 0).
     subplot : matplotlib.axes._axes.Axes, optional
-        Subplot to plot on. If None, a new figure and axis are 
+        Subplot to plot on. If None, a new figure and axis are
         created (default is None).
     resample : bool, optional
-        Whether to resample the data before plotting. 
-        If `True`, the data will be resampled to the frequency 
+        Whether to resample the data before plotting.
+        If `True`, the data will be resampled to the frequency
         specified by `resample_freq` (default is `False`).
     resample_freq : str, optional
-        The frequency to resample the data to. 
-        This can be any valid pandas offset string 
-        (e.g., "h" for hourly, "T" for minutely).
+        The frequency to resample the data to.
+        This can be any valid pandas offset string
+        (e.g., "h" for hourly, "min" for minutely).
         The default is "h" (hourly).
     *args, **kwargs : additional arguments
         These are passed to the plotting function,
@@ -221,11 +219,11 @@ def plot_activity_profile(data, col=0, subplot=None, resample=False,
         A dictionary containing the plot's parameters,
         including labels, title, and xlim.
     """
-    # ability to resample if required 
+    # ability to resample if required
     if resample:
         data = data.resample(resample_freq).mean()
-    # select just the subject 
-    curr_data = data.iloc[:,col]
+    # select just the subject
+    curr_data = data.iloc[:, col]
 
     # Calculate mean activity and SEM
     mean, sem = act.calculate_mean_activity(curr_data, sem=True)
@@ -234,7 +232,7 @@ def plot_activity_profile(data, col=0, subplot=None, resample=False,
     start_date = "2001-01-01"
     freq = pd.infer_freq(data.index)
     datetime_index = pd.date_range(
-            start=start_date, periods=len(mean), freq=freq)
+        start=start_date, periods=len(mean), freq=freq)
     mean.index = datetime_index
     sem.index = datetime_index
 
@@ -242,6 +240,7 @@ def plot_activity_profile(data, col=0, subplot=None, resample=False,
     if subplot is None:
         fig, ax = plt.subplots(figsize=(10, 6))
     else:
+        fig = plt.gcf()
         ax = subplot
 
     # Plot the mean line
@@ -279,6 +278,4 @@ def plot_activity_profile(data, col=0, subplot=None, resample=False,
     if "timeaxis" in kwargs:
         params_dict['timeaxis'] = kwargs["timeaxis"]
 
-    return fig, ax, params_dict 
-
-
+    return fig, ax, params_dict

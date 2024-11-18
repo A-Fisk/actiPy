@@ -9,6 +9,8 @@
 ### mean wave / activity profile 
 - do we want to resample to hourly?
 
+- update xlabel/ylabel depending on if subplot or not
+
 ## TODO
 - add lights to mean 
 - combine waveform into plotting script?

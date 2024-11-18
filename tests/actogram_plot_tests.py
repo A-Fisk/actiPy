@@ -6,10 +6,13 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gs
+from unittest.mock import patch
 sys.path.insert(
     0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 if True:  # noqa E402
-    import actiPy.actogram_plot as act
+    from actiPy.actogram_plot import plot_actogram, plot_activity_profile
+    from tests.activity_tests import assign_values, generate_test_data
+
 
 np.random.seed(42)
 
@@ -18,44 +21,12 @@ class TestPlotActogram(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """Set up test data for all tests."""
-        # Create time index for 10 days with 10-second intervals
-        days = 10
-        freq = "10s"
-        time_index = pd.date_range(
-            start="2000-01-01",
-            periods=8640 * days,
-            freq=freq)
-
-        # Create an empty DataFrame
-        df = pd.DataFrame(index=time_index)
-
-        # Function to assign values based on time of day
-        def assign_values(hour, night, day):
-            if 6 <= hour < 18:  # Between 06:00 and 18:00
-                return np.random.randint(night[0], night[1])
-            else:  # Between 18:00 and 06:00
-                return np.random.randint(day[0], day[1])
-
-        # Create activity and light columns
-        act_night = [0, 10]
-        act_day = [10, 100]
-        light_night = [0, 1]
-        light_day = [500, 501]
-        df["sensor1"] = df.index.hour.map(
-            lambda x: assign_values(x, act_night, act_day)
-        )
-        df["sensor2"] = df.index.hour.map(
-            lambda x: assign_values(x, act_night, act_day)
-        )
-        df["lights"] = df.index.hour.map(
-            lambda x: assign_values(x, light_night, light_day)
-        )
-        cls.test_data = df
+        cls.test_data = generate_test_data()
 
     def test_plot_actogram_basic(self):
         """Test that plot_actogram runs without errors on valid input."""
         data = self.test_data
-        fig, ax, params_dict = act.plot_actogram(data, subject_no=0, LDR=-1)
+        fig, ax, params_dict = plot_actogram(data, subject_no=0, LDR=-1)
 
         self.assertIsInstance(
             fig,
@@ -80,7 +51,7 @@ class TestPlotActogram(unittest.TestCase):
                 periods=0,
                 freq="10min"))
         with self.assertRaises(ValueError):
-            act.plot_actogram(empty_data, subject_no=0, LDR=-1)
+            plot_actogram(empty_data, subject_no=0, LDR=-1)
 
     def test_plot_actogram_single_day(self):
         """Test for single day of data"""
@@ -89,7 +60,7 @@ class TestPlotActogram(unittest.TestCase):
         start = self.test_data.index[0]
         end = start + pd.Timedelta("24h")
         single_day_data = self.test_data.loc[start:end]
-        fig, ax, params_dict = act.plot_actogram(
+        fig, ax, params_dict = plot_actogram(
             single_day_data, subject_no=0, LDR=-1)
         self.assertIsInstance(
             fig,
@@ -102,16 +73,16 @@ class TestPlotActogram(unittest.TestCase):
 
         with self.assertRaises(IndexError):
             # Invalid subject_no
-            act.plot_actogram(data, subject_no=10, LDR=-1)
+            plot_actogram(data, subject_no=10, LDR=-1)
 
         with self.assertRaises(IndexError):
             # Invalid LDR
-            act.plot_actogram(data, subject_no=0, LDR=10)
+            plot_actogram(data, subject_no=0, LDR=10)
 
     def test_plot_actogram_output_labels(self):
         """Test that the plot includes expected labels and titles."""
         data = self.test_data
-        fig, ax, params_dict = act.plot_actogram(data, subject_no=0, LDR=-1)
+        fig, ax, params_dict = plot_actogram(data, subject_no=0, LDR=-1)
 
         # Check defaults in params_dict
         self.assertEqual(
@@ -130,7 +101,7 @@ class TestPlotActogram(unittest.TestCase):
     def test_plot_actogram_multiple_days(self):
         """Test that plotting works for multiple days."""
         data = self.test_data
-        fig, ax, params_dict = act.plot_actogram(data, subject_no=0, LDR=-1)
+        fig, ax, params_dict = plot_actogram(data, subject_no=0, LDR=-1)
 
         days_count = len(data.index.normalize().unique()) + 1
         self.assertEqual(
@@ -143,7 +114,7 @@ class TestPlotActogram(unittest.TestCase):
         data = self.test_data
         fig = plt.figure()
         ax = fig.add_gridspec(ncols=2, nrows=2)
-        fig, ax, params_dict = act.plot_actogram(
+        fig, ax, params_dict = plot_actogram(
             data, subject_no=0, LDR=-1, fig=fig, subplot=ax[0],
             title="subplots test")
 
@@ -159,7 +130,7 @@ class TestPlotActogram(unittest.TestCase):
         data_hours = data.resample("1h").mean()
 
         for curr_data in data_mins, data_hours:
-            fix, ax, params_dict = act.plot_actogram(
+            fix, ax, params_dict = plot_actogram(
                 curr_data, subject_no=0, LDR=-1)
 
             days_count = len(curr_data.index.normalize().unique()) + 1
@@ -167,6 +138,96 @@ class TestPlotActogram(unittest.TestCase):
                 len(ax),
                 days_count,
                 "Number of axes does not match expected number of days.")
+
+
+class TestPlotActivityProfile(unittest.TestCase):
+
+    def setUp(self):
+        # Generate test data using the provided function
+        self.df = generate_test_data(
+            days=10, freq="10s", act_night=[
+                0, 10], act_day=[
+                10, 100])
+
+    def test_plot_activity_profile_without_resampling(self):
+        # Test the function without resampling
+        fig, ax, params = plot_activity_profile(
+            self.df, col=0, resample=False)
+
+        # Check that the figure and ax are created
+        self.assertIsInstance(fig, plt.Figure)
+        self.assertIsInstance(ax, plt.Axes)
+
+        # Check that params dictionary contains expected keys
+        self.assertIn("xlabel", params)
+        self.assertIn("ylabel", params)
+        self.assertIn("xlim", params)
+
+        # Check that xlim is correct (start of the datetime index and 24h
+        # period)
+        self.assertEqual(params["xlim"][0], pd.Timestamp('2001-01-01'))
+        self.assertEqual(params["xlim"][1], pd.Timestamp('2001-01-02'))
+
+    def test_plot_activity_profile_with_resampling(self):
+        # Test the function with resampling
+        fig, ax, params = plot_activity_profile(
+            self.df, col=0, resample=True, resample_freq='D')
+
+        # Check that the figure and ax are created
+        self.assertIsInstance(fig, plt.Figure)
+        self.assertIsInstance(ax, plt.Axes)
+
+        # Check that the data has been resampled
+        # 10 days of data, resampled daily
+        self.assertEqual(len(self.df.resample('D').mean()), 10)
+        self.assertEqual(len(ax.lines), 1)  # Only one plot line (mean)
+
+    def test_resample_freq(self):
+        # Test the resample frequency functionality
+        fig, ax, params = plot_activity_profile(
+            self.df, col=0, resample=True, resample_freq='min')
+
+        # Get the x-axis data (time points)
+        x_data = ax.lines[0].get_xdata()
+
+        # Check if the number of data points is equal to the
+        # number of minutes in a day (1440)
+        self.assertEqual(len(x_data), 1440)  # 1440 minutes in a day
+        self.assertEqual(len(ax.lines), 1)  # Only one plot line (mean)
+
+    def test_plot_with_invalid_column_index(self):
+        # Test with invalid column index (out of range)
+        with self.assertRaises(IndexError):
+            plot_activity_profile(self.df, col=5)
+
+    def test_plot_with_invalid_resample_freq(self):
+        # Test that an invalid resample frequency raises an error
+        with self.assertRaises(ValueError):
+            plot_activity_profile(
+                self.df,
+                col=0,
+                resample=True,
+                resample_freq='invalid_freq')
+
+    @patch('matplotlib.pyplot.show')
+    def test_plot_activity_profile_plot_called(self, mock_show):
+        # Test if plot is displayed
+        fig, ax, params = plot_activity_profile(
+            self.df, col=0, resample=False, showfig=True)
+
+        # Check that show is called (i.e., the plot is displayed)
+        mock_show.assert_called_once()
+
+    def test_xlim_correctness_after_resampling(self):
+        # Test that xlim is correctly set after resampling
+        fig, ax, params = plot_activity_profile(
+            self.df, col=0, resample=True, resample_freq='h')
+
+        # Check if xlim matches the expected range after resampling
+        expected_xlim = [
+            pd.Timestamp('2001-01-01'),
+            pd.Timestamp('2001-01-02')]
+        self.assertEqual(params["xlim"], expected_xlim)
 
 
 if __name__ == "__main__":

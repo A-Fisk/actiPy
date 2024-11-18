@@ -65,8 +65,8 @@ def calculate_mean_activity(data, sem=False):
         A DataFrame with a datetime index and activity values for each time
         point.
     sem: Boolean
-        Whether to return standard error of the mean as well, defaults 
-        to False 
+        Whether to return standard error of the mean as well, defaults
+        to False
 
     Returns
     -------
@@ -81,12 +81,12 @@ def calculate_mean_activity(data, sem=False):
     # Convert the time index back to datetime for clarity
     mean_activity.index = pd.to_datetime(
         mean_activity.index, format="%H:%M:%S").time
-   
+
     if sem:
         sem_activity = data.groupby(data.index.time).sem()
         sem_activity.index = pd.to_datetime(
-                sem_activity.index, format="%H:%M:%S").time
-        
+            sem_activity.index, format="%H:%M:%S").time
+
         return mean_activity, sem_activity
 
     return mean_activity

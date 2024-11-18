@@ -44,6 +44,6 @@ df['lights'] = df.index.hour.map(
 # Display the first few rows of the DataFrame
 print(df.head())
 
-
+fig, ax = plt.subplots(2)
 actp.plot_activity_profile(df, showfig=True, resample=True,
-                           resample_freq="h")
+                           resample_freq="h", subplot=ax[1])
