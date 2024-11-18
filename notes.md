@@ -6,13 +6,18 @@
 
 ## Current todo 
 
-### mean wave / activity profile 
-- do we want to resample to hourly?
-
-- update xlabel/ylabel depending on if subplot or not
+### add lights to mean 
+- problem with lights on time - is earlier than would expect
+- is it the same offset problem, going up straight from 500 from 5-6
+- yeah going up at super steep angle and starting at 5 to be there at 6 is
+  causing problem
+- remap? put light values at just over the ylim?
+- oooooor have it be huge relative values so very steep just where we want it? 
+- yeaaaaaa worked well enough 
 
 ## TODO
-- add lights to mean 
+- lights activity profile not covering to very end of plot 
+- offset mean activity so shows at middle not start of hour 
 - combine waveform into plotting script?
 - test mean activity not 24 hours 
 - testing normalise activity move baseline/test to setup function/
@@ -26,6 +31,8 @@ period of day we want)
 - update check datetime index decorator - add to non zero values?
 - episode finding 
 - get travis working again
+- update xlabel/ylabel depending on if subplot or not
+
 
 ### TODO later/maybe
 - Write documentation

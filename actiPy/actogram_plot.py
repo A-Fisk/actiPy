@@ -1,3 +1,4 @@
+import re
 import pdb
 import pandas as pd
 import numpy as np
@@ -178,8 +179,14 @@ def plot_actogram(data,
 
 @prep.validate_input
 @prep.plot_kwarg_decorator
-def plot_activity_profile(data, col=0, subplot=None, resample=False,
-                          resample_freq="h", *args, **kwargs):
+def plot_activity_profile(data,
+                          col=0,
+                          light_col=-1,
+                          subplot=None,
+                          resample=False,
+                          resample_freq="h",
+                          *args,
+                          **kwargs):
     """
     Plot the activity profile with mean and SEM (Standard Error of the Mean).
     Optionally resample the data before plotting.
@@ -222,11 +229,14 @@ def plot_activity_profile(data, col=0, subplot=None, resample=False,
     # ability to resample if required
     if resample:
         data = data.resample(resample_freq).mean()
+
     # select just the subject
     curr_data = data.iloc[:, col]
+    light_data = data.iloc[:, light_col]
 
     # Calculate mean activity and SEM
     mean, sem = act.calculate_mean_activity(curr_data, sem=True)
+    light_mean = act.calculate_mean_activity(light_data)
 
     # Convert the index of mean and sem to a DatetimeIndex starting 2001-01-01
     start_date = "2001-01-01"
@@ -235,6 +245,23 @@ def plot_activity_profile(data, col=0, subplot=None, resample=False,
         start=start_date, periods=len(mean), freq=freq)
     mean.index = datetime_index
     sem.index = datetime_index
+    light_mean.index = datetime_index
+
+    # Check if there is a number in the frequency string using regex
+    if re.search(r'\d', freq):  # If there's a number, use the frequency as is
+        freq = pd.Timedelta(freq)
+    else:  # If there's no number, prepend "1" to the frequency
+        freq = pd.Timedelta("1" + freq)  # Prepend '1' to the frequency
+    # Extend the light_mean data by one extra period and forward fill
+    light_mean = pd.concat([light_mean, pd.Series(
+        [light_mean.iloc[-1]], index=[light_mean.index[-1] + pd.Timedelta(freq)])])
+    light_mean.ffill(inplace=True)
+
+    # Offset the mean and sem data to plot in the middle of the hour
+    offset_time = 0.5 * pd.Timedelta(freq)
+    mean.index += offset_time
+    sem.index += offset_time
+    light_mean.index += offset_time
 
     # Create plot if no subplot is provided
     if subplot is None:
@@ -257,9 +284,38 @@ def plot_activity_profile(data, col=0, subplot=None, resample=False,
         label="± SEM"
     )
 
+    # get ylims to set at this level later
+    ylim = ax.get_ylim()
+
+    # Find the min and max of light_mean
+    min_light_mean = light_mean.min()
+    max_light_mean = light_mean.max()
+
+    # Define the target range
+    target_max = 10 * ylim[1]
+    target_min = -1 * target_max
+
+    # Scale the light_mean values to the target range
+    # The formula to scale the values is:
+    # scaled_value = (value - min_value) / (max_value - min_value)
+    # * (target_max - target_min) + target_min
+
+    scaled_light_mean = (light_mean - min_light_mean \
+                         ) / (max_light_mean - min_light_mean \
+                         ) * (target_max - target_min) + target_min
+
+    # Add lights region
+    ax.fill_between(
+        scaled_light_mean.index,
+        scaled_light_mean,
+        color='grey',
+        alpha=0.2
+    )
+    
     # Add labels, legend, and title
     ax.set_xlabel("Time")
     ax.set_ylabel("Activity")
+    ax.set_ylim(ylim)
     ax.set_title("Activity Profile with Mean and SEM")
     ax.legend()
 

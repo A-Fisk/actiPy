@@ -165,8 +165,8 @@ class TestPlotActivityProfile(unittest.TestCase):
 
         # Check that xlim is correct (start of the datetime index and 24h
         # period)
-        self.assertEqual(params["xlim"][0], pd.Timestamp('2001-01-01'))
-        self.assertEqual(params["xlim"][1], pd.Timestamp('2001-01-02'))
+        self.assertEqual(params["xlim"][0], pd.Timestamp('2001-01-01 00:00:05'))
+        self.assertEqual(params["xlim"][1], pd.Timestamp('2001-01-02 00:00:05'))
 
     def test_plot_activity_profile_with_resampling(self):
         # Test the function with resampling
@@ -225,8 +225,8 @@ class TestPlotActivityProfile(unittest.TestCase):
 
         # Check if xlim matches the expected range after resampling
         expected_xlim = [
-            pd.Timestamp('2001-01-01'),
-            pd.Timestamp('2001-01-02')]
+                                    pd.Timestamp('2001-01-01 00:30:00'),
+                                    pd.Timestamp('2001-01-02 00:30:00')]
         self.assertEqual(params["xlim"], expected_xlim)
 
 
