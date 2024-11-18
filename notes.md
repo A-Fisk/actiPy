@@ -6,11 +6,7 @@
 
 ## Current todo 
 
-### relative amplitude
- - Hmmmmm most_active_hours is across all, whereas I want 
- seaparetly for each column
-
-- test weird active and inactive times 
+### 
 
 ## TODO
 - relative amplitude 

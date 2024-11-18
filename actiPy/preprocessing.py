@@ -13,7 +13,8 @@ idx = pd.IndexSlice
 def plot_kwarg_decorator(func):
     """
     Universal decorator for plot formatting and configuration.
-    Handles xlabels, ylabels, titles, legends, time formatting, saving, and showing plots.
+    Handles xlabels, ylabels, titles, legends, time formatting, saving,
+    and showing plots.
     :param func: The plotting function to decorate.
     :return: A decorated function that applies plot configurations.
     """
@@ -90,26 +91,47 @@ def plot_kwarg_decorator(func):
     return wrapper
 
 
-def validate_non_zero(func):
+def validate_input(func):
     """
-    Decorator to check if any of the DataFrames or Series passed to the function
-    consist only of zeros. Raises a ValueError if any consist only of zeros.
+    Decorator to validate DataFrames or Series passed to the function.
+    - Checks if any input consists only of zeros.
+    - Checks if any DataFrame is empty.
+    - Checks if the index of any DataFrame is a DatetimeIndex.
+    Raises a ValueError if any condition is not met.
     """
     @wraps(func)
     def wrapper(*args, **kwargs):
-        # Check all positional arguments
-        for arg in args:
+        # Helper function to validate a DataFrame or Series
+        def _validate(input_data, name):
             if isinstance(
-                    arg, (pd.DataFrame, pd.Series)) and (
-                    arg.values == 0).all():
-                raise ValueError(f"Input {arg} consists only of zeros.")
+                    input_data,
+                    pd.DataFrame) or isinstance(
+                        input_data,
+                        pd.Series):
+                # Check if consists only of zeros
+                if (input_data.values == 0).all():
+                    raise ValueError(f"Input {name} consists only of zeros.")
 
-        # Check all keyword arguments
+                # Check if empty
+                if input_data.empty:
+                    raise ValueError(f"Input {name} is empty.")
+
+                # Check if index is a DatetimeIndex (only for DataFrames)
+                if isinstance(
+                        input_data,
+                        pd.DataFrame) and not isinstance(
+                            input_data.index,
+                            pd.DatetimeIndex):
+                    raise TypeError(
+                        f"Input {name} does not have a DatetimeIndex.")
+
+        # Validate positional arguments
+        for i, arg in enumerate(args):
+            _validate(arg, f"arg[{i}]")
+
+        # Validate keyword arguments
         for key, value in kwargs.items():
-            if isinstance(
-                    value, (pd.DataFrame, pd.Series)) and (
-                    value.values == 0).all():
-                raise ValueError(f"Input {key} consists only of zeros.")
+            _validate(value, f"kwarg[{key}]")
 
         # Call the original function
         return func(*args, **kwargs)

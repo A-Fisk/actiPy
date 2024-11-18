@@ -252,12 +252,14 @@ class TestLightPhaseActivity(unittest.TestCase):
         self.data = pd.DataFrame({
             "Activity": [10, 20, 30, 40, 50],
             "Light": [100, 200, 300, 150, 50]
-        })
+        }, index=pd.date_range(
+            start="2023-01-01 00:00:00", periods=5, freq="h"))
         self.empty_data = pd.DataFrame(columns=["Activity", "Light"])
         self.no_light_data = pd.DataFrame({
             "Activity": [10, 20, 30, 40, 50],
             "Light": [100, 100, 100, 100, 100]
-        })
+        }, index=pd.date_range(
+            start="2023-01-01 00:00:00", periods=5, freq="h"))
         self.real_data = generate_test_data(
             days=10, freq="10s", act_night=[0, 1], act_day=[99, 100],
             light_night=[0, 1], light_day=[500, 501])
@@ -330,14 +332,14 @@ class TestRelativeAmplitude(unittest.TestCase):
     def test_linear_increasing_activity(self):
         """Test relative amplitude with linearly increasing activity."""
         result = relative_amplitude(
-            self.test_data, active_time=5, inactive_time=5)
-        self.assertAlmostEqual(result["Activity1"], 1.0, places=2)
+            self.test_data, active_time=1, inactive_time=1)
+        self.assertAlmostEqual(result["Activity1"], 0.92, places=2)
 
     def test_linear_decreasing_activity(self):
         """Test relative amplitude with linearly decreasing activity."""
         result = relative_amplitude(
-            self.test_data, active_time=5, inactive_time=5)
-        self.assertAlmostEqual(result["Activity2"], 1.0, places=2)
+            self.test_data, active_time=1, inactive_time=1)
+        self.assertAlmostEqual(result["Activity2"], 0.92, places=2)
 
     def test_random_activity(self):
         """Test relative amplitude with random activity."""
@@ -348,15 +350,15 @@ class TestRelativeAmplitude(unittest.TestCase):
     def test_single_column(self):
         """Test relative amplitude with a single column."""
         data = self.test_data[["Activity1"]]  # Select only one column
-        result = relative_amplitude(data, active_time=5, inactive_time=5)
+        result = relative_amplitude(data, active_time=1, inactive_time=1)
         self.assertEqual(len(result), 1)
-        self.assertAlmostEqual(result["Activity1"], 1.0, places=2)
+        self.assertAlmostEqual(result["Activity1"], 0.92, places=2)
 
     def test_non_datetime_index(self):
         """Test that the function raises an error for non-datetime index."""
         data = self.test_data.copy()
         data.reset_index(drop=True, inplace=True)  # Remove the datetime index
-        with self.assertRaises(ValueError):
+        with self.assertRaises(TypeError):
             relative_amplitude(data, active_time=5, inactive_time=5)
 
     def test_different_time_unit(self):
@@ -375,17 +377,14 @@ class TestRelativeAmplitude(unittest.TestCase):
         empty_data = pd.DataFrame(columns=["Activity1", "Activity2", "Light"])
         with self.assertRaises(ValueError):
             result = relative_amplitude(
-                    empty_data, active_time=5, inactive_time=5)
+                empty_data, active_time=5, inactive_time=5)
 
     def test_edge_case_insufficient_active_inactive_hours(self):
         """Test with fewer rows than active_time + inactive_time."""
         small_data = self.test_data.iloc[:3]  # Subset with only 3 rows
-        result = relative_amplitude(small_data, active_time=2, inactive_time=2)
-        self.assertTrue(pd.Series.equals(result, pd.Series({
-            "Activity1": 1.0,
-            "Activity2": 1.0,
-            "Light": 1.0
-        }, name="Relative Amplitude")))
+        with self.assertRaises(ValueError):
+            result = relative_amplitude(
+                small_data, active_time=2, inactive_time=2)
 
 
 if __name__ == "__main_":

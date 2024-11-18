@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import actiPy.preprocessing as prep
 
 
-@prep.validate_non_zero
+@prep.validate_input
 def calculate_IV(data):
     """
     Intradavariability calculation.
@@ -52,7 +52,7 @@ def calculate_IV(data):
     return IV
 
 
-@prep.validate_non_zero
+@prep.validate_input
 def calculate_mean_activity(data):
     """
     Mean activity calculation
@@ -88,7 +88,7 @@ def calculate_mean_activity(data):
     return mean_activity
 
 
-@prep.validate_non_zero
+@prep.validate_input
 def normalise_to_baseline(data, baseline_data):
     """
     normalise_to_baseline
@@ -122,7 +122,7 @@ def normalise_to_baseline(data, baseline_data):
     return norm_series
 
 
-@prep.validate_non_zero
+@prep.validate_input
 def light_phase_activity(data,
                          light_col=-1,
                          light_val=150):
@@ -169,6 +169,7 @@ def light_phase_activity(data,
     return light_phase_activity
 
 
+@prep.validate_input
 def relative_amplitude(data,
                        time_unit="h",
                        active_time=1,
@@ -196,11 +197,21 @@ def relative_amplitude(data,
         A Series where the index corresponds to the column names from the
         input data, and the values are the relative amplitude for each column.
 
-
+    Raises
+    ------
+    ValueError
+        If `active_time` + `inactive_time` exceeds the length of the resampled data.
     """
-    # Resample data to given frequency
+    # Resample data to the given frequency
     hourly_data = data.resample(time_unit).mean()
 
+    # Check if active_time + inactive_time exceeds the data length
+    if active_time + inactive_time > len(hourly_data):
+        raise ValueError(
+            f"The sum of active_time ({active_time}) and inactive_time"
+            f"({inactive_time}) exceeds the length of the resampled "
+            f"data ({len(hourly_data)})."
+        )
     # Dictionary to store relative amplitude for each column
     relative_amplitudes = {}
 
