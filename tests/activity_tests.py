@@ -11,7 +11,7 @@ sys.path.insert(
     0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 if True:  # noqa E402
     from actiPy.activity import calculate_mean_activity, calculate_IV, \
-        normalise_to_baseline
+        normalise_to_baseline, light_phase_activity
 
 
 np.random.seed(42)
@@ -43,7 +43,12 @@ def assign_values(hour, night, day):
         return np.random.randint(night[0], night[1])
 
 
-def generate_test_data(days=10, freq="10s"):
+def generate_test_data(days=10, 
+                       freq="10s",
+                       act_night = [0, 10],
+                       act_day = [10, 100],
+                       light_night = [0, 1],
+                       light_day = [500, 501]):
     """
     Generate test data for activity and light levels.
 
@@ -69,10 +74,6 @@ def generate_test_data(days=10, freq="10s"):
     df = pd.DataFrame(index=time_index)
 
     # Define activity and light ranges
-    act_night = [0, 10]
-    act_day = [10, 100]
-    light_night = [0, 1]
-    light_day = [500, 501]
 
     # Populate the DataFrame with sensor and light data
     df["sensor1"] = df.index.hour.map(
@@ -242,6 +243,76 @@ class TestNormaliseToBaseline(unittest.TestCase):
         with self.assertRaises(
                 ValueError, msg="Input baseline_data consists only of zeros."):
             normalise_to_baseline(test_data, zero_baseline)
+
+
+class TestLightPhaseActivity(unittest.TestCase):
+
+    def setUp(self):
+        # Set up some common data for the tests
+        self.data = pd.DataFrame({
+            "Activity": [10, 20, 30, 40, 50],
+            "Light": [100, 200, 300, 150, 50]
+        })
+        self.empty_data = pd.DataFrame(columns=["Activity", "Light"])
+        self.no_light_data = pd.DataFrame({
+            "Activity": [10, 20, 30, 40, 50],
+            "Light": [100, 100, 100, 100, 100]
+        })
+        self.real_data = generate_test_data(
+                days=10, freq="10s", act_night=[0,1], act_day=[99,100],
+                light_night=[0,1], light_day=[500,501])
+
+    def test_valid_data(self):
+        # Test normal case
+        result = light_phase_activity(self.data, light_col=1, light_val=150)
+        expected = (20 + 30 + 40) / (10 + 20 + 30 + 40 + 50) * 100
+        self.assertAlmostEqual(result["Activity"], expected)
+
+    def test_real_data(self):
+        # test with generated data 
+        result = light_phase_activity(
+                self.real_data, light_col=-1, light_val=150)
+        expected = [100, 100, 100]
+        
+        # Use numpy.allclose() for array comparison
+        self.assertTrue(np.allclose(result.values, expected), 
+                        msg=f"Expected {expected}, but got {result.values}")
+    
+    def test_default_parameters(self):
+        # Test using default parameters
+        result = light_phase_activity(self.data)
+        expected = (20 + 30 + 40) / (10 + 20 + 30 + 40 + 50) * 100
+        self.assertAlmostEqual(result["Activity"], expected)
+
+    def test_empty_data(self):
+        # Test with empty DataFrame
+        with self.assertRaises(ValueError):
+            result = light_phase_activity(
+                    self.empty_data, light_col=1, light_val=150)
+
+    def test_no_light_data(self):
+        # Test with no light data exceeding light_val
+        result = light_phase_activity(
+                self.no_light_data, light_col=1, light_val=150)
+        self.assertEqual(result["Activity"], 0)
+
+    def test_invalid_light_col(self):
+        # Test with invalid light_col index
+        with self.assertRaises(IndexError):
+            light_phase_activity(self.data, light_col=3, light_val=150)
+
+    def test_non_numeric_data(self):
+        # Test with non-numeric data in the DataFrame
+        data = pd.DataFrame({
+            "Activity": [10, 20, 30, 40, 50],
+            "Light": ["A", "B", "C", "D", "E"]
+        })
+        with self.assertRaises(TypeError):
+            light_phase_activity(data, light_col=1, light_val=150)
+
+if __name__ == '__main__':
+    unittest.main()
+
 
 
 if __name__ == "__main_":

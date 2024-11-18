@@ -45,14 +45,5 @@ df['lights'] = df.index.hour.map(
 print(df.head())
 
 
-test_data = df.iloc[:, 0]
-test_baseline = df.iloc[:, 1]
 
-norm = act.normalise_to_baseline(test_data, test_baseline)
-
-mean = act.calculate_mean_activity(test_baseline)
-
-time_index = test_data.index.time
-
-mean_values = mean.loc[time_index].values
-normalised = (test_data.values / mean.loc[time_index].values) * 100
+light_phase = act.light_phase_activity(df)

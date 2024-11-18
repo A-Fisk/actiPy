@@ -122,12 +122,51 @@ def normalise_to_baseline(data, baseline_data):
 
     return norm_series
 
-def light_phase_activity(data, light_col, light_val):
+@prep.validate_non_zero
+def light_phase_activity(data,
+                         light_col=-1,
+                         light_val=150):
     """
     Light_phase_activity
-    Calculates the amount of activity occuring in the light and dark 
+    Calculates the percentage of activity occurring during the light phase 
+    compared to the total activity in the dataset.
 
+    Parameters
+    ----------
+    data : pd.DataFrame
+        A time-indexed DataFrame containing activity and light data.
+    light_col : int, optional
+        Index of the column that contains light data. 
+        Default is -1 (the last column).
+    light_val : int, optional
+        The threshold above which the light is considered "on". Default is 150.
+
+    Returns
+    -------
+    pd.Series
+        A Series where each element represents the percentage of activity 
+        occurring during the light phase for each column in the DataFrame.
+
+    Notes
+    -----
+    - The function assumes the `data` DataFrame contains numeric data.
+    - Activity columns should be numeric and summable.
+    - If no light values exceed the `light_val` threshold, the returned 
+      percentage will be 0 for all activity columns.
+    - Ensure `data` is not empty and contains the specified `light_col` index.
     """
+    # select activity just during light 
+    light_mask = data.iloc[:, light_col] >= light_val
+    light_data = data[light_mask]
+
+    # sum up the activity
+    light_sum = light_data.sum()
+    total_sum = data.sum()
+    
+    # calculate light phase as percentage 
+    light_phase_activity = (light_sum / total_sum) * 100
+    
+    return light_phase_activity
 
 
 

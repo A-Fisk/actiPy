@@ -8,7 +8,16 @@
 
 ### light_phase_activity
 - do we want each day? or summary of total? 
+- previously have done it just giving us one value for the whole 
+data 
+- could add in something to generate each day but unless I need it,
+why bother? 
 
+- also do we want to add sum/count versions? 
+- start with sum because more important 
+
+- what to test? 
+- multiple cols/single col? 
 
 
 ## TODO
