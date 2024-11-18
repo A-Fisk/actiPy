@@ -9,7 +9,6 @@
 ### Invert light values 
 
 ## TODO
-- invert light values actogram so shades dark not light
 - add to light remap so can remap based on subjective light/dark (half/what
 period of day we want) 
 - calculate interdaily stability
