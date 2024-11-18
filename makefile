@@ -13,7 +13,8 @@ format:
 .PHONY: test
 test:
 	@echo "running tests"
-	python -m unittest tests/actogram_plot_tests.py
+	python -m unittest tests/preprocessing_tests.py
 	python -m unittest tests/activity_tests.py
+	python -m unittest tests/actogram_plot_tests.py
 
 

@@ -9,7 +9,7 @@ idx = pd.IndexSlice
 # This script contains functions which are useful for preprocessing of
 # actigraphy data
 
-###### Decorators first #####
+#### Decorators ####
 
 
 def plot_kwarg_decorator(func):
@@ -144,6 +144,72 @@ def validate_input(func):
         return func(*args, **kwargs)
 
     return wrapper
+
+
+#### Functions ####
+# function to set data by circadian period
+@validate_input
+def set_circadian_time(
+        data,
+        period='24h'):
+    """
+    Reindexes current data to 24 hours CT instead of ZT by setting
+    frequency to the ratio of 24hrs/new period
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        Dataframe with a pandas timeindex
+    period : str or float
+        The new period to set the data to.
+        Timedelta string (e.g., '24h', '1d', '72h')
+
+    Returns
+    -------
+    pd.DataFrame
+        Original data but with a new datetimeindex, starting at the same time
+        as the original but now 24 hours is equal to the given period instead
+        of real time.
+    """
+
+    # Convert period string to timedelta
+    if isinstance(period, str):
+        period = pd.to_timedelta(period)
+
+    # Calculate the frequency ratio based on the period
+    freq_ratio = 24 / (period.total_seconds() / 3600)
+
+    # get data frequency as timedelta
+    base_freq = pd.infer_freq(data.index)
+
+    # Ensure base_freq has a numeric component
+    if not any(char.isdigit() for char in base_freq):
+        base_freq = '1' + base_freq  # Prepend '1' if missing
+
+    # convert to timedelta
+    base_timedelta = pd.to_timedelta(base_freq)
+
+    # calculate ratio as a string
+    new_timedelta = base_timedelta * freq_ratio
+    new_freq_str = str(np.round(new_timedelta.total_seconds() * 1000)) + "ms"
+
+    # create new index based on this
+    start_time = data.index[0]
+    data_length = len(data)
+    new_index = pd.date_range(
+        start=start_time,
+        periods=data_length,
+        freq=new_freq_str
+    )
+
+    # reindex the data
+    reindexed_data = pd.DataFrame(
+        data=data.values,
+        index=new_index,
+        columns=data.columns
+    )
+
+    return reindexed_data
 
 
 def _drop_level_decorator(func):
@@ -1077,55 +1143,3 @@ def manual_resample_mean_groupby(curr_data,
     resampled_data = pd.concat(resampled_data_dict)
 
     return resampled_data
-
-
-# function to set data by circadian period
-def set_circadian_time(
-        data,
-        base_freq=4,
-        period=24):
-    """
-    set_circadian_time
-    Reindexes current data to 24 hours CT instead of ZT by setting
-    frequency to the ratio of 24hrs/new period
-
-    Parameters
-    ----------
-    data : pd.DataFrame
-        Dataframe with a pandas timeindex
-    base_freq : int
-        sampling frequency of the data in seconds
-    period : float
-        new period to set the data to, in hours
-
-    Returns
-    -------
-    pd.DataFrame
-        original data but with new datetimeindex, starting at same time as
-        original but now 24 hours is equal to the given period instead
-        of real time.
-
-
-    """
-    # calculate what new frequency is
-    freq_ratio = 24 / curr_period
-    new_freq = base_freq * freq_ratio
-    new_freq_str = str(np.round(new_freq * 1000)) + "ms"
-
-    # create new index based on this
-    start_time = data.index[0]
-    data_length = len(data)
-    new_index = pd.date_range(
-        start=start_time,
-        periods=data_length,
-        freq=new_freq_str
-    )
-
-    # reindex the data
-    reindexed_data = pd.DataFrame(
-        data=data.values,
-        index=new_index,
-        columns=data.columns
-    )
-
-    return reindexed_data

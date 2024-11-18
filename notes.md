@@ -6,10 +6,15 @@
 
 ## Current todo 
 
-### add lights to mean 
+### test set_circadian_time
+- what is going wrong 
+- if 48 hours, is generating much shorter rather than longer.
+- which is actually what I want yes
+- so test is wrong 
+- asking for "2D" as freq which is wrong, want it to be 1/2 first freq
+
 
 ## TODO
-- combine waveform into plotting script?
 - test mean activity not 24 hours 
 - testing normalise activity move baseline/test to setup function/
 class attribute 
@@ -24,6 +29,7 @@ period of day we want)
 - get travis working again
 - update xlabel/ylabel depending on if subplot or not
 - rename actogram_plot to just plots 
+- add helped for set_circadian_time checking float vs string input 
 
 ### TODO later/maybe
 - Write documentation

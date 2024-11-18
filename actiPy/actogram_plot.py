@@ -247,11 +247,9 @@ def plot_activity_profile(data,
     sem.index = datetime_index
     light_mean.index = datetime_index
 
-    # Check if there is a number in the frequency string using regex
-    if re.search(r'\d', freq):  # If there's a number, use the frequency as is
-        freq = pd.Timedelta(freq)
-    else:  # If there's no number, prepend "1" to the frequency
-        freq = pd.Timedelta("1" + freq)  # Prepend '1' to the frequency
+    # Ensure freq has a numeric component
+    if not any(char.isdigit() for char in freq):
+        freq = pd.Timedelta('1' + freq)  # Prepend '1' if missing
     # Extend the light_mean data by one extra period and forward fill
     light_mean = pd.concat([light_mean, pd.Series(
         [light_mean.iloc[-1]], index=[light_mean.index[-1] + pd.Timedelta(freq)])])
@@ -300,9 +298,9 @@ def plot_activity_profile(data,
     # scaled_value = (value - min_value) / (max_value - min_value)
     # * (target_max - target_min) + target_min
 
-    scaled_light_mean = (light_mean - min_light_mean \
-                         ) / (max_light_mean - min_light_mean \
-                         ) * (target_max - target_min) + target_min
+    scaled_light_mean = (light_mean - min_light_mean
+                         ) / (max_light_mean - min_light_mean
+                              ) * (target_max - target_min) + target_min
 
     # Add lights region
     ax.fill_between(
@@ -311,7 +309,7 @@ def plot_activity_profile(data,
         color='grey',
         alpha=0.2
     )
-    
+
     # Add labels, legend, and title
     ax.set_xlabel("Time")
     ax.set_ylabel("Activity")
