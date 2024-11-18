@@ -6,19 +6,12 @@
 
 ## Current todo 
 
-### test set_circadian_time
-- what is going wrong 
-- if 48 hours, is generating much shorter rather than longer.
-- which is actually what I want yes
-- so test is wrong 
-- asking for "2D" as freq which is wrong, want it to be 1/2 first freq
+### 
 
 
 ## TODO
-- test mean activity not 24 hours 
 - testing normalise activity move baseline/test to setup function/
 class attribute 
-- write decorator to check if dataframes are empty 
 - invert light values actogram so shades dark not light
 - add to light remap so can remap based on subjective light/dark (half/what
 period of day we want) 

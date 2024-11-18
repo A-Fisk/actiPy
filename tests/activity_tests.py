@@ -189,17 +189,17 @@ class TestCalculateIV(unittest.TestCase):
 
 class TestNormaliseToBaseline(unittest.TestCase):
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(self):
         """Set up test data for all tests."""
         # Generate test data for multiple days
-        cls.data = generate_test_data(days=10, freq="10s")
+        self.data = generate_test_data(days=10, freq="10s")
+        self.test_data = self.data.iloc[:, 0]
+        self.test_data_baseline = self.data.iloc[:, 1]
 
     def test_normalisation_valid_data(self):
         """Test normalisation with valid data."""
-        test_data = self.data.iloc[:, 0]
-        test_data_baseline = self.data.iloc[:, 1]
-
-        normalised_data = normalise_to_baseline(test_data, test_data_baseline)
+        normalised_data = normalise_to_baseline(
+            self.test_data, self.test_data_baseline)
 
         # Check that the result is a DataFrame or Series
         self.assertIsInstance(
@@ -227,10 +227,9 @@ class TestNormaliseToBaseline(unittest.TestCase):
         """
         zero_series = pd.Series([0, 0, 0], index=pd.date_range(
             "2024-01-01", periods=3, freq="10min"))
-        baseline_data = self.data.iloc[:, 1]
         with self.assertRaises(
                 ValueError, msg="Input data consists only of zeros."):
-            normalise_to_baseline(zero_series, baseline_data)
+            normalise_to_baseline(zero_series, self.test_data_baseline)
 
     def test_zero_baseline_raises_error(self):
         """
@@ -239,10 +238,9 @@ class TestNormaliseToBaseline(unittest.TestCase):
         """
         zero_baseline = pd.Series([0, 0, 0], index=pd.date_range(
             "2024-01-01", periods=3, freq="10min"))
-        test_data = self.data.iloc[:, 0]
         with self.assertRaises(
                 ValueError, msg="Input baseline_data consists only of zeros."):
-            normalise_to_baseline(test_data, zero_baseline)
+            normalise_to_baseline(self.test_data, zero_baseline)
 
 
 class TestLightPhaseActivity(unittest.TestCase):
