@@ -1,11 +1,49 @@
 [![Build Status](https://travis-ci.org/A-Fisk/actigraphy_analysis.png?branch=master)](https://travis-ci.org/A-Fisk/actigraphy_analysis)  
+
+
 # ActiPy
 
-ActiPy is a python module for analysing circadian activity data. 
-It was developed using non-invasive activity monitoring for laboratory
- rodents but is applicable across species and monitoring devices.
+ActiPy is a python module for circadian analysis of activity data.
+It was developed using laboratory
+rodents data but is applicable across species and monitoring devices.
 
 ## Getting Started
+
+Before you continue you need an installation of Anaconda, available 
+[here](https://www.anaconda.com/download).
+
+Then in a terminal of your choice run the following 
+
+1. Go to directory you want to download the repo into 
+```
+cd path/to/directory
+```
+
+2. Clone the repo 
+```
+git clone https://github.com/aa-fisk/actiPy.git
+```
+
+3. Move into the repo
+``` 
+cd actiPy
+```
+
+4. Create conda environment
+``` 
+conda env create -f environment.yml
+```
+
+5. Activate environment
+```
+conda activate actipy_env
+```
+
+You 
+
+
+
+
 
 The dependencies are all listed in the environment.yml file.  
 1. Download the repo  
