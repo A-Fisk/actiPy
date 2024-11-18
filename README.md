@@ -7,6 +7,7 @@ ActiPy is a python module for circadian analysis of activity data.
 It was developed using laboratory
 rodents data but is applicable across species and monitoring devices.
 
+
 ## Getting Started
 
 Before you continue you need an installation of Anaconda, available 
@@ -14,55 +15,75 @@ Before you continue you need an installation of Anaconda, available
 
 Then in a terminal of your choice run the following 
 
-1. Go to directory you want to download the repo into 
 ```
-cd path/to/directory
-```
-
-2. Clone the repo 
-```
-git clone https://github.com/aa-fisk/actiPy.git
+pip install git+https://github.com/aa-fisk/actiPy.git@main
 ```
 
-3. Move into the repo
+This will install actiPy in your current python environment.
+Package dependencies are listed in the environment.yml file 
+
+
+## Using actiPy
+
+actiPy provides a set of functions to analyse and plot the most common
+methods of circadian analysis.
+
+Create some test data 
+```
+import pandas as pd
+import numpy as np
+import actiPy.activity as act
+
+# Create a sample dataset with time-series activity data
+index = pd.date_range(start='2024-01-01', periods=86400, freq="10s")
+values = np.random.randint(0, 100, size=(len(index),2))
+
+df = pd.DataFrame(values, index=index)
 ``` 
-cd actiPy
+
+# Calculate IV 
+```
+# Use actiPy's calculate_IV function to compute Interdaily Variability
+iv = act.calculate_IV(df)
+
+# Print the result
+print(f"Interdaily Variability (IV): {iv:.4f}")
 ```
 
-4. Create conda environment
-``` 
+# Plot actogram 
+```
+# Use actiPy plot_actogram
+import actiPy.actogram_plot as actp
+
+actp.plot_actogram(df, showfig=True)
+```
+
+
+
+## Contributing 
+
+1. Fork this repository
+2. Create branch `git checkout -b <branch-name>
+3. Create conda environment
+```
 conda env create -f environment.yml
-```
-
-5. Activate environment
-```
 conda activate actipy_env
 ```
+4. Make your changes and commit them `git commit -m <commit-message>
+    - ensure test suite is passing by running `make all`
+5. Push to the original branch `git push origin <project_name>/<location>`
+6. Create pull request 
 
-You 
-
-
-
-
-
-The dependencies are all listed in the environment.yml file.  
-1. Download the repo  
-``` git clone https://github.com/A-Fisk/actiPy.git```  
-2. Get started by creating an environment using conda package management
-``` conda env create -f environment.yml ``` 
-
-## Build notes  
-
-1. Conda package management  
-2. Travis CI for testing  
-
-## Versioning
-
-Version control using git/github. 
 
 ## Authors  
 
 - Angus Fisk 
+    - [angus_fisk@hotmail.com](angus_fisk@hotmail.com)
+    
+
+## Licence 
+
+- Available under GNU general public licence 
 
 
 

@@ -6,7 +6,9 @@
 
 ## Current todo 
 
-### Plot waveform
+### Documentation write 
+- README actually want to install as package so no to repo?
+
 
 ## TODO
 - combine waveform into plotting script?
@@ -21,6 +23,7 @@ period of day we want)
 - Calculate period 
 - update check datetime index decorator - add to non zero values?
 - episode finding 
+- get travis working again
 
 ### TODO later/maybe
 - Write documentation
@@ -30,6 +33,8 @@ period of day we want)
 - write what expected in docstring parameters 
 - detect activity onset 
 - gui to select start/end of sleep period? 
+- conda env create in makefile?
+- Add to pypi
 
 ## Questions
 - how deal with start time? 
@@ -69,7 +74,10 @@ period of day we want)
 
 - Example of how to structure repo 
 https://github.com/navdeep-G/samplemod/tree/master 
-
+- example of package template
+https://github.com/allenai/python-package-template/
+- README guide
+https://dev.to/scottydocs/how-to-write-a-kickass-readme-5af9
 
 # Scripts 
 ### Create environment

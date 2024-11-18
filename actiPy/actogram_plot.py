@@ -177,3 +177,4 @@ def plot_actogram(data,
 
 
 def plot_activity_profile():
+    return None
