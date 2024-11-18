@@ -146,6 +146,46 @@ def validate_input(func):
     return wrapper
 
 
+def invert_light_values(func):
+    """
+    Decorator to invert the light values in the given light column.
+    Used to ensure that on plots, darkness is shaded grey, not the lights.
+
+    Parameters
+    ----------
+    func : function
+        The function to wrap.
+
+    Returns
+    -------
+    function
+        The wrapped function with inverted light values in the specified column.
+    """
+    @wraps(func)
+    def wrapper(data, *args, light_col=-1, **kwargs):
+        # Ensure light_col is a valid index
+        if isinstance(light_col, int):  # If specified as column index
+            light_col_name = data.columns[light_col]
+        elif isinstance(light_col, str):  # If specified as column name
+            light_col_name = light_col
+        else:
+            raise ValueError(
+                "light_col must be an integer index or a column name")
+
+        # Copy the data to avoid modifying the original DataFrame
+        data = data.copy()
+
+        # Invert the light values
+        max_value = data[light_col_name].max()
+        min_value = data[light_col_name].min()
+        data[light_col_name] = max_value - data[light_col_name] + min_value
+
+        # Call the original function with the modified data
+        return func(data, *args, **kwargs)
+
+    return wrapper
+
+
 #### Functions ####
 # function to set data by circadian period
 @validate_input

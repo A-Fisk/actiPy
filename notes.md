@@ -6,12 +6,9 @@
 
 ## Current todo 
 
-### 
-
+### Invert light values 
 
 ## TODO
-- testing normalise activity move baseline/test to setup function/
-class attribute 
 - invert light values actogram so shades dark not light
 - add to light remap so can remap based on subjective light/dark (half/what
 period of day we want) 

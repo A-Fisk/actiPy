@@ -40,6 +40,6 @@ df['lights'] = df.index.hour.map(
 # Display the first few rows of the DataFrame
 print(df.head())
 
-df_min = df.resample("1min").mean()
-# test resampling and see what happening to lights
-df_ct = prep.set_circadian_time(df_min, period='48h')
+# test actogram plot with invert light values
+fig, ax, params_dict = actp.plot_activity_profile(
+    df, showfig=True, resample=True, resample_freq='h')

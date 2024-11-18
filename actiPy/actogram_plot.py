@@ -4,14 +4,17 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gs
+from matplotlib.transforms import Bbox
 import actiPy.activity as act
 import actiPy.preprocessing as prep
 
 
+@prep.validate_input
+@prep.invert_light_values
 @prep.plot_kwarg_decorator
 def plot_actogram(data,
                   subject_no=0,
-                  LDR=-1,
+                  light_col=-1,
                   ylim=[0, 120],
                   fig=False,
                   subplot=False,
@@ -33,7 +36,7 @@ def plot_actogram(data,
         and single column for each day
     subject_no : int
         which column number to plot, defaults to 0
-    LDR : int
+    light_col : int
         which columns contains light information, defaults to -1
     ylim : list of two ints
         set the minimum and maximum values to plot
@@ -72,7 +75,7 @@ def plot_actogram(data,
 
     # select the correct data to plot for activity and light
     col_data = data.columns[subject_no]
-    ldr_col = data.columns[LDR]
+    ldr_col = data.columns[light_col]
     data_plot = data.loc[:, col_data].copy()
     data_light = data.loc[:, ldr_col].copy()
 
@@ -102,6 +105,7 @@ def plot_actogram(data,
     # create a new figure if not passed one when called
     if not fig:
         fig, ax = plt.subplots(nrows=(len(days) - 1))
+        fig.subplots_adjust(hspace=0)
 
     # add subplots to figure if passed when called
     else:
@@ -129,7 +133,7 @@ def plot_actogram(data,
         fill_data = curr_data.where(curr_data > 0)
         fill_ldr = curr_data_light.where(curr_data_light > 0)
 
-        # plot the data and LDR
+        # plot the data and light_col
         axis.fill_between(fill_ldr.index,
                           fill_ldr,
                           alpha=ldralpha,
@@ -147,9 +151,6 @@ def plot_actogram(data,
         spines = ["left", "right", "top", "bottom"]
         for pos in spines:
             axis.spines[pos].set_visible(False)
-
-    if not fig:
-        fig.subplots_adjust(hspace=0)
 
     # create the y labels for every 10th row
     day_markers = np.arange(0, len(days), 10)
@@ -178,6 +179,7 @@ def plot_actogram(data,
 
 
 @prep.validate_input
+@prep.invert_light_values
 @prep.plot_kwarg_decorator
 def plot_activity_profile(data,
                           col=0,
@@ -290,7 +292,7 @@ def plot_activity_profile(data,
     max_light_mean = light_mean.max()
 
     # Define the target range
-    target_max = 10 * ylim[1]
+    target_max = 1000 * ylim[1]
     target_min = -1 * target_max
 
     # Scale the light_mean values to the target range
@@ -313,7 +315,7 @@ def plot_activity_profile(data,
     # Add labels, legend, and title
     ax.set_xlabel("Time")
     ax.set_ylabel("Activity")
-    ax.set_ylim(ylim)
+    ax.set_ylim([0, ylim[1]])
     ax.set_title("Activity Profile with Mean and SEM")
     ax.legend()
 
