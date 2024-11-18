@@ -6,22 +6,13 @@
 
 ## Current todo 
 
-### light_phase_activity
-- do we want each day? or summary of total? 
-- previously have done it just giving us one value for the whole 
-data 
-- could add in something to generate each day but unless I need it,
-why bother? 
+### relative amplitude
+ - Hmmmmm most_active_hours is across all, whereas I want 
+ seaparetly for each column
 
-- also do we want to add sum/count versions? 
-- start with sum because more important 
-
-- what to test? 
-- multiple cols/single col? 
-
+- test weird active and inactive times 
 
 ## TODO
-- light phase activity
 - relative amplitude 
 - combine waveform into plotting script?
 - test mean activity not 24 hours 
@@ -29,7 +20,11 @@ why bother?
 class attribute 
 - write decorator to check if dataframes are empty 
 - invert light values actogram so shades dark not light
-
+- add to light remap so can remap based on subjective light/dark (half/what
+period of day we want) 
+- calculate interdaily stability
+- Calculate period 
+- update check datetime index decorator - add to non zero values?
 
 ### TODO later/maybe
 - Write documentation
@@ -37,6 +32,8 @@ class attribute
 - move day_label_size to decorator 
 - rename analysis? 
 - write what expected in docstring parameters 
+- detect activity onset 
+- gui to select start/end of sleep period? 
 
 ## Questions
 - how deal with start time? 

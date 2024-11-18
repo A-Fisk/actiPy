@@ -36,7 +36,7 @@ act_day = [10, 100]
 light_night = [0, 1]
 light_day = [500, 501]
 df['sensor1'] = df.index.hour.map(
-    lambda x: assign_values(x, act_night, act_day))
+    lambda x: assign_values(x, act_day, act_day))
 df['sensor2'] = df.index.hour.map(
     lambda x: assign_values(x, act_night, act_day))
 df['lights'] = df.index.hour.map(
@@ -45,5 +45,4 @@ df['lights'] = df.index.hour.map(
 print(df.head())
 
 
-
-light_phase = act.light_phase_activity(df)
+rel_amp = act.relative_amplitude(df)

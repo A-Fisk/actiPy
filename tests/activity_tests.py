@@ -11,7 +11,7 @@ sys.path.insert(
     0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 if True:  # noqa E402
     from actiPy.activity import calculate_mean_activity, calculate_IV, \
-        normalise_to_baseline, light_phase_activity
+        normalise_to_baseline, light_phase_activity, relative_amplitude
 
 
 np.random.seed(42)
@@ -43,12 +43,12 @@ def assign_values(hour, night, day):
         return np.random.randint(night[0], night[1])
 
 
-def generate_test_data(days=10, 
+def generate_test_data(days=10,
                        freq="10s",
-                       act_night = [0, 10],
-                       act_day = [10, 100],
-                       light_night = [0, 1],
-                       light_day = [500, 501]):
+                       act_night=[0, 10],
+                       act_day=[10, 100],
+                       light_night=[0, 1],
+                       light_day=[500, 501]):
     """
     Generate test data for activity and light levels.
 
@@ -234,12 +234,12 @@ class TestNormaliseToBaseline(unittest.TestCase):
 
     def test_zero_baseline_raises_error(self):
         """
-        Test that an error is raised if the baseline data consists 
+        Test that an error is raised if the baseline data consists
         only of zeros.
         """
         zero_baseline = pd.Series([0, 0, 0], index=pd.date_range(
             "2024-01-01", periods=3, freq="10min"))
-        test_data = self.data.iloc[:,0]
+        test_data = self.data.iloc[:, 0]
         with self.assertRaises(
                 ValueError, msg="Input baseline_data consists only of zeros."):
             normalise_to_baseline(test_data, zero_baseline)
@@ -259,8 +259,8 @@ class TestLightPhaseActivity(unittest.TestCase):
             "Light": [100, 100, 100, 100, 100]
         })
         self.real_data = generate_test_data(
-                days=10, freq="10s", act_night=[0,1], act_day=[99,100],
-                light_night=[0,1], light_day=[500,501])
+            days=10, freq="10s", act_night=[0, 1], act_day=[99, 100],
+            light_night=[0, 1], light_day=[500, 501])
 
     def test_valid_data(self):
         # Test normal case
@@ -269,15 +269,15 @@ class TestLightPhaseActivity(unittest.TestCase):
         self.assertAlmostEqual(result["Activity"], expected)
 
     def test_real_data(self):
-        # test with generated data 
+        # test with generated data
         result = light_phase_activity(
-                self.real_data, light_col=-1, light_val=150)
+            self.real_data, light_col=-1, light_val=150)
         expected = [100, 100, 100]
-        
+
         # Use numpy.allclose() for array comparison
-        self.assertTrue(np.allclose(result.values, expected), 
+        self.assertTrue(np.allclose(result.values, expected),
                         msg=f"Expected {expected}, but got {result.values}")
-    
+
     def test_default_parameters(self):
         # Test using default parameters
         result = light_phase_activity(self.data)
@@ -288,12 +288,12 @@ class TestLightPhaseActivity(unittest.TestCase):
         # Test with empty DataFrame
         with self.assertRaises(ValueError):
             result = light_phase_activity(
-                    self.empty_data, light_col=1, light_val=150)
+                self.empty_data, light_col=1, light_val=150)
 
     def test_no_light_data(self):
         # Test with no light data exceeding light_val
         result = light_phase_activity(
-                self.no_light_data, light_col=1, light_val=150)
+            self.no_light_data, light_col=1, light_val=150)
         self.assertEqual(result["Activity"], 0)
 
     def test_invalid_light_col(self):
@@ -310,9 +310,82 @@ class TestLightPhaseActivity(unittest.TestCase):
         with self.assertRaises(TypeError):
             light_phase_activity(data, light_col=1, light_val=150)
 
-if __name__ == '__main__':
-    unittest.main()
 
+class TestRelativeAmplitude(unittest.TestCase):
+
+    def setUp(self):
+        """Set up test data."""
+        # Create a datetime index
+        index = pd.date_range("2024-01-01", "2024-01-02", freq="h")
+
+        # Sample data for testing
+        self.test_data = pd.DataFrame({
+            # Linearly increasing activity
+            "Activity1": np.linspace(1, 24, len(index)),
+            # Linearly decreasing activity
+            "Activity2": np.linspace(24, 1, len(index)),
+            "Light": np.random.randint(0, 100, len(index))  # Random activity
+        }, index=index)
+
+    def test_linear_increasing_activity(self):
+        """Test relative amplitude with linearly increasing activity."""
+        result = relative_amplitude(
+            self.test_data, active_time=5, inactive_time=5)
+        self.assertAlmostEqual(result["Activity1"], 1.0, places=2)
+
+    def test_linear_decreasing_activity(self):
+        """Test relative amplitude with linearly decreasing activity."""
+        result = relative_amplitude(
+            self.test_data, active_time=5, inactive_time=5)
+        self.assertAlmostEqual(result["Activity2"], 1.0, places=2)
+
+    def test_random_activity(self):
+        """Test relative amplitude with random activity."""
+        result = relative_amplitude(
+            self.test_data, active_time=5, inactive_time=5)
+        self.assertTrue(0 <= result["Light"] <= 1.0)
+
+    def test_single_column(self):
+        """Test relative amplitude with a single column."""
+        data = self.test_data[["Activity1"]]  # Select only one column
+        result = relative_amplitude(data, active_time=5, inactive_time=5)
+        self.assertEqual(len(result), 1)
+        self.assertAlmostEqual(result["Activity1"], 1.0, places=2)
+
+    def test_non_datetime_index(self):
+        """Test that the function raises an error for non-datetime index."""
+        data = self.test_data.copy()
+        data.reset_index(drop=True, inplace=True)  # Remove the datetime index
+        with self.assertRaises(ValueError):
+            relative_amplitude(data, active_time=5, inactive_time=5)
+
+    def test_different_time_unit(self):
+        """Test relative amplitude with different time units."""
+        result = relative_amplitude(
+            self.test_data,
+            time_unit="2h",
+            active_time=2,
+            inactive_time=2)
+        self.assertTrue("Activity1" in result)
+        self.assertTrue("Activity2" in result)
+        self.assertTrue("Light" in result)
+
+    def test_edge_case_no_data(self):
+        """Test with an empty DataFrame."""
+        empty_data = pd.DataFrame(columns=["Activity1", "Activity2", "Light"])
+        with self.assertRaises(ValueError):
+            result = relative_amplitude(
+                    empty_data, active_time=5, inactive_time=5)
+
+    def test_edge_case_insufficient_active_inactive_hours(self):
+        """Test with fewer rows than active_time + inactive_time."""
+        small_data = self.test_data.iloc[:3]  # Subset with only 3 rows
+        result = relative_amplitude(small_data, active_time=2, inactive_time=2)
+        self.assertTrue(pd.Series.equals(result, pd.Series({
+            "Activity1": 1.0,
+            "Activity2": 1.0,
+            "Light": 1.0
+        }, name="Relative Amplitude")))
 
 
 if __name__ == "__main_":

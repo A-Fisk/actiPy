@@ -4,7 +4,6 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import actiPy.preprocessing as prep
-idx = pd.IndexSlice
 
 
 @prep.validate_non_zero
@@ -122,13 +121,14 @@ def normalise_to_baseline(data, baseline_data):
 
     return norm_series
 
+
 @prep.validate_non_zero
 def light_phase_activity(data,
                          light_col=-1,
                          light_val=150):
     """
     Light_phase_activity
-    Calculates the percentage of activity occurring during the light phase 
+    Calculates the percentage of activity occurring during the light phase
     compared to the total activity in the dataset.
 
     Parameters
@@ -136,7 +136,7 @@ def light_phase_activity(data,
     data : pd.DataFrame
         A time-indexed DataFrame containing activity and light data.
     light_col : int, optional
-        Index of the column that contains light data. 
+        Index of the column that contains light data.
         Default is -1 (the last column).
     light_val : int, optional
         The threshold above which the light is considered "on". Default is 150.
@@ -144,67 +144,83 @@ def light_phase_activity(data,
     Returns
     -------
     pd.Series
-        A Series where each element represents the percentage of activity 
+        A Series where each element represents the percentage of activity
         occurring during the light phase for each column in the DataFrame.
 
     Notes
     -----
     - The function assumes the `data` DataFrame contains numeric data.
     - Activity columns should be numeric and summable.
-    - If no light values exceed the `light_val` threshold, the returned 
+    - If no light values exceed the `light_val` threshold, the returned
       percentage will be 0 for all activity columns.
     - Ensure `data` is not empty and contains the specified `light_col` index.
     """
-    # select activity just during light 
+    # select activity just during light
     light_mask = data.iloc[:, light_col] >= light_val
     light_data = data[light_mask]
 
     # sum up the activity
     light_sum = light_data.sum()
     total_sum = data.sum()
-    
-    # calculate light phase as percentage 
-    light_phase_activity = (light_sum / total_sum) * 100
-    
-    return light_phase_activity
 
-
-
-# TODO test for count per day
-def light_phase_activity_nfreerun(test_df,
-                                  ldr_label: str = "LDR",
-                                  ldr_val: float = 150):
-    light_mask = test_df.loc[:, ldr_label] > ldr_val
-    light_data = test_df[light_mask]
-    light_sum = light_data.sum()
-    total_sum = test_df.sum()
+    # calculate light phase as percentage
     light_phase_activity = (light_sum / total_sum) * 100
 
     return light_phase_activity
 
 
-def light_phase_activity_freerun(test_df,
-                                 start_light="2010-01-01 00:00:00",
-                                 end_light="2010-01-01 12:00:00"):
-    light_data = test_df.loc[idx[:, :, :, start_light:end_light], :]
-    light_sum = light_data.sum()
-    total_sum = test_df.sum()
-    light_phase_activity = light_sum / total_sum
+def relative_amplitude(data,
+                       time_unit="h",
+                       active_time=1,
+                       inactive_time=1):
+    """
+    Relative Amplitude
 
-    return light_phase_activity
+    Calculates the relative amplitude for each column as the difference between
+    the maximum activity during the most active hours and the minimum activity
+    during the least active hours, after resampling the data to an hourly
+    frequency.
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        A DataFrame with a time index and activity columns.
+    active_time : int, optional
+        The number of most active hours to consider. Default is 10.
+    inactive_time : int, optional
+        The number of least active hours to consider. Default is 5.
+
+    Returns
+    -------
+    pd.Series
+        A Series where the index corresponds to the column names from the
+        input data, and the values are the relative amplitude for each column.
 
 
-def relative_amplitude(test_df):
-    hourly_max = test_df.max()
-    hourly_min = test_df.min()
-    hourly_diff = hourly_max - hourly_min
-    hourly_sum = hourly_max + hourly_min
-    relative_amplitude = hourly_diff / hourly_sum
+    """
+    # Resample data to given frequency
+    hourly_data = data.resample(time_unit).mean()
+
+    # Dictionary to store relative amplitude for each column
+    relative_amplitudes = {}
+
+    for column in hourly_data.columns:
+        # Get the most active hours for this column
+        most_active_time = hourly_data[column].nlargest(active_time)
+
+        # Get the least active hours for this column
+        least_active_time = hourly_data[column].nsmallest(inactive_time)
+
+        # Calculate max and min activity
+        max_active = most_active_time.mean()
+        min_inactive = least_active_time.mean()
+
+        # Calculate relative amplitude
+        amplitude_diff = max_active - min_inactive
+        amplitude_sum = max_active + min_inactive
+        relative_amplitudes[column] = amplitude_diff / amplitude_sum
+
+    relative_amplitude = pd.Series(
+        relative_amplitudes, name="Relative Amplitude")
 
     return relative_amplitude
-
-
-def hist_vals(test_data, bins, hist_cols, **kwargs):
-    hist = np.histogram(test_data, bins, **kwargs)
-    hist_vals = pd.DataFrame(hist[0], index=hist_cols)
-    return hist_vals

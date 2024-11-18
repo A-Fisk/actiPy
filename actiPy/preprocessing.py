@@ -1,4 +1,4 @@
-from functools import wraps 
+from functools import wraps
 import pingouin as pg
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -17,7 +17,7 @@ def plot_kwarg_decorator(func):
     :param func: The plotting function to decorate.
     :return: A decorated function that applies plot configurations.
     """
-    @wraps(func) 
+    @wraps(func)
     def wrapper(data, *args, **kwargs):
         # Call the original plotting function
         fig, ax, params_dict = func(data, *args, **kwargs)
@@ -90,7 +90,6 @@ def plot_kwarg_decorator(func):
     return wrapper
 
 
-
 def validate_non_zero(func):
     """
     Decorator to check if any of the DataFrames or Series passed to the function
@@ -100,21 +99,22 @@ def validate_non_zero(func):
     def wrapper(*args, **kwargs):
         # Check all positional arguments
         for arg in args:
-            if isinstance(arg, (pd.DataFrame, pd.Series)) and (arg.values == 0).all():
+            if isinstance(
+                    arg, (pd.DataFrame, pd.Series)) and (
+                    arg.values == 0).all():
                 raise ValueError(f"Input {arg} consists only of zeros.")
-        
+
         # Check all keyword arguments
         for key, value in kwargs.items():
-            if isinstance(value, (pd.DataFrame, pd.Series)) and (value.values == 0).all():
+            if isinstance(
+                    value, (pd.DataFrame, pd.Series)) and (
+                    value.values == 0).all():
                 raise ValueError(f"Input {key} consists only of zeros.")
-        
+
         # Call the original function
         return func(*args, **kwargs)
-    
+
     return wrapper
-
-
-
 
 
 def _drop_level_decorator(func):
