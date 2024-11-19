@@ -6,13 +6,16 @@
 
 ## Current todo 
 
-### Invert light values 
+### Calculate period 
+- so multiple different algorithms
+- which file do I put this in? 
+
+
 
 ## TODO
 - add to light remap so can remap based on subjective light/dark (half/what
 period of day we want) 
 - calculate interdaily stability
-- Calculate period 
 - update check datetime index decorator - add to non zero values?
 - episode finding 
 - get travis working again
@@ -30,6 +33,7 @@ period of day we want)
 - gui to select start/end of sleep period? 
 - conda env create in makefile?
 - Add to pypi
+- fix CI - use circle instead? free? 
 
 ## Questions
 - how deal with start time? 

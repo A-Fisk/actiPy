@@ -1,7 +1,7 @@
 langauge: python
 
 python:
- - "3.7"
+ - "3.12"
 
 install:
   - sudo apt-get update
@@ -22,10 +22,11 @@ install:
 
   # use environment.yml file to build
   - conda env create -f environment.yml 
-  - source activate actigraphy_analysis_environment
+  - conda activate actipy_env
 
 script:
- - python ./tests/preprocessing_tests.py
- - python ./tests/sleep_process_tests.py
+ - python -m unittest ./tests/preprocessing_tests.py
+ - python -m unittest ./tests/activity_tests.py
+ - python -m unittest ./tests/actogram_plot_tests.py
 
  
