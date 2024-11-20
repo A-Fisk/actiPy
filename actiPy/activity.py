@@ -204,7 +204,8 @@ def relative_amplitude(data,
     Raises
     ------
     ValueError
-        If `active_time` + `inactive_time` exceeds the length of the resampled data.
+        If `active_time` + `inactive_time` exceeds the length of the resampled
+        data.
     """
     # Resample data to the given frequency
     hourly_data = data.resample(time_unit).mean()
@@ -239,3 +240,126 @@ def relative_amplitude(data,
         relative_amplitudes, name="Relative Amplitude")
 
     return relative_amplitude
+
+
+def calculate_IS(data, subject_no=0):
+    r"""
+    Calculates the Interdaily Stability (IS) for a given time series of
+    activity data.
+
+    The Interdaily Stability (IS) is a measure of the consistency of an
+    activity pattern across different periods of time (e.g., days). It is
+    defined as the ratio of variance caused by the time periods to the total
+    variance of the data. Higher IS values indicate more stability in the
+    activity pattern.
+
+    The formula for IS is:
+
+    .. math::
+
+        IS = \frac{N \sum_{h=1}^p (M_h - M )^2}{p \sum_{i=1}^N (x_i - M)^2}
+
+    where:
+        - :math:`N` is the total number of observations.
+        - :math:`p` is the number of time points in the period.
+        - :math:`M_h` is the mean value at time point :math:`h`.
+        - :math:`M` is the overall mean.
+        - :math:`x_i` is the value of the observation :math:`i`.
+
+    The result is a ratio of variances that ranges from 0 to 1, where higher
+    values indicate a more stable activity pattern. The function calculates the
+    variance in the activity time series for each time point relative to the
+    overall mean, and compares this to the total variance of the series.
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        The DataFrame containing the activity data for multiple subjects, where
+        each column represents a subject's data over time.
+    subject_no : int, optional
+        The column index of the subject for whom the IS is being calculated.
+        Default is 0.
+
+    Returns
+    -------
+    float
+        The Interdaily Stability value (IS) for the specified subject's data.
+
+    Notes
+    -----
+    The function assumes that the data is organized in time series format,
+    where each row corresponds to a time point, and each column corresponds to
+    a subject's activity data.
+    """
+    # select the data 
+    curr_data = data.iloc[:,subject_no]
+
+    # calculate mean
+    mean_data = calculate_mean_activity(curr_data)
+
+    # get squared deviation from the mean 
+    mean = curr_data.mean()
+    square_deviation = (mean_data - mean) ** 2
+
+    # divide by mean to get variance around the time points 
+    time_variance = square_deviation.sum() / len(square_deviation)
+
+    # divide by total variance 
+    total_variance = curr_data.var()
+    interdaily_stability = time_variance / total_variance 
+
+    return interdaily_stability
+    
+
+
+def _calculate_IS(data, subject_no=0, period="24h"):
+    r"""
+    Calculates Interdaily Stability (IS) - my version? 
+
+    The Interdaily Stability is the ratio of variance caused by the period 
+    to the total variance. It is defined as:
+
+    .. math::
+
+        IS = \frac{N \sum_{h=1}^p (M_h - M )^2}{p \sum_{i=1}^N (x_i - M)^2}
+
+    where:
+        - :math:`N` is the total number of observations.
+        - :math:`p` is the number of time points in the period.
+        - :math:`M_h` is the mean value at time point :math:`h`.
+        - :math:`M` is the overall mean.
+        - :math:`x_i` is the value of the observation :math:`i`.
+
+    The IS value ranges from 0 to 1, the higher the more stable.
+    """
+    # select the data 
+    curr_data = data.iloc[:,subject_no]
+
+    # calculate mean
+    mean_data = calculate_mean_activity(curr_data)
+
+    # sum of squares from mean
+    # extend mean data so matches length of curr_data 
+    multiple_length = len(curr_data) / len(mean_data)
+    repeated_mean_data = pd.Series(
+            np.tile(
+                mean_data.values,
+                (int(multiple_length) + 1)
+            )[:len(curr_data)], index=curr_data.index)
+    
+    # calculate differences square
+    deviation = repeated_mean_data - curr_data
+    square_dev = deviation ** 2
+
+    # group them by time of day
+    square_dev.index = square_dev.index.strftime("%H:%M:%S") 
+    sum_of_squares = square_dev.groupby(square_dev.index).sum()
+
+    # divide by mean to get variance around the time points 
+    time_variance = sum_of_squares.sum() / len(sum_of_squares)
+
+    # divide by total variance 
+    total_variance = curr_data.var()
+    interdaily_stability = time_variance / total_variance 
+
+    return interdaily_stability

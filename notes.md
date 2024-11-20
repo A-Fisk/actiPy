@@ -6,27 +6,25 @@
 
 ## Current todo 
 
-### Calculate period 
-- just use lombscargle for now so have something 
+### - calculate interdaily stability
+- IS 
+- previous notebook in 01_dphil/03_oldgithub
 
-- oh something about observation times not being altered for the sampling
-  interval? 
-- but that shouldn't affect as already doing cycles/observation 
-- doing observation times as * sample_freq made it much better 
-- Now much better but picking up at 25 hours which is ... weird 
+- which version? Published or not? 
+- kind of have to have published version
 
-- what if we give it different hour values ?
-- okay giving different high periods is affecting results? - shouldn't
-high_period = 27 gives at 24.5 hours 
-high_period = 30 gives 25 hours for the same data
-high_period = 300 gives 70 hours 
-- Somthing wrong with the indexing then 
-- freq_hours needed adjusting - done 
+- want to do comparison so kind of want to script both!
+
+- okay done and calculated, but we are getting suuuuper low values for 
+perfect sine wave? 
+- is this correct?
+
+- not quite right, think I want to take the mean at current data
+first? then do the rest? 
+- yeah that's my whole problem with this calculation, have accidentally
+done my own version where low is better 
 
 ## TODO
-- add to light remap so can remap based on subjective light/dark (half/what
-period of day we want) 
-- calculate interdaily stability
 - update check datetime index decorator - add to non zero values?
 - episode finding 
 - get travis working again
@@ -35,6 +33,7 @@ period of day we want)
 - add helped for set_circadian_time checking float vs string input 
 - rename lomb_scargle_period to just find period?
 - move assign_values and generate test data to it's own file? 
+- test actogram/get period with T cycles 
 
 ### TODO later/maybe
 - Write documentation
@@ -49,6 +48,8 @@ period of day we want)
 - fix CI - use circle instead? free? 
 - add in biodare methods 
 - check all docstrings in numpy format 
+- add to light remap so can remap based on subjective light/dark (half/what
+period of day we want) 
 
 ## Questions
 - how deal with start time? 
