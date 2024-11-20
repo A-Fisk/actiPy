@@ -33,6 +33,8 @@ period of day we want)
 - update xlabel/ylabel depending on if subplot or not
 - rename actogram_plot to just plots 
 - add helped for set_circadian_time checking float vs string input 
+- rename lomb_scargle_period to just find period?
+- move assign_values and generate test data to it's own file? 
 
 ### TODO later/maybe
 - Write documentation
@@ -46,6 +48,7 @@ period of day we want)
 - Add to pypi
 - fix CI - use circle instead? free? 
 - add in biodare methods 
+- check all docstrings in numpy format 
 
 ## Questions
 - how deal with start time? 

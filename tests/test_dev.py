@@ -43,6 +43,9 @@ print(df.head())
 
 # test lomb scargle
 
+constant_data = pd.DataFrame(
+    {"sensor1": [1] * len(df)}, index=df.index)
+constant_pmax = 3.12e-5
 
 power = per.lomb_scargle_period(df, high_period=30)
 
@@ -51,6 +54,3 @@ power_df = power["Power_values"]
 fig, ax = plt.subplots()
 ax.plot(power_df.index, power_df.values)
 fig.show()
-
-
-
