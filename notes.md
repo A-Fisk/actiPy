@@ -7,10 +7,21 @@
 ## Current todo 
 
 ### Calculate period 
-- so multiple different algorithms
-- which file do I put this in? 
+- just use lombscargle for now so have something 
 
+- oh something about observation times not being altered for the sampling
+  interval? 
+- but that shouldn't affect as already doing cycles/observation 
+- doing observation times as * sample_freq made it much better 
+- Now much better but picking up at 25 hours which is ... weird 
 
+- what if we give it different hour values ?
+- okay giving different high periods is affecting results? - shouldn't
+high_period = 27 gives at 24.5 hours 
+high_period = 30 gives 25 hours for the same data
+high_period = 300 gives 70 hours 
+- Somthing wrong with the indexing then 
+- freq_hours needed adjusting - done 
 
 ## TODO
 - add to light remap so can remap based on subjective light/dark (half/what
@@ -34,6 +45,7 @@ period of day we want)
 - conda env create in makefile?
 - Add to pypi
 - fix CI - use circle instead? free? 
+- add in biodare methods 
 
 ## Questions
 - how deal with start time? 

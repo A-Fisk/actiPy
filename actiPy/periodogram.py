@@ -1,143 +1,68 @@
-import actiPy.old_periodogram as old
-import actiPy.waveform as wave
-from actiPy.preprocessing import _drop_level_decorator, _groupby_decorator
-import actiPy.preprocessing as prep
+import re
+import pdb
 import pandas as pd
-import matplotlib.pyplot as plt
 import numpy as np
 from astropy.timeseries import LombScargle
-import pathlib
-import sys
-
-sys.path.insert(0, "/Users/angusfisk/Documents/01_PhD_files/"
-                   "07_python_package/actiPy")
+import actiPy.activity as act
+import actiPy.preprocessing as prep
 
 
-@_drop_level_decorator
-def _period_df(data,
-               animal_no: int = 0,
-               low_time: str = "20H",
-               high_time: str = "30H",
-               base_time: str = "10S",
-               base_unit: str = "s",
-               **kwargs):
+@prep.validate_input
+def lomb_scargle_period(data, subject_no=0, low_period=20, high_period=30,
+                        **kwargs):
     """
-    Applies Lombscargle periodogram for given data
-    :param data:
-    :param low_time:
-    :param high_time:
-    :param base_time:
-    :return:
+    Calculates the Lomb-Scargle periodogram for a single column in a DataFrame.
+
+    Parameters:
+        data (pd.DataFrame): Input DataFrame with time-series data.
+            The index represents time, and the columns contain observations.
+        subject_no (int): The positional index of the column to analyze.
+            Default is 0.
+        low_period (float): The shortest period to search for, in hours.
+        high_period (float): The longest period to search for, in hours.
+
+    Returns:
+        dict: A dictionary with the following keys:
+            - "Pmax": Maximum power from the Lomb-Scargle periodogram.
+            - "Period": Period corresponding to the maximum power, in hours.
+            - "Power_values": Power values for all test periods (pd.Series).
     """
+    # Ensure the positional index is valid
+    if subject_no < 0 or subject_no >= len(data.columns):
+        raise IndexError(
+            f"Invalid subject_no {subject_no}. Must be between 0 and"
+            f"{len(data.columns) - 1}.")
 
-    # create x and y values of observations
-    time = np.linspace(0, len(data), len(data))
-    y = data.iloc[:, animal_no].values
+    # get sampling frequency 
+    sample_freq = pd.Timedelta(pd.infer_freq(data.index)).total_seconds()
 
-    # convert all times into the same units (seconds)
-    base_secs = pd.Timedelta(base_time).total_seconds()
-    low_secs = pd.Timedelta(low_time).total_seconds()
-    high_secs = pd.Timedelta(high_time).total_seconds()
+    # Define the range of frequencies to search in cycles/sample
+    low_freq = 1 / (high_period * 3600) # convert to seconds 
+    high_freq = 1 / (low_period * 3600)
+    freq = np.linspace(low_freq, high_freq, 10000)
+    freq_hours = 1/ (freq * 3600)
 
-    # frequency is number of 1/ cycles per base = base / cycles
-    low_freq = base_secs / low_secs
-    high_freq = base_secs / high_secs
-    frequency = np.linspace(high_freq, low_freq, 1000)
+    # Observation times and values
+    observation_times = np.arange(len(data)) * sample_freq 
+    observations = data.iloc[:, subject_no].values
+    
+    # Calculate Lomb-Scargle periodogram
+    power = LombScargle(
+        observation_times,
+        observations).power(
+        freq,
+        method='auto')
 
-    # find the LombScargle power at each frequency point
-    power = LombScargle(time, y).power(frequency)
+    # Handle cases where the power calculation fails
+    if pd.isnull(power[0]):
+        return {"Pmax": 0, "Period": 0, "Power_values": pd.Series()}
 
-    # create index of timedeltas for dataframe
-    index = pd.to_timedelta((1 / frequency), unit=base_unit) * base_secs
+    # Maximum power and its corresponding period in hours 
+    pmax = power.max()
+    best_period = freq_hours[np.argmax(power)]
 
-    # create df out of the power values
-    power_df = pd.DataFrame(power, index=index)
+    # Create a power series for the output
+    power_values = pd.Series(
+            power, index=freq_hours).sort_index()
 
-    return power_df
-
-
-def idxmax_level(data,
-                 level_drop: int = 0):
-    """
-    Drops the given level and returns idx max
-    :param data:
-    :param level_drop:
-    :return:
-    """
-    data.index = data.index.droplevel(level_drop)
-    max_values = data.idxmax()
-
-    return max_values
-
-
-def get_period(data,
-               return_power: bool = False,
-               return_periods: bool = True,
-               drop_lastcol: bool = True,
-               **kwargs):
-    """
-    Function to apply lombscargle periodogram then get the internal period
-    for each animal
-    :param data:
-    :return:
-    """
-    grouped_dict = {}
-    cols = data.columns
-    if drop_lastcol:
-        cols = data.columns[:-1]
-    for animal, label in enumerate(cols):
-        grouped_periods = data.groupby(level=0).apply(_period_df,
-                                                      animal_no=animal,
-                                                      reset_level=False,
-                                                      **kwargs)
-        grouped_dict[label] = grouped_periods
-
-    power_df = pd.concat(grouped_dict, axis=1)
-
-    periods = idxmax_level(power_df, level_drop=0)
-
-    periods.index = periods.index.droplevel(1)
-
-    # implement bool statement so can get power df for all animals if required
-    if return_power and return_periods:
-        return periods, power_df
-    if return_power:
-        return power_df
-    if return_periods:
-        return periods
-
-
-def _enright_periodogram(data,
-                         level: list = [0],
-                         low: float = 20,
-                         high: float = 30,
-                         **kwargs):
-    """
-    Calls enright periodogram on the data and returns power df
-    done using old terrible class of circadian analysis
-    :param data:
-    :return:
-    """
-    data.index = data.index.droplevel(level=level)
-    # create object, call function, return df
-    obj = old.Circadian_Analysis(data)
-    obj.Enright_Periodogram(low=low, high=high)
-    power_df = obj.Qp_DF
-
-    return power_df
-
-
-def get_secs_mean_df(test_periods):
-    secs_values = test_periods.values.astype(np.int64)
-    secs_df = pd.DataFrame(
-        secs_values,
-        index=test_periods.index,
-        columns=test_periods.columns
-    )
-    secs_mean = secs_df.mean(axis=1)
-    secs_sem = secs_df.sem(axis=1)
-    secs_mean_df = pd.DataFrame(index=secs_mean.index)
-    secs_mean_df["Mean"] = pd.to_timedelta(secs_mean)
-    secs_mean_df["sem"] = pd.to_timedelta(secs_sem)
-
-    return secs_mean_df
+    return {"Pmax": pmax, "Period": best_period, "Power_values": power_values}

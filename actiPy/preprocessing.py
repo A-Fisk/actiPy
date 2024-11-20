@@ -250,5 +250,3 @@ def set_circadian_time(
     )
 
     return reindexed_data
-
-

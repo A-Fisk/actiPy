@@ -13,10 +13,11 @@ if True:  # noqa E402
     import actiPy.activity as act
     import actiPy.preprocessing as prep
     import actiPy.actogram_plot as actp
+    import actiPy.periodogram as per
     from tests.activity_tests import assign_values
 
 # Create time index for 10 days with 10-second intervals
-days = 10
+days = 100
 freq = '10s'
 time_index = pd.date_range(start='2000-01-01', periods=8640 * days, freq=freq)
 
@@ -27,12 +28,12 @@ df = pd.DataFrame(index=time_index)
 
 
 # create activity columns
-act_night = [0, 10]
-act_day = [10, 100]
+act_night = [0, 5]
+act_day = [50, 100]
 light_night = [0, 1]
 light_day = [500, 501]
 df['sensor1'] = df.index.hour.map(
-    lambda x: assign_values(x, act_day, act_night))
+    lambda x: assign_values(x, act_night, act_day))
 df['sensor2'] = df.index.hour.map(
     lambda x: assign_values(x, act_night, act_day))
 df['lights'] = df.index.hour.map(
@@ -40,6 +41,16 @@ df['lights'] = df.index.hour.map(
 # Display the first few rows of the DataFrame
 print(df.head())
 
-# test actogram plot with invert light values
-fig, ax, params_dict = actp.plot_activity_profile(
-    df, showfig=True, resample=True, resample_freq='h')
+# test lomb scargle
+
+
+power = per.lomb_scargle_period(df, high_period=30)
+
+power_df = power["Power_values"]
+
+fig, ax = plt.subplots()
+ax.plot(power_df.index, power_df.values)
+fig.show()
+
+
+
