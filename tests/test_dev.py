@@ -17,7 +17,7 @@ if True:  # noqa E402
     from tests.activity_tests import assign_values
 
 # Create time index for 10 days with 10-second intervals
-days = 10
+days = 100
 freq = '10s'
 time_index = pd.date_range(start='2000-01-01', periods=8640 * days, freq=freq)
 
@@ -30,6 +30,7 @@ df = pd.DataFrame(index=time_index)
 # create activity columns
 act_night = [0, 5]
 act_day = [50, 100]
+total = [0,100]
 light_night = [0, 1]
 light_day = [500, 501]
 df['sensor1'] = df.index.hour.map(
@@ -46,23 +47,23 @@ sensor3_sine_wave = np.sin(2 * np.pi * time_in_seconds)
 # Scale the sine wave to be between 0 and 100
 # Shift by 1 to make it between 0 and 2, then scale by 50
 df["sensor3"] = (sensor3_sine_wave + 1) * 50
+df['sensor4'] = df.index.hour.map(
+    lambda x: assign_values(x, total, total))
 df['lights'] = df.index.hour.map(
     lambda x: assign_values(x, light_night, light_day))
 
 # Display the first few rows of the DataFrame
 print(df.head())
-data = df
-subject_no = 0
 
-# select the data
-curr_data = data.iloc[:, subject_no]
+col_no = 3
 
-# calculate mean
-mean_data = act.calculate_mean_activity(curr_data)
+# TV 
+TV = act.calculate_TV(df, subject_no=col_no)
+IS = act.calculate_IS(df, subject_no=col_no)
 
-# sum of squares from the mean
-mean = curr_data.mean()
+# try for hourly instead 
+df_hourly = df.resample("h").mean()
+TV_h = act.calculate_TV(df, subject_no=col_no)
+IS_h = act.calculate_IS(df, subject_no=col_no)
 
-
-# test calculate_IS
-IS = act.calculate_IS(df, subject_no=2)
+print(f"TV {TV}, IS {IS}, TV_h {TV_h}, IS_h {IS_h}")

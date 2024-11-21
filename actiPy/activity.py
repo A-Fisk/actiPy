@@ -311,13 +311,13 @@ def calculate_IS(data, subject_no=0):
 
     return interdaily_stability
 
-
-def calculate_TV(data, subject_no=0, period="24h"):
+@prep.validate_input
+def calculate_TV(data, subject_no=0):
     r"""
     Calculates Timepoint Variability
 
-    The Interdaily Stability is the ratio of variance caused by the period
-    to the total variance. It is defined as:
+    The Timepoint Variability is the ratio of variance around each timepoint
+    to the total variance. It is defined as follows
 
     .. math::
 
@@ -368,9 +368,10 @@ def calculate_TV(data, subject_no=0, period="24h"):
     # group them by time of day
     square_dev.index = square_dev.index.strftime("%H:%M:%S")
     sum_of_squares = square_dev.groupby(square_dev.index).sum()
-
-    # divide by mean to get variance around the time points
-    time_variance = sum_of_squares.sum() / len(sum_of_squares)
+    
+    # divide by number of measurements at each timepoint
+    timepoint_variance = sum_of_squares / multiple_length
+    time_variance = timepoint_variance.mean()
 
     # divide by total variance
     total_variance = curr_data.var()

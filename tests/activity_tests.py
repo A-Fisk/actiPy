@@ -12,8 +12,7 @@ sys.path.insert(
 if True:  # noqa E402
     from actiPy.activity import calculate_mean_activity, calculate_IV, \
         normalise_to_baseline, light_phase_activity, relative_amplitude, \
-        calculate_IS
-
+        calculate_IS, calculate_TV
 
 
 np.random.seed(42)
@@ -84,6 +83,12 @@ def generate_test_data(days=10,
     df["sensor2"] = df.index.hour.map(
         lambda x: assign_values(x, act_night, act_day)
     )
+    # 24 hour sine wave between 0-100 for sensor 3
+    time_in_seconds = (
+        df.index.hour * 3600 + df.index.minute * 60 + df.index.second) / 86400
+    sensor3_sine_wave = np.sin(2 * np.pi * time_in_seconds)
+    df["sensor3"] = (sensor3_sine_wave + 1) * 50
+    
     df["lights"] = df.index.hour.map(
         lambda x: assign_values(x, light_night, light_day)
     )
@@ -266,7 +271,7 @@ class TestLightPhaseActivity(unittest.TestCase):
 
     def test_valid_data(self):
         # Test normal case
-        result = light_phase_activity(self.data, light_col=1, light_val=150)
+        result = light_phase_activity(self.data, light_col=-1, light_val=150)
         expected = (20 + 30 + 40) / (10 + 20 + 30 + 40 + 50) * 100
         self.assertAlmostEqual(result["Activity"], expected)
 
@@ -274,10 +279,10 @@ class TestLightPhaseActivity(unittest.TestCase):
         # test with generated data
         result = light_phase_activity(
             self.real_data, light_col=-1, light_val=150)
-        expected = [100, 100, 100]
-
+        expected = [100, 100, 50, 100]
+        
         # Use numpy.allclose() for array comparison
-        self.assertTrue(np.allclose(result.values, expected),
+        self.assertTrue(np.allclose(np.round(result.values), expected),
                         msg=f"Expected {expected}, but got {result.values}")
 
     def test_default_parameters(self):
@@ -290,12 +295,12 @@ class TestLightPhaseActivity(unittest.TestCase):
         # Test with empty DataFrame
         with self.assertRaises(ValueError):
             result = light_phase_activity(
-                self.empty_data, light_col=1, light_val=150)
+                self.empty_data, light_col=-1, light_val=150)
 
     def test_no_light_data(self):
         # Test with no light data exceeding light_val
         result = light_phase_activity(
-            self.no_light_data, light_col=1, light_val=150)
+            self.no_light_data, light_col=-1, light_val=150)
         self.assertEqual(result["Activity"], 0)
 
     def test_invalid_light_col(self):
@@ -310,7 +315,7 @@ class TestLightPhaseActivity(unittest.TestCase):
             "Light": ["A", "B", "C", "D", "E"]
         })
         with self.assertRaises(TypeError):
-            light_phase_activity(data, light_col=1, light_val=150)
+            light_phase_activity(data, light_col=-1, light_val=150)
 
 
 class TestRelativeAmplitude(unittest.TestCase):
@@ -417,7 +422,7 @@ class TestCalculateIS(unittest.TestCase):
         """Test calculate_IS with an empty DataFrame."""
         empty_data = pd.DataFrame(columns=["sensor1", "sensor2"])
         with self.assertRaises(
-                ValueError, 
+                ValueError,
                 msg="Function should raise ValueError for an empty DataFrame."):
             calculate_IS(empty_data, subject_no=0)
 
@@ -432,12 +437,12 @@ class TestCalculateIS(unittest.TestCase):
     def test_calculate_is_constant_data(self):
         """Test calculate_IS with constant data."""
         constant_data = generate_test_data(
-                days=10, 
-                freq="10s",
-                act_night=[1,2],
-                act_day=[1,2],
-                light_night=[1,2],
-                light_day=[1,2])
+            days=10,
+            freq="10s",
+            act_night=[1, 2],
+            act_day=[1, 2],
+            light_night=[1, 2],
+            light_day=[1, 2])
 
         is_value = calculate_IS(constant_data, subject_no=0)
         self.assertTrue(
@@ -447,10 +452,73 @@ class TestCalculateIS(unittest.TestCase):
     def test_calculate_is_invalid_subject(self):
         """Test calculate_IS with an invalid subject index."""
         with self.assertRaises(
-                IndexError, 
+                IndexError,
                 msg="Function should raise IndexError for"
                     "an invalid subject index."):
             calculate_IS(self.data, subject_no=10)
+
+
+class TestCalculateTV(unittest.TestCase):
+
+    def setUp(self):
+        # Generate test data
+        self.data = generate_test_data(
+            days=10, freq="10s", act_night=[
+                0, 10], act_day=[
+                10, 100])
+        np.random.seed(42)  # Set a seed for reproducibility
+
+    def test_calculate_tv_basic(self):
+        """Test calculate_TV with valid data."""
+        tv_value = calculate_TV(self.data, subject_no=0)
+        self.assertIsInstance(tv_value, float, "The result should be a float.")
+        self.assertGreaterEqual(tv_value, 0, "TV should be >= 0.")
+        self.assertLessEqual(tv_value, 1, "TV should be <= 1.")
+
+    def test_calculate_tv_different_subjects(self):
+        """Test calculate_TV with different subject columns."""
+        tv_sensor1 = calculate_TV(self.data, subject_no=0)
+        tv_sensor2 = calculate_TV(self.data, subject_no=1)
+        self.assertNotEqual(
+            tv_sensor1,
+            tv_sensor2,
+            "TV values for different subjects should differ if data differs.")
+
+    def test_calculate_tv_empty_data(self):
+        """Test calculate_TV with an empty DataFrame."""
+        empty_data = pd.DataFrame(columns=["sensor1", "sensor2"])
+        with self.assertRaises(
+                ValueError, 
+                msg="Function should raise IndexError for an empty DataFrame."):
+            calculate_TV(empty_data, subject_no=0)
+
+    def test_calculate_tv_single_row(self):
+        """Test calculate_TV with a single row of data."""
+        single_row_data = self.data.iloc[:1]
+        tv_value = calculate_TV(single_row_data, subject_no=0)
+        self.assertTrue(
+            np.isnan(tv_value),
+            "TV should be NaN for single-row data due to lack of variance.")
+
+    def test_calculate_tv_constant_data(self):
+        """Test calculate_TV with constant data."""
+        constant_data = generate_test_data(
+            days=10,
+            freq="10s",
+            act_night=[1, 2],
+            act_day=[1, 2],
+            light_night=[1, 2],
+            light_day=[1, 2])
+
+        tv_value = calculate_TV(constant_data, subject_no=0)
+        self.assertTrue(
+            np.isnan(tv_value),
+            "TV should be NaN for constant data due to zero total variance.")
+
+    def test_calculate_tv_invalid_subject(self):
+        """Test calculate_TV with an invalid subject index."""
+        with self.assertRaises(IndexError, msg="Function should raise IndexError for an invalid subject index."):
+            calculate_TV(self.data, subject_no=10)
 
 
 if __name__ == "__main_":

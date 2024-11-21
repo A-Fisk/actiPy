@@ -27,6 +27,43 @@ Options
 - lets try TV - timepoint variability   
 
 - what do I want to test? 
+- test with perfect sine wave, should be close to 1 / 0 IS/TV 
+- hmmm so what is upper value? - perfectly noisy data? 
+- noisy data gives 8.98, does it depend on frequency?
+- 10s = 8.98
+- h = 8.98 too so doesn't depend
+- how about length? that is for 10 days 
+- 100 days is 98.9 hmm
+
+- 100 days random noisy data 
+- TV 0.9899
+- IS 0.01
+- TV_h 0.9899
+- IS_h 0.01
+
+- 100 days sine wave 
+- TV 1.09 e-32
+- IS 0.99
+- TV_h 1.09 e-32
+- IS_h 0.99
+
+- 10 days noise 
+- TV 0.89
+- IS 0.1
+- TV_h 0.898
+- IS_h 0.1
+
+- 10 days sine
+- TV 1.47 e-33
+- IS  0.99
+- TV_h 1.47e-33
+- IS_h 0.99
+
+- so what edge cases differentiate the results of these two? 
+- unstable rhythms check 
+- separate project 
+
+
 
 ## TODO
 - update check datetime index decorator - add to non zero values?
@@ -38,6 +75,7 @@ Options
 - rename lomb_scargle_period to just find period?
 - move assign_values and generate test data to it's own file? 
 - test actogram/get period with T cycles 
+- test IS/IV catch out invalid value scalar divide (dividing by 0)
 
 ### TODO later/maybe
 - Write documentation
