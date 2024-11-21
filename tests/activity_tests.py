@@ -11,7 +11,9 @@ sys.path.insert(
     0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 if True:  # noqa E402
     from actiPy.activity import calculate_mean_activity, calculate_IV, \
-        normalise_to_baseline, light_phase_activity, relative_amplitude
+        normalise_to_baseline, light_phase_activity, relative_amplitude, \
+        calculate_IS
+
 
 
 np.random.seed(42)
@@ -383,6 +385,72 @@ class TestRelativeAmplitude(unittest.TestCase):
         with self.assertRaises(ValueError):
             result = relative_amplitude(
                 small_data, active_time=2, inactive_time=2)
+
+
+class TestCalculateIS(unittest.TestCase):
+
+    def setUp(self):
+        # Generate test data
+        self.data = generate_test_data(
+            days=10, freq="10s", act_night=[
+                0, 10], act_day=[
+                10, 100])
+        np.random.seed(42)  # Set a seed for reproducibility
+
+    def test_calculate_is_basic(self):
+        """Test calculate_IS with valid data."""
+        is_value = calculate_IS(self.data, subject_no=0)
+        self.assertIsInstance(is_value, float, "The result should be a float.")
+        self.assertGreaterEqual(is_value, 0, "IS should be >= 0.")
+        self.assertLessEqual(is_value, 1, "IS should be <= 1.")
+
+    def test_calculate_is_different_subjects(self):
+        """Test calculate_IS with different subject columns."""
+        is_sensor1 = calculate_IS(self.data, subject_no=0)
+        is_sensor2 = calculate_IS(self.data, subject_no=1)
+        self.assertNotEqual(
+            is_sensor1,
+            is_sensor2,
+            "IS values for different subjects should differ if data differs.")
+
+    def test_calculate_is_empty_data(self):
+        """Test calculate_IS with an empty DataFrame."""
+        empty_data = pd.DataFrame(columns=["sensor1", "sensor2"])
+        with self.assertRaises(
+                ValueError, 
+                msg="Function should raise ValueError for an empty DataFrame."):
+            calculate_IS(empty_data, subject_no=0)
+
+    def test_calculate_is_single_row(self):
+        """Test calculate_IS with a single row of data."""
+        single_row_data = self.data.iloc[:1]
+        is_value = calculate_IS(single_row_data, subject_no=0)
+        self.assertTrue(
+            np.isnan(is_value),
+            "IS should be NaN for single-row data due to lack of variance.")
+
+    def test_calculate_is_constant_data(self):
+        """Test calculate_IS with constant data."""
+        constant_data = generate_test_data(
+                days=10, 
+                freq="10s",
+                act_night=[1,2],
+                act_day=[1,2],
+                light_night=[1,2],
+                light_day=[1,2])
+
+        is_value = calculate_IS(constant_data, subject_no=0)
+        self.assertTrue(
+            np.isnan(is_value),
+            "IS should be NaN for constant data due to zero total variance.")
+
+    def test_calculate_is_invalid_subject(self):
+        """Test calculate_IS with an invalid subject index."""
+        with self.assertRaises(
+                IndexError, 
+                msg="Function should raise IndexError for"
+                    "an invalid subject index."):
+            calculate_IS(self.data, subject_no=10)
 
 
 if __name__ == "__main_":

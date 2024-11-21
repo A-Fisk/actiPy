@@ -242,6 +242,7 @@ def relative_amplitude(data,
     return relative_amplitude
 
 
+@prep.validate_input
 def calculate_IS(data, subject_no=0):
     r"""
     Calculates the Interdaily Stability (IS) for a given time series of
@@ -291,37 +292,50 @@ def calculate_IS(data, subject_no=0):
     where each row corresponds to a time point, and each column corresponds to
     a subject's activity data.
     """
-    # select the data 
-    curr_data = data.iloc[:,subject_no]
+    # select the data
+    curr_data = data.iloc[:, subject_no]
 
     # calculate mean
     mean_data = calculate_mean_activity(curr_data)
 
-    # get squared deviation from the mean 
+    # get squared deviation from the mean
     mean = curr_data.mean()
     square_deviation = (mean_data - mean) ** 2
 
-    # divide by mean to get variance around the time points 
+    # divide by mean to get variance around the time points
     time_variance = square_deviation.sum() / len(square_deviation)
 
-    # divide by total variance 
+    # divide by total variance
     total_variance = curr_data.var()
-    interdaily_stability = time_variance / total_variance 
+    interdaily_stability = time_variance / total_variance
 
     return interdaily_stability
-    
 
 
-def _calculate_IS(data, subject_no=0, period="24h"):
+def calculate_TV(data, subject_no=0, period="24h"):
     r"""
-    Calculates Interdaily Stability (IS) - my version? 
+    Calculates Timepoint Variability
 
-    The Interdaily Stability is the ratio of variance caused by the period 
+    The Interdaily Stability is the ratio of variance caused by the period
     to the total variance. It is defined as:
 
     .. math::
 
-        IS = \frac{N \sum_{h=1}^p (M_h - M )^2}{p \sum_{i=1}^N (x_i - M)^2}
+    \begin{equation*}
+    TV=
+    \frac{\sum_{h=1}^P}{P} \frac{S^2_h}{S^2}
+    \end{equation*}
+
+
+    \begin{equation*}
+    TV=
+    \frac{\sum_{h=1}^P \frac{\sum_{x=1}^N (x_i-x_h)^2}{N}}{P \frac{\sum_{i=1}^N (x_i - \bar x)^2}{N}}
+    \end{equation*}
+
+    \begin{equation*}
+    TV=
+    \frac{\sum_{h=1}^P \sum_{x=1}^N (x_i-x_h)^2}{P \sum_{i=1}^N (x_i - \bar x)^2}
+    \end{equation*}
 
     where:
         - :math:`N` is the total number of observations.
@@ -330,36 +344,36 @@ def _calculate_IS(data, subject_no=0, period="24h"):
         - :math:`M` is the overall mean.
         - :math:`x_i` is the value of the observation :math:`i`.
 
-    The IS value ranges from 0 to 1, the higher the more stable.
+    The TV value ranges from 0 to 1, lower is more stable.
     """
-    # select the data 
-    curr_data = data.iloc[:,subject_no]
+    # select the data
+    curr_data = data.iloc[:, subject_no]
 
     # calculate mean
     mean_data = calculate_mean_activity(curr_data)
 
     # sum of squares from mean
-    # extend mean data so matches length of curr_data 
+    # extend mean data so matches length of curr_data
     multiple_length = len(curr_data) / len(mean_data)
     repeated_mean_data = pd.Series(
-            np.tile(
-                mean_data.values,
-                (int(multiple_length) + 1)
-            )[:len(curr_data)], index=curr_data.index)
-    
-    # calculate differences square
+        np.tile(
+            mean_data.values,
+            (int(multiple_length) + 1)
+        )[:len(curr_data)], index=curr_data.index)
+
+    # calculate differences square of each time point from that timepoint mean
     deviation = repeated_mean_data - curr_data
     square_dev = deviation ** 2
 
     # group them by time of day
-    square_dev.index = square_dev.index.strftime("%H:%M:%S") 
+    square_dev.index = square_dev.index.strftime("%H:%M:%S")
     sum_of_squares = square_dev.groupby(square_dev.index).sum()
 
-    # divide by mean to get variance around the time points 
+    # divide by mean to get variance around the time points
     time_variance = sum_of_squares.sum() / len(sum_of_squares)
 
-    # divide by total variance 
+    # divide by total variance
     total_variance = curr_data.var()
-    interdaily_stability = time_variance / total_variance 
+    timepoint_variability = time_variance / total_variance
 
-    return interdaily_stability
+    return timepoint_variability

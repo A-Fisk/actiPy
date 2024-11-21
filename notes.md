@@ -10,19 +10,23 @@
 - IS 
 - previous notebook in 01_dphil/03_oldgithub
 
-- which version? Published or not? 
-- kind of have to have published version
-
-- want to do comparison so kind of want to script both!
-
-- okay done and calculated, but we are getting suuuuper low values for 
-perfect sine wave? 
-- is this correct?
-
-- not quite right, think I want to take the mean at current data
-first? then do the rest? 
 - yeah that's my whole problem with this calculation, have accidentally
 done my own version where low is better 
+
+- how have my version vs the other version
+- want to do full investigation but that's later 
+- for now what do I call my version?
+Options 
+- IS_fisk
+- Easy to access, bit wankery, can change later
+- \_calculate_IS 
+- also easy to access, suggests less important though
+- Something descriptive?
+- timepoint_stability?
+- since we want low number variation seems good thing to have in title 
+- lets try TV - timepoint variability   
+
+- what do I want to test? 
 
 ## TODO
 - update check datetime index decorator - add to non zero values?
@@ -50,6 +54,7 @@ done my own version where low is better
 - check all docstrings in numpy format 
 - add to light remap so can remap based on subjective light/dark (half/what
 period of day we want) 
+- write script comparing IS and TV 
 
 ## Questions
 - how deal with start time? 
