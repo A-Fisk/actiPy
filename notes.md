@@ -13,7 +13,12 @@
 - able to add min_length
 - able to add min_activity?
 
-
+- allow for minimum intensity? so if doesn't get above 3 then doesn't break
+episode
+- allow interruptions? 
+- what does allow interruptions mean? if time from end of x to start of x+1 is
+  < value then get rid of it 
+  
 
 ## TODO
 - episode finding 

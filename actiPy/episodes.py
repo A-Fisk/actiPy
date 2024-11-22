@@ -16,38 +16,71 @@ import actiPy.preprocessing as prep
 # df
 
 
+@prep.validate_input
 def find_episodes(data,
-                  inactive_episodes=False,
-                  allow_interruptions=False,
-                  min_length="1S",
+                  subject_no=0,
+                  min_length="1s",
+                  max_interruption="0s",
                   *args,
                   **kwargs):
     """
-    Identifies episodes in a time series of activity data.
+    Identifies episodes in a time series of activity data for a specific subject,
+    optionally merging episodes if interruptions between them are below a given
+    threshold.
 
-    Parameters:
-    - data (pd.Series): Raw activity data with a time-based index.
-    - inactive_episodes (bool): If True, finds inactive episodes (where value == 0).
-                                If False, finds activity episodes (value > 0).
-    - allow_interruptions (bool): If True, allows for interruptions in episodes
-                                  by applying additional filtering.
-    - min_length (str or pd.Timedelta): Minimum duration for an episode to be included,
-                                        default is "1S" (1 second).
-    - *args, **kwargs: Additional arguments passed to the filtering function.
+    Parameters
+    ----------
+    data : pd.DataFrame
+        The activity data for multiple subjects, where each column represents
+        a subject's activity over time, and the index is a time-based index.
+    subject_no : int, optional
+        The column index of the subject to analyze. Default is 0.
+    min_length : str or pandas.Timedelta, optional
+        The minimum duration for an episode to be included in the results.
+        Can be specified as a string (e.g., "1s", "5m") or a `pandas.Timedelta`
+        object.  Default is "1s".
+    max_interruption : str or pandas.Timedelta, optional
+        The maximum allowable interruption between episodes for them to be
+        considered a single episode. If the interruption is below this threshold,
+        the episodes are merged. Can be specified as a string (e.g., "1s", "5m")
+        or a `pandas.Timedelta` object. Default is "0s" (no merging).
+    *args : tuple
+        Additional positional arguments passed to downstream filtering functions.
+    **kwargs : dict
+        Additional keyword arguments passed to downstream filtering functions.
 
-    Returns:
-    - pd.Series: A series where the index represents the start time of episodes,
-                 and the values represent the duration of each episode in seconds.
+    Returns
+    -------
+    pandas.Series
+        A Series where the index represents the start time of valid episodes,
+        and the values represent the duration of each episode in seconds.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> import numpy as np
+    >>> index = pd.date_range("2024-01-01", periods=100, freq="1s")
+    >>> data = pd.DataFrame({
+    ...     "Subject 1": np.random.choice([0, 1], size=100, p=[0.8, 0.2]),
+    ...     "Subject 2": np.random.choice([0, 1], size=100, p=[0.7, 0.3]),
+    ... }, index=index)
+    >>> find_episodes(data, subject_no=0, min_length="3s", max_interruption="2s")
+    2024-01-01 00:00:15    7.0
+    2024-01-01 00:00:45    5.0
+    dtype: float64
     """
+    # select single column
+    curr_data = data.iloc[:, subject_no]
+
     # Determine the threshold for episode identification
-    zero_data = (data == 0) 
-    episode_data = data[target_condition]
+    zero_data = (curr_data == 0)
+    episode_data = curr_data[zero_data]
 
     # Identify the time differences between consecutive points
     shifted_index = episode_data.index.to_series().shift(-1)  # Shift index forward
     episode_durations = (
         shifted_index - episode_data.index.to_series()
-        ).dropna().dt.total_seconds()
+    ).dropna().dt.total_seconds()
 
     # Filter episodes based on minimum length
     min_length_seconds = pd.Timedelta(min_length).total_seconds()
@@ -56,8 +89,44 @@ def find_episodes(data,
     # Create a Series for valid episodes
     episodes = pd.Series(
         valid_episodes.values,
-        index=valid_episodes.index,
-        name=data.name)
+        index=valid_episodes.index)
+
+    # Handle merging of episodes based on max_interruption
+    if max_interruption != "0s":
+        max_interruption_seconds = pd.Timedelta(
+            max_interruption).total_seconds()
+        merged_episodes = []
+        current_start = None
+        current_duration = 0
+
+        for start_time, duration in episodes.items():
+            if current_start is None:
+                current_start = start_time
+                current_duration = duration
+            else:
+                interruption = (
+                    start_time - (
+                        current_start + pd.Timedelta(
+                            seconds=current_duration)
+                    )
+                ).total_seconds()
+                if interruption <= max_interruption_seconds:
+                    # Merge episodes
+                    current_duration += interruption + duration
+                else:
+                    # Save the current episode and start a new one
+                    merged_episodes.append((current_start, current_duration))
+                    current_start = start_time
+                    current_duration = duration
+
+        # Append the last episode
+        if current_start is not None:
+            merged_episodes.append((current_start, current_duration))
+
+        # Convert merged episodes into a Series
+        episodes = pd.Series(
+            {start: duration for start, duration in merged_episodes}
+        )
 
     return episodes
 
