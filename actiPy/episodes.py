@@ -5,12 +5,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from IPython.core.debugger import set_trace
-
 import actiPy.preprocessing as prep
-from actiPy.preprocessing import _drop_level_decorator, _name_decorator, \
-    _remove_lights_decorator, sep_by_index_decorator
-from actiPy.plots import multiple_plot_kwarg_decorator,  \
-    show_savefig_decorator, set_title_decorator
 
 # function to create episode dataframe
 # starting off by working on just a single
@@ -19,6 +14,52 @@ from actiPy.plots import multiple_plot_kwarg_decorator,  \
 # and then return a series <- later problem
 # to loop over and do for everything in the
 # df
+
+
+def find_episodes(data,
+                  inactive_episodes=False,
+                  allow_interruptions=False,
+                  min_length="1S",
+                  *args,
+                  **kwargs):
+    """
+    Identifies episodes in a time series of activity data.
+
+    Parameters:
+    - data (pd.Series): Raw activity data with a time-based index.
+    - inactive_episodes (bool): If True, finds inactive episodes (where value == 0).
+                                If False, finds activity episodes (value > 0).
+    - allow_interruptions (bool): If True, allows for interruptions in episodes
+                                  by applying additional filtering.
+    - min_length (str or pd.Timedelta): Minimum duration for an episode to be included,
+                                        default is "1S" (1 second).
+    - *args, **kwargs: Additional arguments passed to the filtering function.
+
+    Returns:
+    - pd.Series: A series where the index represents the start time of episodes,
+                 and the values represent the duration of each episode in seconds.
+    """
+    # Determine the threshold for episode identification
+    zero_data = (data == 0) 
+    episode_data = data[target_condition]
+
+    # Identify the time differences between consecutive points
+    shifted_index = episode_data.index.to_series().shift(-1)  # Shift index forward
+    episode_durations = (
+        shifted_index - episode_data.index.to_series()
+        ).dropna().dt.total_seconds()
+
+    # Filter episodes based on minimum length
+    min_length_seconds = pd.Timedelta(min_length).total_seconds()
+    valid_episodes = episode_durations[episode_durations >= min_length_seconds]
+
+    # Create a Series for valid episodes
+    episodes = pd.Series(
+        valid_episodes.values,
+        index=valid_episodes.index,
+        name=data.name)
+
+    return episodes
 
 
 def _episode_finder(data,
@@ -155,8 +196,6 @@ def filter_episodes(
     return episodes_filtered
 
 
-@_name_decorator
-@_drop_level_decorator
 def episode_find_df(data,
                     LDR=-1,
                     remove_lights=True,
@@ -242,11 +281,6 @@ def check_episode_max(data,
 # Functions to plot histogram of data
 
 
-@set_title_decorator
-@show_savefig_decorator
-@multiple_plot_kwarg_decorator
-@_remove_lights_decorator
-@_drop_level_decorator
 def _deprec_episode_histogram(data,
                               fig=None,
                               ax=None,
@@ -289,9 +323,6 @@ def _deprec_episode_histogram(data,
     }
 
 
-@sep_by_index_decorator
-@set_title_decorator
-@multiple_plot_kwarg_decorator
 def episode_histogram(data_list,
                       LDR: int = -1,
                       logx: bool = True,
@@ -376,7 +407,6 @@ def convert_data_to_unit(data,
     return data_new
 
 
-@_remove_lights_decorator
 def _stack_all_values(data):
     """
     gets all values for all animals in a single column

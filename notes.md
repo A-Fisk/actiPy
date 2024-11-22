@@ -42,7 +42,7 @@
 - check all docstrings in numpy format 
 - add to light remap so can remap based on subjective light/dark (half/what
 period of day we want) 
-
+- changelog for versions? 
 
 ## Questions
 - how deal with start time? 
