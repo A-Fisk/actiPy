@@ -88,7 +88,7 @@ def generate_test_data(days=10,
         df.index.hour * 3600 + df.index.minute * 60 + df.index.second) / 86400
     sensor3_sine_wave = np.sin(2 * np.pi * time_in_seconds)
     df["sensor3"] = (sensor3_sine_wave + 1) * 50
-    
+
     df["lights"] = df.index.hour.map(
         lambda x: assign_values(x, light_night, light_day)
     )
@@ -280,7 +280,7 @@ class TestLightPhaseActivity(unittest.TestCase):
         result = light_phase_activity(
             self.real_data, light_col=-1, light_val=150)
         expected = [100, 100, 50, 100]
-        
+
         # Use numpy.allclose() for array comparison
         self.assertTrue(np.allclose(np.round(result.values), expected),
                         msg=f"Expected {expected}, but got {result.values}")
@@ -488,7 +488,7 @@ class TestCalculateTV(unittest.TestCase):
         """Test calculate_TV with an empty DataFrame."""
         empty_data = pd.DataFrame(columns=["sensor1", "sensor2"])
         with self.assertRaises(
-                ValueError, 
+                ValueError,
                 msg="Function should raise IndexError for an empty DataFrame."):
             calculate_TV(empty_data, subject_no=0)
 

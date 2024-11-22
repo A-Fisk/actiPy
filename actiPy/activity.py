@@ -311,6 +311,7 @@ def calculate_IS(data, subject_no=0):
 
     return interdaily_stability
 
+
 @prep.validate_input
 def calculate_TV(data, subject_no=0):
     r"""
@@ -368,7 +369,7 @@ def calculate_TV(data, subject_no=0):
     # group them by time of day
     square_dev.index = square_dev.index.strftime("%H:%M:%S")
     sum_of_squares = square_dev.groupby(square_dev.index).sum()
-    
+
     # divide by number of measurements at each timepoint
     timepoint_variance = sum_of_squares / multiple_length
     time_variance = timepoint_variance.mean()

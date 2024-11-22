@@ -6,13 +6,19 @@
 
 ## Current todo 
 
-### 
+### Episode finder 
 
+- what do I want ? 
+- episodes defined as between 0 and 0
+- able to add min_length
+- able to add min_activity?
 
 
 
 ## TODO
 - episode finding 
+- move branches around so working on development not testing? 
+- move and merge to A-Fisk github 
 - get travis working again
 - update xlabel/ylabel depending on if subplot or not
 - rename actogram_plot to just plots 
@@ -26,7 +32,6 @@
 - Write documentation
 - switch to venv 
 - move day_label_size to decorator 
-- rename analysis? 
 - write what expected in docstring parameters 
 - detect activity onset 
 - gui to select start/end of sleep period? 
@@ -37,7 +42,7 @@
 - check all docstrings in numpy format 
 - add to light remap so can remap based on subjective light/dark (half/what
 period of day we want) 
-- write script comparing IS and TV 
+
 
 ## Questions
 - how deal with start time? 

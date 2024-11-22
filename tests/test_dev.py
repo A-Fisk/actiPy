@@ -30,7 +30,7 @@ df = pd.DataFrame(index=time_index)
 # create activity columns
 act_night = [0, 5]
 act_day = [50, 100]
-total = [0,100]
+total = [0, 100]
 light_night = [0, 1]
 light_day = [500, 501]
 df['sensor1'] = df.index.hour.map(
@@ -57,11 +57,11 @@ print(df.head())
 
 col_no = 3
 
-# TV 
+# TV
 TV = act.calculate_TV(df, subject_no=col_no)
 IS = act.calculate_IS(df, subject_no=col_no)
 
-# try for hourly instead 
+# try for hourly instead
 df_hourly = df.resample("h").mean()
 TV_h = act.calculate_TV(df, subject_no=col_no)
 IS_h = act.calculate_IS(df, subject_no=col_no)
