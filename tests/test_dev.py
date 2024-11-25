@@ -56,5 +56,12 @@ df['lights'] = df.index.hour.map(
 # Display the first few rows of the DataFrame
 print(df.head())
 
+from episode_finder_tests import TestFindEpisodes
 
-episodes = ep.find_episodes(df)
+episode_cls = TestFindEpisodes
+episode_cls.setUp(episode_cls)
+
+data = episode_cls.data
+
+episodes = ep.find_episodes(data)
+

@@ -1,6 +1,7 @@
 # Scripts for finding episodes
 # can be sleep or activity episodes!
 
+import pdb 
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -83,13 +84,22 @@ def find_episodes(data,
     ).dropna().dt.total_seconds()
 
     # Filter episodes based on minimum length
-    min_length_seconds = pd.Timedelta(min_length).total_seconds()
-    valid_episodes = episode_durations[episode_durations >= min_length_seconds]
+    # get frequency and filter out epsisodes that are just consecutive 0s 
+    min_length_measure = pd.Timedelta(pd.infer_freq(curr_data.index))
+    min_length_time = pd.Timedelta(min_length)
+    if min_length_measure.total_seconds() > min_length_time.total_seconds():
+        min_length_use = min_length_measure
+    else:
+        min_length_use = min_length_time
+    min_length_seconds = min_length_use.total_seconds()
+    valid_episodes = episode_durations[episode_durations > min_length_seconds]
 
-    # Create a Series for valid episodes
+    # Create a Series for valid episodes 
+    # duration - frequency so episode duration not just conecutive 0s
+    # index - min length for same reason 
     episodes = pd.Series(
-        valid_episodes.values,
-        index=valid_episodes.index)
+        (valid_episodes.values - min_length_measure.total_seconds()),
+        index=(valid_episodes.index + min_length_measure))
 
     # Handle merging of episodes based on max_interruption
     if max_interruption != "0s":
@@ -127,6 +137,8 @@ def find_episodes(data,
         episodes = pd.Series(
             {start: duration for start, duration in merged_episodes}
         )
+        # filter for min duration 
+        pdb.set_trace()
 
     return episodes
 
@@ -186,7 +198,7 @@ def _episode_finder(data,
     # find the unit of time - assuming stationary
     basic_time_unit = data.index[1] - data.index[0]
     extended_time_unit = ((2 * basic_time_unit) -
-                          pd.Timedelta("1S")).total_seconds()
+                          pd.Timedelta("1s")).total_seconds()
     if "min_length" in kwargs:
         extended_time_unit = pd.Timedelta(kwargs["min_length"]).total_seconds()
     episode_lengths_filtered = episode_series[
@@ -206,7 +218,7 @@ def _episode_finder(data,
 def filter_episodes(
         raw_data,
         episode_data,
-        length_val: str = "10S",
+        length_val: str = "10s",
         intensity_val: int = 30,
         **kwargs):
     '''
@@ -221,7 +233,7 @@ def filter_episodes(
         original activity dataframe
     episode_data:
         raw episodes from activity dataframe
-    length_val:str "10S"
+    length_val:str "10s"
         interruption time to allow, as a timedelta string
     intensity_val:int 30
         max interruption intensity to allow
@@ -256,7 +268,7 @@ def filter_episodes(
 
     # Add the duration of skipped episode to the main episode
     start_list = episodes_filtered.index[0:-1]
-    end_list = episodes_filtered.index[1:] - pd.Timedelta("1S")
+    end_list = episodes_filtered.index[1:] - pd.Timedelta("1s")
     new_durations = [episode_data.loc[x:y].sum() for
                      x, y in zip(start_list, end_list)]
     new_durations.append(episodes_filtered.iloc[-1])
@@ -331,7 +343,7 @@ def episode_find_df(data,
 
 
 def check_episode_max(data,
-                      max_time="6H",
+                      max_time="6h",
                       LDR=-1,
                       **kwargs):
     """

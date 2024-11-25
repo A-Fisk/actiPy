@@ -13,12 +13,12 @@
 - able to add min_length
 - able to add min_activity?
 
-- allow for minimum intensity? so if doesn't get above 3 then doesn't break
-episode
-- allow interruptions? 
-- what does allow interruptions mean? if time from end of x to start of x+1 is
-  < value then get rid of it 
-  
+- testing
+- test min length and max interruptions
+- what do want? 20s min length and 30s max interruption?
+- currently not filtering out durations if max interruption allowed 
+
+
 
 ## TODO
 - episode finding 
@@ -48,6 +48,8 @@ episode
 - add to light remap so can remap based on subjective light/dark (half/what
 period of day we want) 
 - changelog for versions? 
+- Activity onset 
+- Significance testing of rhythms (chi-square periodogram? how do in actogramJ)
 
 ## Questions
 - how deal with start time? 

@@ -15,32 +15,39 @@ class TestFindEpisodes(unittest.TestCase):
 
     def setUp(self):
         # Generate synthetic test data
-        self.index = pd.date_range("2024-01-01", periods=50, freq="1s")
+        self.index = pd.date_range("2024-01-01", periods=50, freq="10s")
         self.data = pd.DataFrame({
-            "Subject 1": [0, 0, 1, 0, 0, 0, 1, 1, 0, 0] * 5,
-            "Subject 2": [0, 1, 0, 0, 1, 0, 0, 0, 1, 0] * 5
+            "Subject 1": [0, 0, 10, 0, 0, 0, 10, 10, 0, 0] * 5,
+            "Subject 2": [0, 10, 0, 0, 10, 0, 0, 0, 10, 0] * 5
         }, index=self.index)
 
+        self.expected_index_default = pd.to_datetime([
+            "2024-01-01 00:00:20",  # Index 2
+            "2024-01-01 00:01:00",  # Index 6-7
+            "2024-01-01 00:02:00",  # Index 12
+            "2024-01-01 00:02:40",  # Index 16-17
+            "2024-01-01 00:03:40",  # Index 22
+            "2024-01-01 00:04:20",  # Index 26-27
+            "2024-01-01 00:05:20",  # Index 32
+            "2024-01-01 00:06:00",  # Index 36-37
+            "2024-01-01 00:07:00",  # Index 42
+            "2024-01-01 00:07:40"   # Index 46-47
+        ])
+        self.expected_values_default = [10, 20, 10, 20, 10, 20, 10, 20, 10, 20]  
     def test_default_behavior(self):
         # Default min_length="1s" and max_interruption="0s"
         episodes = find_episodes(self.data, subject_no=0)
-        expected_index = pd.to_datetime(
-                ["2024-01-01 00:00:00", 
-                 "2024-01-01 00:00:03",
-                 "2024-01-01 00:00:08", 
-                 "2024-01-01 00:00:13"])
-        expected_values = [2, 3, 2, 3]
+        expected_values = self.expected_values_default
+        expected_index = self.expected_index_default
         pd.testing.assert_series_equal(
             episodes, pd.Series(expected_values, index=expected_index),
             check_dtype=False
         )
-
     def test_min_length(self):
         # Test with a longer min_length
-        episodes = find_episodes(self.data, subject_no=0, min_length="3s")
-        expected_index = pd.to_datetime(
-            ["2024-01-01 00:00:03", "2024-01-01 00:00:13"])
-        expected_values = [3, 3]
+        episodes = find_episodes(self.data, subject_no=0, min_length="20s")
+        expected_index = self.expected_index_default[1::2]
+        expected_values = [x for x in self.expected_values_default if x >= 20]
         pd.testing.assert_series_equal(
             episodes, pd.Series(expected_values, index=expected_index),
             check_dtype=False
@@ -51,10 +58,12 @@ class TestFindEpisodes(unittest.TestCase):
         episodes = find_episodes(
             self.data,
             subject_no=0,
-            max_interruption="2s")
-        expected_index = pd.to_datetime(
-            ["2024-01-01 00:00:00", "2024-01-01 00:00:08"])
-        expected_values = [5, 5]
+            max_interruption="30s")
+        expected_index = self.expected_index_default[::2]
+        expected_values = [
+                self.expected_values_default[i] + \
+                self.expected_values_default[i + 1] + 30 
+        for i in range(0, len(self.expected_values_default), 2)]
         pd.testing.assert_series_equal(
             episodes, pd.Series(expected_values, index=expected_index),
             check_dtype=False
