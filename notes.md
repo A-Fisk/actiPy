@@ -35,17 +35,7 @@
 - something weird with how handling interruptions 
 - going through episodes and checking 
 
-- okay actually don't need to filter again? as already filtering into the
-  episodes? 
-- oooh filtering before reducing times? 
-- so yes this is a behaviour problem, we are filtering out the short ones
-  before then checking for max interruptions so that we are missing out merging
-  the short ones with small interruptions 
- - aaahh how fix? 
- - add filtering to the end not the start? 
- - also adjust the index and durations at the end? actually not durations as
-   that is important 
- - filter out consecutives first, then later do short ones 
+- next check max_interruption logic too 
 
 
 

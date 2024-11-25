@@ -33,7 +33,8 @@ class TestFindEpisodes(unittest.TestCase):
             "2024-01-01 00:07:00",  # Index 42
             "2024-01-01 00:07:40"   # Index 46-47
         ])
-        self.expected_values_default = [10, 20, 10, 20, 10, 20, 10, 20, 10, 20]  
+        self.expected_values_default = [10, 20, 10, 20, 10, 20, 10, 20, 10, 20]
+
     def test_default_behavior(self):
         # Default min_length="1s" and max_interruption="0s"
         episodes = find_episodes(self.data, subject_no=0)
@@ -43,6 +44,7 @@ class TestFindEpisodes(unittest.TestCase):
             episodes, pd.Series(expected_values, index=expected_index),
             check_dtype=False
         )
+
     def test_min_length(self):
         # Test with a longer min_length
         episodes = find_episodes(self.data, subject_no=0, min_length="20s")
@@ -61,9 +63,9 @@ class TestFindEpisodes(unittest.TestCase):
             max_interruption="30s")
         expected_index = self.expected_index_default[::2]
         expected_values = [
-                self.expected_values_default[i] + \
-                self.expected_values_default[i + 1] + 30 
-        for i in range(0, len(self.expected_values_default), 2)]
+            self.expected_values_default[i] +
+            self.expected_values_default[i + 1] + 30
+            for i in range(0, len(self.expected_values_default), 2)]
         pd.testing.assert_series_equal(
             episodes, pd.Series(expected_values, index=expected_index),
             check_dtype=False

@@ -1,7 +1,7 @@
 # Scripts for finding episodes
 # can be sleep or activity episodes!
 
-import pdb 
+import pdb
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -83,66 +83,69 @@ def find_episodes(data,
         shifted_index - episode_data.index.to_series()
     ).dropna().dt.total_seconds()
 
-    # Filter episodes based on minimum length
-    # get frequency and filter out epsisodes that are just consecutive 0s 
-    min_length_measure = pd.Timedelta(pd.infer_freq(curr_data.index))
-    min_length_time = pd.Timedelta(min_length)
-    if min_length_measure.total_seconds() > min_length_time.total_seconds():
-        min_length_use = min_length_measure
-    else:
-        min_length_use = min_length_time
-    min_length_seconds = min_length_use.total_seconds()
-    valid_episodes = episode_durations[episode_durations > min_length_seconds]
+    # Filter out consecutive zero episodes (treat them as one episode)
+    # where goes activity to 0
+    episode_ends = zero_data & ~zero_data.shift(1, fill_value=False)
+    # where goes from 0 to activity
+    episode_starts = zero_data & ~zero_data.shift(-1, fill_value=False)
 
-    # Create a Series for valid episodes 
-    # duration - frequency so episode duration not just conecutive 0s
-    # index - min length for same reason 
-    episodes = pd.Series(
-        (valid_episodes.values - min_length_measure.total_seconds()),
-        index=(valid_episodes.index + min_length_measure))
+    # grab the start and end times 
+    data_freq = pd.Timedelta(pd.infer_freq(curr_data.index))
+    episode_start_times = curr_data.index[episode_starts] + data_freq
+    episode_end_times = curr_data.index[episode_ends]
 
-    # Handle merging of episodes based on max_interruption
+    # Create a DataFrame with episodes
+    episode_df = pd.Series(
+        (episode_start_times - episode_end_times).total_seconds()
+    , index=episode_start_times)
+
+    # Merge episodes based on max_interruption
     if max_interruption != "0s":
-        max_interruption_seconds = pd.Timedelta(
-            max_interruption).total_seconds()
+        max_interruption_td = pd.Timedelta(max_interruption)
         merged_episodes = []
         current_start = None
-        current_duration = 0
-        pdb.set_trace()
-
-        for start_time, duration in episodes.items():
+        current_end = None
+        
+        # go through each start time and duration 
+        for start_time, duration in episode_df.items():
             if current_start is None:
                 current_start = start_time
                 current_duration = duration
             else:
+                # check what the interruption length is between this and last
                 interruption = (
                     start_time - (
                         current_start + pd.Timedelta(
                             seconds=current_duration)
                     )
                 ).total_seconds()
-                if interruption <= max_interruption_seconds:
+                # if short enough 
+                if interruption <= max_interruption_td.total_seconds():
                     # Merge episodes
                     current_duration += interruption + duration
                 else:
-                    # Save the current episode and start a new one
+                    # save current episode and start new one
                     merged_episodes.append((current_start, current_duration))
                     current_start = start_time
-                    current_duration = duration
+                    current_duration = duration 
+    
 
         # Append the last episode
         if current_start is not None:
             merged_episodes.append((current_start, current_duration))
 
-        # Convert merged episodes into a Series
-        episodes = pd.Series(
-            {start: duration for start, duration in merged_episodes}
-        )
-        
-        # filter for min duration # wait what why do I need? 
-        episodes = episodes[episodes > min_length_seconds]
+        # Update the episode DataFrame
+        episode_df = pd.Series(
+                {start: duration for start, duration in merged_episodes})
 
-    return episodes
+    # Finally, filter episodes by min_length
+    min_length_td = pd.Timedelta(min_length)
+    episode_df = episode_df[episode_df > min_length_td.total_seconds()]
+
+    return episode_df
+
+
+
 
 
 def _episode_finder(data,
