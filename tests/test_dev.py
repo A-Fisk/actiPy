@@ -63,5 +63,5 @@ episode_cls.setUp(episode_cls)
 
 data = episode_cls.data
 
-episodes = ep.find_episodes(data)
+episodes = ep.find_episodes(data, subject_no=1)
 

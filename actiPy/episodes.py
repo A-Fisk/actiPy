@@ -108,6 +108,7 @@ def find_episodes(data,
         merged_episodes = []
         current_start = None
         current_duration = 0
+        pdb.set_trace()
 
         for start_time, duration in episodes.items():
             if current_start is None:
@@ -137,8 +138,9 @@ def find_episodes(data,
         episodes = pd.Series(
             {start: duration for start, duration in merged_episodes}
         )
-        # filter for min duration 
-        pdb.set_trace()
+        
+        # filter for min duration # wait what why do I need? 
+        episodes = episodes[episodes > min_length_seconds]
 
     return episodes
 

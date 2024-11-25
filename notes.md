@@ -17,6 +17,36 @@
 - test min length and max interruptions
 - what do want? 20s min length and 30s max interruption?
 - currently not filtering out durations if max interruption allowed 
+- problem filtering valid episodes twice, can I fix that? 
+- do I need to filter before creating valid episodes the first time?
+- or just create episodes 
+
+- how do I test for both? want to get merged episode < min length? 
+- subject 2? 
+- max_interruptions = 10 merges first two, then min_length 20s gets rid of last
+  one 
+
+- getting empty when doing subject 1 min and max, is it just the interruptions
+  causing problems? 
+- subject 1 is fine 
+- okay filtering out is problem, we are getting duration of 20 seconds when
+  should be longer, 40 seconds 
+
+- something weird with how handling interruptions 
+- going through episodes and checking 
+
+- okay actually don't need to filter again? as already filtering into the
+  episodes? 
+- oooh filtering before reducing times? 
+- so yes this is a behaviour problem, we are filtering out the short ones
+  before then checking for max interruptions so that we are missing out merging
+  the short ones with small interruptions 
+ - aaahh how fix? 
+ - add filtering to the end not the start? 
+ - also adjust the index and durations at the end? actually not durations as
+   that is important 
+ - filter out consecutives first, then later do short ones 
+
 
 
 
