@@ -78,9 +78,9 @@ class TestFindEpisodes(unittest.TestCase):
             subject_no=1,
             min_length="20s",
             max_interruption="10s")
-        expected_index = self.data.index[2::10]
+        expected_index = self.data.index[1::10]
+        expected_index.freq = None
         expected_values = [40] * 5
-        pdb.set_trace()
         pd.testing.assert_series_equal(
             episodes, pd.Series(expected_values, index=expected_index),
             check_dtype=False
@@ -88,7 +88,7 @@ class TestFindEpisodes(unittest.TestCase):
 
     def test_no_valid_episodes(self):
         # Test with no episodes meeting min_length criteria
-        episodes = find_episodes(self.data, subject_no=1, min_length="5s")
+        episodes = find_episodes(self.data, subject_no=1, min_length="100s")
         self.assertTrue(episodes.empty)
 
     def test_empty_data(self):
@@ -102,9 +102,9 @@ class TestFindEpisodes(unittest.TestCase):
         episodes = find_episodes(
             self.data,
             subject_no=0,
-            max_interruption="10s")
-        expected_index = pd.to_datetime(["2024-01-01 00:00:00"])
-        expected_values = [50]
+            max_interruption="100s")
+        expected_index = self.expected_index_default[0:1]
+        expected_values = [460]
         pd.testing.assert_series_equal(
             episodes, pd.Series(expected_values, index=expected_index),
             check_dtype=False

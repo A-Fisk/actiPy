@@ -139,7 +139,7 @@ def find_episodes(data,
 
     # Finally, filter episodes by min_length
     min_length_td = pd.Timedelta(min_length)
-    episode_df = episode_df[episode_df > min_length_td.total_seconds()]
+    episode_df = episode_df[episode_df >= min_length_td.total_seconds()]
 
     return episode_df
 

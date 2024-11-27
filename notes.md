@@ -20,9 +20,9 @@
 
 - figured out start/end times and durations, still failing some 
 - test large max interruptions 
+- error is lengths different 10, 1
 
-- test min length and max interruption error
-- start times not correct, hasn't added data_freq to start times 
+
 
 ## TODO
 - episode finding 
