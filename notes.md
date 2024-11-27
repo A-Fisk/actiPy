@@ -20,6 +20,10 @@
 - activate conda environment
 - make all 
 
+- okay using github actions first error is python.app is mac specific
+- easy fix, make it os dependant in the env file 
+- try again 
+
 
 ## TODO
 - get travis working again
