@@ -8,10 +8,17 @@
 
 ### Continuous integration
 - Options
-- Travis $$$ 
-- Circle?
 - Other? github actions!
 
+- github actions seems sensible
+- how to run 
+
+- need .github/workflows/python-package-conda.yml file
+
+- what want?
+- Create conda environment
+- activate conda environment
+- make all 
 
 
 ## TODO
