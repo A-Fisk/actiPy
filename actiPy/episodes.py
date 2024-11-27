@@ -88,16 +88,15 @@ def find_episodes(data,
     episode_ends = zero_data & ~zero_data.shift(1, fill_value=False)
     # where goes from 0 to activity
     episode_starts = zero_data & ~zero_data.shift(-1, fill_value=False)
-
     # grab the start and end times 
     data_freq = pd.Timedelta(pd.infer_freq(curr_data.index))
     episode_start_times = curr_data.index[episode_starts] + data_freq
     episode_end_times = curr_data.index[episode_ends]
-
+    
     # Create a DataFrame with episodes
     episode_df = pd.Series(
-        (episode_start_times - episode_end_times).total_seconds()
-    , index=episode_start_times)
+            (episode_end_times[1:] - episode_start_times[:-1]).total_seconds(), 
+            index=episode_start_times[:-1])
 
     # Merge episodes based on max_interruption
     if max_interruption != "0s":

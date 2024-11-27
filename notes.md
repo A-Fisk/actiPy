@@ -14,31 +14,15 @@
 - able to add min_activity?
 
 - testing
-- test min length and max interruptions
-- what do want? 20s min length and 30s max interruption?
-- currently not filtering out durations if max interruption allowed 
-- problem filtering valid episodes twice, can I fix that? 
-- do I need to filter before creating valid episodes the first time?
-- or just create episodes 
+- failing 
+- default behaviour series are different, expected 4 long, 
+- start from beginning again, what is failing and where?
 
-- how do I test for both? want to get merged episode < min length? 
-- subject 2? 
-- max_interruptions = 10 merges first two, then min_length 20s gets rid of last
-  one 
+- figured out start/end times and durations, still failing some 
+- test large max interruptions 
 
-- getting empty when doing subject 1 min and max, is it just the interruptions
-  causing problems? 
-- subject 1 is fine 
-- okay filtering out is problem, we are getting duration of 20 seconds when
-  should be longer, 40 seconds 
-
-- something weird with how handling interruptions 
-- going through episodes and checking 
-
-- next check max_interruption logic too 
-
-
-
+- test min length and max interruption error
+- start times not correct, hasn't added data_freq to start times 
 
 ## TODO
 - episode finding 
