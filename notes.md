@@ -6,27 +6,10 @@
 
 ## Current todo 
 
-### Continuous integration
-- Options
-- Other? github actions!
-
-- github actions seems sensible
-- how to run 
-
-- need .github/workflows/python-package-conda.yml file
-
-- what want?
-- Create conda environment
-- activate conda environment
-- make all 
-
-- okay using github actions first error is python.app is mac specific
-- easy fix, make it os dependant in the env file 
-- try again 
+### 
 
 
 ## TODO
-- get travis working again
 - update xlabel/ylabel depending on if subplot or not
 - rename actogram_plot to just plots 
 - add helped for set_circadian_time checking float vs string input 
@@ -53,6 +36,7 @@ period of day we want)
 - Activity onset 
 - Significance testing of rhythms (chi-square periodogram? how do in actogramJ)
 - minimum activity in episodes? 
+- add in linux into github actions workflow
 
 ## Questions
 - how deal with start time? 
