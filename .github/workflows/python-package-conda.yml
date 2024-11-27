@@ -16,6 +16,5 @@ jobs:
           environment-file: environment.yml
           auto-update-conda: true
           use-mamba: true  
-      - name: Test with makefile
         run: |
           make all 
