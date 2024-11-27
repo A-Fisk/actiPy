@@ -6,28 +6,11 @@
 
 ## Current todo 
 
-### Episode finder 
-
-- what do I want ? 
-- episodes defined as between 0 and 0
-- able to add min_length
-- able to add min_activity?
-
-- testing
-- failing 
-- default behaviour series are different, expected 4 long, 
-- start from beginning again, what is failing and where?
-
-- figured out start/end times and durations, still failing some 
-- test large max interruptions 
-- error is lengths different 10, 1
+### 
 
 
 
 ## TODO
-- episode finding 
-- move branches around so working on development not testing? 
-- move and merge to A-Fisk github 
 - get travis working again
 - update xlabel/ylabel depending on if subplot or not
 - rename actogram_plot to just plots 
@@ -54,6 +37,7 @@ period of day we want)
 - changelog for versions? 
 - Activity onset 
 - Significance testing of rhythms (chi-square periodogram? how do in actogramJ)
+- minimum activity in episodes? 
 
 ## Questions
 - how deal with start time? 

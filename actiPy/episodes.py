@@ -88,15 +88,15 @@ def find_episodes(data,
     episode_ends = zero_data & ~zero_data.shift(1, fill_value=False)
     # where goes from 0 to activity
     episode_starts = zero_data & ~zero_data.shift(-1, fill_value=False)
-    # grab the start and end times 
+    # grab the start and end times
     data_freq = pd.Timedelta(pd.infer_freq(curr_data.index))
     episode_start_times = curr_data.index[episode_starts] + data_freq
     episode_end_times = curr_data.index[episode_ends]
-    
+
     # Create a DataFrame with episodes
     episode_df = pd.Series(
-            (episode_end_times[1:] - episode_start_times[:-1]).total_seconds(), 
-            index=episode_start_times[:-1])
+        (episode_end_times[1:] - episode_start_times[:-1]).total_seconds(),
+        index=episode_start_times[:-1])
 
     # Merge episodes based on max_interruption
     if max_interruption != "0s":
@@ -104,8 +104,8 @@ def find_episodes(data,
         merged_episodes = []
         current_start = None
         current_end = None
-        
-        # go through each start time and duration 
+
+        # go through each start time and duration
         for start_time, duration in episode_df.items():
             if current_start is None:
                 current_start = start_time
@@ -118,7 +118,7 @@ def find_episodes(data,
                             seconds=current_duration)
                     )
                 ).total_seconds()
-                # if short enough 
+                # if short enough
                 if interruption <= max_interruption_td.total_seconds():
                     # Merge episodes
                     current_duration += interruption + duration
@@ -126,8 +126,7 @@ def find_episodes(data,
                     # save current episode and start new one
                     merged_episodes.append((current_start, current_duration))
                     current_start = start_time
-                    current_duration = duration 
-    
+                    current_duration = duration
 
         # Append the last episode
         if current_start is not None:
@@ -135,16 +134,13 @@ def find_episodes(data,
 
         # Update the episode DataFrame
         episode_df = pd.Series(
-                {start: duration for start, duration in merged_episodes})
+            {start: duration for start, duration in merged_episodes})
 
     # Finally, filter episodes by min_length
     min_length_td = pd.Timedelta(min_length)
     episode_df = episode_df[episode_df >= min_length_td.total_seconds()]
 
     return episode_df
-
-
-
 
 
 def _episode_finder(data,
