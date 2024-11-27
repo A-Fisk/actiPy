@@ -6,19 +6,15 @@
 
 ## Current todo 
 
-### Episode finder 
-
-- what do I want ? 
-- episodes defined as between 0 and 0
-- able to add min_length
-- able to add min_activity?
+### Continuous integration
+- Options
+- Travis $$$ 
+- Circle?
+- Other? github actions!
 
 
 
 ## TODO
-- episode finding 
-- move branches around so working on development not testing? 
-- move and merge to A-Fisk github 
 - get travis working again
 - update xlabel/ylabel depending on if subplot or not
 - rename actogram_plot to just plots 
@@ -43,6 +39,9 @@
 - add to light remap so can remap based on subjective light/dark (half/what
 period of day we want) 
 - changelog for versions? 
+- Activity onset 
+- Significance testing of rhythms (chi-square periodogram? how do in actogramJ)
+- minimum activity in episodes? 
 
 ## Questions
 - how deal with start time? 

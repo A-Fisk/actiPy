@@ -1,53 +1,115 @@
-# Tests for episode finder scripts
-
 import unittest
+import sys
+import os
+import pdb
 import numpy as np
 import pandas as pd
-import actiPy.episode_finder as ep
+import datetime
+sys.path.insert(
+    0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+if True:  # noqa E402
+    from actiPy.episodes import find_episodes
 
-np.random.seed(42)
 
-
-class test_episode_finder(unittest.TestCase):
-    """
-    Class to test functionality of episode finder.
-    Needs to be able to handle 000 - check it rejects
-    if there are no non0 numbers present
-    """
+class TestFindEpisodes(unittest.TestCase):
 
     def setUp(self):
-        # create a test dataframe with a set
-        # number of episodes in it and with a 000
-        # string in there too
-        random_segment = np.random.randint(1, 100, 20)
-        rand_seg_withzero = np.append(random_segment, 0)
-        multiple_episodes = [rand_seg_withzero for x in range(10)]
-        concat_array = np.concatenate(multiple_episodes)
-        trip_zero_seg = np.append(random_segment, np.zeros(3))
-        final_few_episodes = [rand_seg_withzero,
-                              trip_zero_seg,
-                              rand_seg_withzero]
-        final_ep_concat = np.concatenate(final_few_episodes)
-        final_episode_array = np.append(concat_array, final_ep_concat)
+        # Generate synthetic test data
+        self.index = pd.date_range("2024-01-01", periods=50, freq="10s")
+        self.data = pd.DataFrame({
+            "Subject 1": [0, 0, 10, 0, 0, 0, 10, 10, 0, 0] * 5,
+            "Subject 2": [0, 10, 0, 10, 10, 0, 0, 0, 10, 0] * 5
+        }, index=self.index)
 
-        # create index for array
-        index = pd.DatetimeIndex(start='2018-01-01',
-                                 freq="10S",
-                                 periods=len(final_episode_array))
-        episode_series = pd.Series(data=final_episode_array,
-                                   index=index)
-        self.episode_data = episode_series
+        self.expected_index_default = pd.to_datetime([
+            "2024-01-01 00:00:20",  # Index 2
+            "2024-01-01 00:01:00",  # Index 6-7
+            "2024-01-01 00:02:00",  # Index 12
+            "2024-01-01 00:02:40",  # Index 16-17
+            "2024-01-01 00:03:40",  # Index 22
+            "2024-01-01 00:04:20",  # Index 26-27
+            "2024-01-01 00:05:20",  # Index 32
+            "2024-01-01 00:06:00",  # Index 36-37
+            "2024-01-01 00:07:00",  # Index 42
+            "2024-01-01 00:07:40"   # Index 46-47
+        ])
+        self.expected_values_default = [10, 20, 10, 20, 10, 20, 10, 20, 10, 20]
 
-    def test_episode_finder(self):
-        # check it finds the right number of episodes
-        # calc as 12?
-        episodes = ep.episode_finder(self.episode_data)
-        self.assertEqual(len(episodes), 12)
+    def test_default_behavior(self):
+        # Default min_length="1s" and max_interruption="0s"
+        episodes = find_episodes(self.data, subject_no=0)
+        expected_values = self.expected_values_default
+        expected_index = self.expected_index_default
+        pd.testing.assert_series_equal(
+            episodes, pd.Series(expected_values, index=expected_index),
+            check_dtype=False
+        )
+
+    def test_min_length(self):
+        # Test with a longer min_length
+        episodes = find_episodes(self.data, subject_no=0, min_length="20s")
+        expected_index = self.expected_index_default[1::2]
+        expected_values = [x for x in self.expected_values_default if x >= 20]
+        pd.testing.assert_series_equal(
+            episodes, pd.Series(expected_values, index=expected_index),
+            check_dtype=False
+        )
+
+    def test_max_interruption(self):
+        # Test with a max_interruption allowing merging
+        episodes = find_episodes(
+            self.data,
+            subject_no=0,
+            max_interruption="30s")
+        expected_index = self.expected_index_default[::2]
+        expected_values = [
+            self.expected_values_default[i] +
+            self.expected_values_default[i + 1] + 30
+            for i in range(0, len(self.expected_values_default), 2)]
+        pd.testing.assert_series_equal(
+            episodes, pd.Series(expected_values, index=expected_index),
+            check_dtype=False
+        )
+
+    def test_min_length_and_max_interruption(self):
+        # Test with both min_length and max_interruption
+        episodes = find_episodes(
+            self.data,
+            subject_no=1,
+            min_length="20s",
+            max_interruption="10s")
+        expected_index = self.data.index[1::10]
+        expected_index.freq = None
+        expected_values = [40] * 5
+        pd.testing.assert_series_equal(
+            episodes, pd.Series(expected_values, index=expected_index),
+            check_dtype=False
+        )
+
+    def test_no_valid_episodes(self):
+        # Test with no episodes meeting min_length criteria
+        episodes = find_episodes(self.data, subject_no=1, min_length="100s")
+        self.assertTrue(episodes.empty)
+
+    def test_empty_data(self):
+        # Test with empty DataFrame
+        empty_data = pd.DataFrame(columns=["Subject 1"], index=self.index)
+        episodes = find_episodes(empty_data, subject_no=0)
+        self.assertTrue(episodes.empty)
+
+    def test_large_max_interruption(self):
+        # Test with a very large max_interruption that merges all episodes
+        episodes = find_episodes(
+            self.data,
+            subject_no=0,
+            max_interruption="100s")
+        expected_index = self.expected_index_default[0:1]
+        expected_values = [460]
+        pd.testing.assert_series_equal(
+            episodes, pd.Series(expected_values, index=expected_index),
+            check_dtype=False
+        )
 
 
 if __name__ == "__main__":
     unittest.main()
-
-
-# TODO pipe dream create test for different base_times
-# only useful once in production mode

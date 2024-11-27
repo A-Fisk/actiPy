@@ -1,3 +1,4 @@
+from episode_finder_tests import TestFindEpisodes
 import unittest
 import sys
 import os
@@ -14,10 +15,11 @@ if True:  # noqa E402
     import actiPy.preprocessing as prep
     import actiPy.actogram_plot as actp
     import actiPy.periodogram as per
+    import actiPy.episodes as ep
     from tests.activity_tests import assign_values
 
 # Create time index for 10 days with 10-second intervals
-days = 100
+days = 10
 freq = '10s'
 time_index = pd.date_range(start='2000-01-01', periods=8640 * days, freq=freq)
 
@@ -55,15 +57,10 @@ df['lights'] = df.index.hour.map(
 # Display the first few rows of the DataFrame
 print(df.head())
 
-col_no = 3
 
-# TV
-TV = act.calculate_TV(df, subject_no=col_no)
-IS = act.calculate_IS(df, subject_no=col_no)
+episode_cls = TestFindEpisodes
+episode_cls.setUp(episode_cls)
 
-# try for hourly instead
-df_hourly = df.resample("h").mean()
-TV_h = act.calculate_TV(df, subject_no=col_no)
-IS_h = act.calculate_IS(df, subject_no=col_no)
+data = episode_cls.data
 
-print(f"TV {TV}, IS {IS}, TV_h {TV_h}, IS_h {IS_h}")
+episodes = ep.find_episodes(data, subject_no=1)
