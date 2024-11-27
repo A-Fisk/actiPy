@@ -19,7 +19,7 @@ jobs:
           use-mamba: true  
       - name: Install dependencies
         run: |
-          conda env create --file environment.yml 
+          conda env update --file environment.yml 
       - name: Activate conda env
         run: |
           conda activate actipy_env
