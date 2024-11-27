@@ -16,5 +16,7 @@ jobs:
           environment-file: environment.yml
           auto-update-conda: true
           use-mamba: true  
+      - name: Test with makefile
         run: |
+          conda init && conda activate actipy_env
           make all 
