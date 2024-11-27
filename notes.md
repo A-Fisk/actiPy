@@ -6,7 +6,11 @@
 
 ## Current todo 
 
-### 
+### Continuous integration
+- Options
+- Travis $$$ 
+- Circle?
+- Other? github actions!
 
 
 
