@@ -22,6 +22,7 @@ jobs:
           conda env update --file environment.yml 
       - name: Activate conda env
         run: |
+          conda init
           conda activate actipy_env
       - name: Test with makefile
         run: |
