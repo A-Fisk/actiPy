@@ -18,10 +18,10 @@ jobs:
         echo $CONDA/bin >> $GITHUB_PATH
     - name: Install dependencies
       run: |
-        conda env update --file environment.yml --name base
+        conda env create --file environment.yml 
     - name: Activate conda env
       run: |
-        conda activate base 
+        conda activate actipy_env
     - name: Test with makefile
       run: |
         make all 
