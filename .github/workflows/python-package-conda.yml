@@ -18,5 +18,6 @@ jobs:
           use-mamba: true  
       - name: Test with makefile
         run: |
+          conda info 
           conda init && conda activate actipy_env
           make all 
