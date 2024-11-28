@@ -9,6 +9,7 @@ sys.path.insert(
     0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 if True:  # noqa E402
     from actiPy.periodogram import lomb_scargle_period
+    from actiPy.preprocessing import set_circadian_time
     from tests.activity_tests import assign_values, generate_test_data
 
 
@@ -76,6 +77,18 @@ class TestLombScarglePeriod(unittest.TestCase):
         self.assertTrue(
             (20 <= power_values.index).all() and (
                 power_values.index <= 30).all())
+
+    def test_twenty_hrs(self):
+        """Test can detect a 20 hour period"""
+        data = self.data
+        data_circ = set_circadian_time(data, period="28h")
+        result = lomb_scargle_period(
+                data_circ,
+                subject_no=0,
+                low_period=20,
+                high_period=30)
+        self.assertTrue(result["Period"] < 21)
+
 
 
 if __name__ == "__main__":

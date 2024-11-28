@@ -11,9 +11,15 @@
   different 
 - 20 hours should be diff after 7 days so 10 is long enough
 
+- how test set_circadian_time?
+- test lomb_scargle_period
+
+
+- after set_circadian_time, lights working on actogram but not data?
 
 ## TODO
 - test IS/IV catch out invalid value scalar divide (dividing by 0)
+- rename actogram_plot_test.py
 
 ### TODO later/maybe
 - Write documentation
