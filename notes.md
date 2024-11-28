@@ -6,7 +6,9 @@
 
 ## Current todo 
 
-### test IS/IV catch out invalid value scalar divide (dividing by 0)
+### 
+
+
 
 ## TODO
 - rename actogram_plot_test.py
