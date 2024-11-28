@@ -7,12 +7,11 @@
 ## Current todo 
 
 ### 
+- add helper for set_circadian_time checking float vs string input 
 
 
 
 ## TODO
-- rename actogram_plot to just plots 
-- add helped for set_circadian_time checking float vs string input 
 - rename lomb_scargle_period to just find period?
 - move assign_values and generate test data to it's own file? 
 - test actogram/get period with T cycles 

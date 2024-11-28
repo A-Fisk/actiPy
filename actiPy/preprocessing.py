@@ -222,6 +222,8 @@ def set_circadian_time(
     # Convert period string to timedelta
     if isinstance(period, str):
         period = pd.to_timedelta(period)
+    else:
+        raise TypeError("Period must be in timedelta string format")
 
     # Calculate the frequency ratio based on the period
     freq_ratio = 24 / (period.total_seconds() / 3600)
