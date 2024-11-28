@@ -309,9 +309,9 @@ def calculate_IS(data, subject_no=0):
     total_variance = curr_data.var()
 
     # is 0s avoid divide by 0
-    if time_variance == 0 and total_variance == 0: 
-        return 0 
-    
+    if time_variance == 0 and total_variance == 0:
+        return np.nan
+
     interdaily_stability = time_variance / total_variance
 
     return interdaily_stability
@@ -381,10 +381,10 @@ def calculate_TV(data, subject_no=0):
 
     # divide by total variance
     total_variance = curr_data.var()
-    
+
     # not if both 0s
     if time_variance == 0 and total_variance == 0:
-        return 0
+        return np.nan
 
     timepoint_variability = time_variance / total_variance
 

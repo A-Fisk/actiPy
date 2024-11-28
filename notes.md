@@ -44,6 +44,7 @@ period of day we want)
 - minimum activity in episodes? 
 - add in linux into github actions workflow
 - rename lomb_scargle_period to just find period?
+- Intel MKL warning on make all? 
 
 ## Questions
 - how deal with start time? 
