@@ -140,7 +140,6 @@ class TestPlotActogram(unittest.TestCase):
                 days_count,
                 "Number of axes does not match expected number of days.")
 
-
     def test_non_24hr_day(self):
         """Tests can handle non-24 hour days"""
         data = self.test_data
@@ -148,10 +147,9 @@ class TestPlotActogram(unittest.TestCase):
         fig, ax, params_dict = plot_actogram(data_twenty, title="20hr test")
         days_twenty = len(data_twenty.index.normalize().unique()) + 1
         self.assertEqual(
-            len(ax), 
-            days_twenty, 
+            len(ax),
+            days_twenty,
             "Number of axes does not match expected number of days.")
-
 
 
 class TestPlotActivityProfile(unittest.TestCase):

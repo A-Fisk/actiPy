@@ -85,8 +85,14 @@ def plot_actogram(data,
     start = data_plot.index.min()
     end = data_plot.index.max()
 
+    # check frequency works
+    try:
+        pd.Timedelta(freq)
+    except:
+        freq = pd.Timedelta(f"1{freq}")
+
     # Extend the range by 1 day but make sure lines up with original index
-    # select the length of one day  
+    # select the length of one day
     day_length = len(data_plot.loc[str(data_plot.index[0].date())])
     extended_start = start - (pd.Timedelta(freq) * day_length)
     extended_end = end + (pd.Timedelta(freq) * day_length)
@@ -95,7 +101,7 @@ def plot_actogram(data,
     extended_index = pd.date_range(
         start=extended_start, end=extended_end, freq=freq)
     data_plot = data_plot.reindex(extended_index, fill_value=-100)
-    
+
     # select just the days
     days = data_plot.index.normalize().unique()
 

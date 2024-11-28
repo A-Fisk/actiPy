@@ -83,12 +83,11 @@ class TestLombScarglePeriod(unittest.TestCase):
         data = self.data
         data_circ = set_circadian_time(data, period="28h")
         result = lomb_scargle_period(
-                data_circ,
-                subject_no=0,
-                low_period=20,
-                high_period=30)
+            data_circ,
+            subject_no=0,
+            low_period=20,
+            high_period=30)
         self.assertTrue(result["Period"] < 21)
-
 
 
 if __name__ == "__main__":
