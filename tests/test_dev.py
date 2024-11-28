@@ -58,6 +58,6 @@ df['lights'] = df.index.hour.map(
 print(df.head())
 
 fig, ax = plt.subplots(ncols=2)
-subplot = ax[1].get_subplotspec()
+subplot = ax[1]
 plot = actp.plot_actogram(df, fig=fig, subplot=subplot, showfig=True)
 plot_fig = actp.plot_actogram(df, showfig=True)

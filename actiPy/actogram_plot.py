@@ -109,9 +109,14 @@ def plot_actogram(data,
 
     # add subplots to figure if passed when called
     else:
+        # remove ticks so don't draw over when we add later 
+        subplot.set(yticks=[], xticks=[])
+
+        # draw subplots for each day on the subplot given
+        subplot_spec = subplot.get_subplotspec()
         subplot_grid = gs.GridSpecFromSubplotSpec(nrows=(len(days) - 1),
                                                   ncols=1,
-                                                  subplot_spec=subplot,
+                                                  subplot_spec=subplot_spec,
                                                   wspace=0,
                                                   hspace=0)
         ax = []

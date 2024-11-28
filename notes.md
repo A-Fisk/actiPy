@@ -25,6 +25,13 @@ how do I update it to work on the subplot ax instead?
 
 - xlabel updated = fine on both single and multiple plots 
 
+- yticks - remove when plotting? 
+- update to go with subplot instead of getting subplotspec first? 
+- okay that worked for now, will probably break a test or two but for now is
+  good
+- can then set yticks to be 0
+- great, does it also work for xticks? 
+
 ## TODO
 - update xlabel/ylabel depending on if subplot or not
 - rename actogram_plot to just plots 
