@@ -45,7 +45,7 @@ def calculate_IV(data):
     denominator = (n - 1) * np.sum((x - x_mean)**2)
 
     if numerator == 0 and denominator == 0:
-        return 0
+        return np.nan
 
     # Compute IV
     IV = numerator / denominator
