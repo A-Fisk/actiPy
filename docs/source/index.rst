@@ -11,6 +11,8 @@ actiPy is a Python library for researchers and anyone interested in analysing
 circadian activity data, that contains a series of methods that are commonly
 used in the field.
 
+Check out the :doc: `usage` for further information.
+
 .. note::
    This project is under active development. 
    First build of documentation.  

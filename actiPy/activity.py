@@ -45,7 +45,7 @@ def calculate_IV(data):
     denominator = (n - 1) * np.sum((x - x_mean)**2)
 
     if numerator == 0 and denominator == 0:
-        return 0
+        return np.nan
 
     # Compute IV
     IV = numerator / denominator
@@ -310,7 +310,7 @@ def calculate_IS(data, subject_no=0):
 
     # is 0s avoid divide by 0
     if time_variance == 0 and total_variance == 0: 
-        return 0 
+        return np.nan 
     
     interdaily_stability = time_variance / total_variance
 
