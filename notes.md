@@ -11,7 +11,6 @@
 This is an actogram_plot thing isn't it? 
 - what is it? 
 - params dict plots xlabel and ylabel
-- then in plotting_kwargs
 
 - yay works, now need to move ylabel pos so a bit further out on subplots?
 

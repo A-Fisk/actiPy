@@ -109,7 +109,7 @@ def plot_actogram(data,
 
     # add subplots to figure if passed when called
     else:
-        # remove ticks so don't draw over when we add later 
+        # remove ticks so don't draw over when we add later
         subplot.set(yticks=[], xticks=[])
 
         # draw subplots for each day on the subplot given

@@ -112,10 +112,10 @@ class TestPlotActogram(unittest.TestCase):
     def test_plot_actogram_subplotting(self):
         """Test that can plot on subplot"""
         data = self.test_data
-        fig = plt.figure()
-        ax = fig.add_gridspec(ncols=2, nrows=2)
+        fig, ax = plt.subplots(ncols=2)
+        subplot = ax[1]
         fig, ax, params_dict = plot_actogram(
-            data, subject_no=0, light_col=-1, fig=fig, subplot=ax[0],
+            data, subject_no=0, light_col=-1, fig=fig, subplot=subplot,
             title="subplots test")
 
         self.assertIsInstance(
