@@ -13,7 +13,7 @@ sys.path.insert(
 if True:  # noqa E402
     import actiPy.activity as act
     import actiPy.preprocessing as prep
-    import actiPy.actogram_plot as actp
+    import actiPy.plots as actp
     import actiPy.periodogram as per
     import actiPy.episodes as ep
     from tests.activity_tests import assign_values

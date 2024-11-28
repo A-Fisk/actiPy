@@ -6,17 +6,11 @@
 
 ## Current todo 
 
-### update xlabel/ylabel depending on if subplot or not
+### 
 
-This is an actogram_plot thing isn't it? 
-- what is it? 
-- params dict plots xlabel and ylabel
-
-- yay works, now need to move ylabel pos so a bit further out on subplots?
 
 
 ## TODO
-- update xlabel/ylabel depending on if subplot or not
 - rename actogram_plot to just plots 
 - add helped for set_circadian_time checking float vs string input 
 - rename lomb_scargle_period to just find period?
