@@ -57,7 +57,10 @@ df['lights'] = df.index.hour.map(
 # Display the first few rows of the DataFrame
 print(df.head())
 
-fig, ax = plt.subplots(ncols=2)
-subplot = ax[1]
-plot = actp.plot_actogram(df, fig=fig, subplot=subplot, showfig=True)
-plot_fig = actp.plot_actogram(df, showfig=True)
+df_circ = prep.set_circadian_time(df, period='28h')
+
+plot_fig = actp.plot_actogram(df_circ, showfig=True)
+
+fig, ax = plt.subplots()
+ax.plot(df_circ.iloc[:, 0])
+fig.show()
