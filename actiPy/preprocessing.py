@@ -48,25 +48,34 @@ def plot_kwarg_decorator(func):
 
         # Set x-axis label
         xlabel = kwargs.get("xlabel", params_dict.get("xlabel", ""))
-        xlabelpos = kwargs.get("xlabelpos", (0.5, 0.05))
         if xlabel:
             final_ax.set_xlabel(
                     xlabel,
+                    labelpad=5,
                     ha='center',
                     va='center')
 
         # Set y-axis label
         ylabel = kwargs.get("ylabel", params_dict.get("ylabel", ""))
         ylabelpos = kwargs.get("ylabelpos", (0.02, 0.5))
+        subplot = kwargs.get("subplot", params_dict.get("subplot", None))
         if ylabel:
-            fig.text(
-                ylabelpos[0],
-                ylabelpos[1],
-                ylabel,
-                ha="center",
-                va="center",
-                rotation="vertical"
-            )
+            if subplot:
+                subplot.set_ylabel(
+                        ylabel,
+                        labelpad=5,
+                        ha='center',
+                        va='center',
+                        rotation='vertical')
+            else:
+                fig.text(
+                    ylabelpos[0],
+                    ylabelpos[1],
+                    ylabel,
+                    ha="center",
+                    va="center",
+                    rotation="vertical"
+                )
 
         # Set plot title
         title = kwargs.get("title", params_dict.get("title", ""))

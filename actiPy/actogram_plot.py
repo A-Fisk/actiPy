@@ -174,6 +174,7 @@ def plot_actogram(data,
         "interval": 6,
         "title": "Double Plotted Actogram",
         "timeaxis": True,
+        "subplot": subplot
     }
 
     # put axis as a controllable parameter

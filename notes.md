@@ -12,25 +12,9 @@ This is an actogram_plot thing isn't it?
 - what is it? 
 - params dict plots xlabel and ylabel
 - then in plotting_kwargs
-- plots using fig.text - so if plotted as part of a subplot, would be 
-incorrect
-- lets try that in test_dev
-- okay yes see problem, now plots for whole fig
-how do I update it to work on the subplot ax instead? 
-- xlabel easy just do on final ax
-- ylabel? 
 
-- okay xlabel worked but overlapping xticks? 
-- and yticks also present
+- yay works, now need to move ylabel pos so a bit further out on subplots?
 
-- xlabel updated = fine on both single and multiple plots 
-
-- yticks - remove when plotting? 
-- update to go with subplot instead of getting subplotspec first? 
-- okay that worked for now, will probably break a test or two but for now is
-  good
-- can then set yticks to be 0
-- great, does it also work for xticks? 
 
 ## TODO
 - update xlabel/ylabel depending on if subplot or not
