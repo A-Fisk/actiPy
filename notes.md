@@ -6,12 +6,11 @@
 
 ## Current todo 
 
-### Documentation?
+### Rename whole freaking project!
+- circaPy
 
-- okay how? 
-- two separate
-- how write
-- how host 
+
+
 
 #### README
 https://dbader.org/blog/write-a-great-readme-for-your-github-project
@@ -22,8 +21,12 @@ Tutorial
 https://www.sphinx-doc.org/en/master/tutorial/more-sphinx-customization.html 
 
 ## TODO
+- publish to pypi
 - host sphinx on read-the-docs
 - use different template for docs? 
+- add in doc urls to pyproject/metadata 
+- setup apitoken in twine?
+- auto generate wheels and upload - github actions
 
 ### TODO later/maybe
 - Write documentation
