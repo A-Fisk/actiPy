@@ -9,7 +9,21 @@
 ### update xlabel/ylabel depending on if subplot or not
 
 This is an actogram_plot thing isn't it? 
+- what is it? 
+- params dict plots xlabel and ylabel
+- then in plotting_kwargs
+- plots using fig.text - so if plotted as part of a subplot, would be 
+incorrect
+- lets try that in test_dev
+- okay yes see problem, now plots for whole fig
+how do I update it to work on the subplot ax instead? 
+- xlabel easy just do on final ax
+- ylabel? 
 
+- okay xlabel worked but overlapping xticks? 
+- and yticks also present
+
+- xlabel updated = fine on both single and multiple plots 
 
 ## TODO
 - update xlabel/ylabel depending on if subplot or not

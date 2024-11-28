@@ -50,12 +50,10 @@ def plot_kwarg_decorator(func):
         xlabel = kwargs.get("xlabel", params_dict.get("xlabel", ""))
         xlabelpos = kwargs.get("xlabelpos", (0.5, 0.05))
         if xlabel:
-            fig.text(
-                xlabelpos[0],
-                xlabelpos[1],
-                xlabel,
-                ha="center",
-                va="center")
+            final_ax.set_xlabel(
+                    xlabel,
+                    ha='center',
+                    va='center')
 
         # Set y-axis label
         ylabel = kwargs.get("ylabel", params_dict.get("ylabel", ""))
