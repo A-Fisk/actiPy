@@ -6,12 +6,23 @@
 
 ## Current todo 
 
-### 
+### Documentation?
 
+- okay how? 
+- two separate
+- how write
+- how host 
+
+#### README
+https://dbader.org/blog/write-a-great-readme-for-your-github-project
+
+
+#### Documentation 
 
 
 ## TODO
-- rename actogram_plot_test.py
+
+
 
 ### TODO later/maybe
 - Write documentation
@@ -22,7 +33,6 @@
 - gui to select start/end of sleep period? 
 - conda env create in makefile?
 - Add to pypi
-- fix CI - use circle instead? free? 
 - add in biodare methods 
 - check all docstrings in numpy format 
 - add to light remap so can remap based on subjective light/dark (half/what
