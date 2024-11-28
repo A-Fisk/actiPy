@@ -6,21 +6,9 @@
 
 ## Current todo 
 
-### - test actogram/get period with T cycles 
-- after set_circadian_time, lights working on actogram but not data?
-- okay something about diff between df and df_circ
-Frequency? 
-- something to do with extended_start and end? + index? 
-- okay so problem is the reindex step which puts all values at -100
-
-- Creating the extended start and end uses hours=24 which doesn't line up?
-- so problem is that since 24 hours doesn't line up the start doesn't line up
-- so if I do as multiple of actual index by calculating len of data in one day
-  hopefully that will line up? 
-  - fixed, but does it test well? 
+### test IS/IV catch out invalid value scalar divide (dividing by 0)
 
 ## TODO
-- test IS/IV catch out invalid value scalar divide (dividing by 0)
 - rename actogram_plot_test.py
 
 ### TODO later/maybe

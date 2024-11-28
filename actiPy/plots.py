@@ -88,7 +88,7 @@ def plot_actogram(data,
     # check frequency works
     try:
         pd.Timedelta(freq)
-    except:
+    except BaseException:
         freq = pd.Timedelta(f"1{freq}")
 
     # Extend the range by 1 day but make sure lines up with original index
