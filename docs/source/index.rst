@@ -6,12 +6,18 @@
 actiPy documentation
 ====================
 
-Add your content using ``reStructuredText`` syntax. See the
-`reStructuredText <https://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html>`_
-documentation for details.
 
+actiPy is a Python library for researchers and anyone interested in analysing
+circadian activity data, that contains a series of methods that are commonly
+used in the field.
+
+.. note::
+   This project is under active development. 
+   First build of documentation.  
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
+    
+   usage 
 

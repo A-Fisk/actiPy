@@ -18,11 +18,12 @@ https://dbader.org/blog/write-a-great-readme-for-your-github-project
 
 
 #### Documentation 
-
+Tutorial 
+https://www.sphinx-doc.org/en/master/tutorial/more-sphinx-customization.html 
 
 ## TODO
-
-
+- host sphinx on read-the-docs
+- use different template for docs? 
 
 ### TODO later/maybe
 - Write documentation
