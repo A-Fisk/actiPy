@@ -6,15 +6,13 @@
 
 ## Current todo 
 
-### 
-- add helper for set_circadian_time checking float vs string input 
-
+### - test actogram/get period with T cycles 
+- okay how test, check to see how many days? give short enough period should be
+  different 
+- 20 hours should be diff after 7 days so 10 is long enough
 
 
 ## TODO
-- rename lomb_scargle_period to just find period?
-- move assign_values and generate test data to it's own file? 
-- test actogram/get period with T cycles 
 - test IS/IV catch out invalid value scalar divide (dividing by 0)
 
 ### TODO later/maybe
@@ -36,6 +34,7 @@ period of day we want)
 - Significance testing of rhythms (chi-square periodogram? how do in actogramJ)
 - minimum activity in episodes? 
 - add in linux into github actions workflow
+- rename lomb_scargle_period to just find period?
 
 ## Questions
 - how deal with start time? 

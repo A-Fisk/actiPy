@@ -11,6 +11,7 @@ sys.path.insert(
     0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 if True:  # noqa E402
     from actiPy.plots import plot_actogram, plot_activity_profile
+    from actiPy.preprocessing import set_circadian_time
     from tests.activity_tests import assign_values, generate_test_data
 
 
@@ -138,6 +139,19 @@ class TestPlotActogram(unittest.TestCase):
                 len(ax),
                 days_count,
                 "Number of axes does not match expected number of days.")
+
+
+    def test_non_24hr_day(self):
+        """Tests can handle non-24 hour days"""
+        data = self.test_data
+        data_twenty = set_circadian_time(data, period="20h")
+        fig, ax, params_dict = plot_actogram(data_twenty, title="20hr test")
+        days_twenty = len(data_twenty.index.normalize().unique()) + 1
+        self.assertEqual(
+            len(ax), 
+            days_twenty, 
+            "Number of axes does not match expected number of days.")
+
 
 
 class TestPlotActivityProfile(unittest.TestCase):
