@@ -1,4 +1,4 @@
-name: actipy_env
+name: circapy_env
 
 channels:
     - defaults

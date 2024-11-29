@@ -5,8 +5,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gs
 from matplotlib.transforms import Bbox
-import actiPy.activity as act
-import actiPy.preprocessing as prep
+import circaPy.activity as act
+import circaPy.preprocessing as prep
 
 
 @prep.validate_input

@@ -10,7 +10,7 @@ import datetime
 sys.path.insert(
     0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 if True:  # noqa E402
-    from actiPy.activity import calculate_mean_activity, calculate_IV, \
+    from circaPy.activity import calculate_mean_activity, calculate_IV, \
         normalise_to_baseline, light_phase_activity, relative_amplitude, \
         calculate_IS, calculate_TV
 

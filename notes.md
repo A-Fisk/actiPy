@@ -1,4 +1,4 @@
-# Plan for actipy
+# Plan for circapy
 
 ## Overall plans
 - Get individual functions working as wanted
@@ -8,8 +8,19 @@
 
 ### Rename whole freaking project!
 - circaPy
+- actipytools
+- actogrampy
+- clocklabpy
 
-
+Places to rename
+- pyproject file
+- dir name
+- imports
+- readme
+- documentation
+- else? 
+- github
+- remote 
 
 
 #### README
@@ -96,3 +107,9 @@ CONDA_SUBDIR=osx-64 conda env create -f environment.yml
 
 ### Update 
 CONDA_SUBDIR=osx-64 conda env update -f environment.yml
+
+# Pip
+python3 -m build
+
+python3 -m twine upload dist/*
+

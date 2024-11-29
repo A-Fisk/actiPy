@@ -2,7 +2,7 @@
 
 import os
 import numpy as np
-import actiPy.preprocessing as prep
+import circaPy.preprocessing as prep
 
 
 def sleep_process(data, window=4):

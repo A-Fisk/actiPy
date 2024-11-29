@@ -6,7 +6,7 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = 'actiPy'
+project = 'circaPy'
 copyright = '2024, Angus Fisk'
 author = 'Angus Fisk'
 release = '0.1.4'

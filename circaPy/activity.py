@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-import actiPy.preprocessing as prep
+import circaPy.preprocessing as prep
 
 
 @prep.validate_input

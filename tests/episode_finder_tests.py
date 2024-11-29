@@ -8,7 +8,7 @@ import datetime
 sys.path.insert(
     0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 if True:  # noqa E402
-    from actiPy.episodes import find_episodes
+    from circaPy.episodes import find_episodes
 
 
 class TestFindEpisodes(unittest.TestCase):

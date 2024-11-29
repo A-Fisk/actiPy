@@ -11,11 +11,11 @@ sns.set()
 sys.path.insert(
     0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 if True:  # noqa E402
-    import actiPy.activity as act
-    import actiPy.preprocessing as prep
-    import actiPy.plots as actp
-    import actiPy.periodogram as per
-    import actiPy.episodes as ep
+    import circaPy.activity as act
+    import circaPy.preprocessing as prep
+    import circaPy.plots as actp
+    import circaPy.periodogram as per
+    import circaPy.episodes as ep
     from tests.activity_tests import assign_values
 
 # Create time index for 10 days with 10-second intervals

@@ -12,7 +12,7 @@ jobs:
         uses: conda-incubator/setup-miniconda@v3
         with:
           miniconda-version: latest
-          activate-environment: actipy_env
+          activate-environment: circapy_env
           environment-file: environment.yml
           auto-update-conda: true
           use-mamba: true  

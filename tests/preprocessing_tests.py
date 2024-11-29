@@ -11,7 +11,7 @@ sys.path.insert(
     0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 if True:  # noqa E402
     from tests.activity_tests import assign_values, generate_test_data
-    from actiPy.preprocessing import set_circadian_time
+    from circaPy.preprocessing import set_circadian_time
 
 
 class TestSetCircadianTime(unittest.TestCase):

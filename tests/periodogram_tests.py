@@ -8,8 +8,8 @@ import matplotlib.pyplot as plt
 sys.path.insert(
     0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 if True:  # noqa E402
-    from actiPy.periodogram import lomb_scargle_period
-    from actiPy.preprocessing import set_circadian_time
+    from circaPy.periodogram import lomb_scargle_period
+    from circaPy.preprocessing import set_circadian_time
     from tests.activity_tests import assign_values, generate_test_data
 
 

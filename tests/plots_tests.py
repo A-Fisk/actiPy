@@ -10,8 +10,8 @@ from unittest.mock import patch
 sys.path.insert(
     0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 if True:  # noqa E402
-    from actiPy.plots import plot_actogram, plot_activity_profile
-    from actiPy.preprocessing import set_circadian_time
+    from circaPy.plots import plot_actogram, plot_activity_profile
+    from circaPy.preprocessing import set_circadian_time
     from tests.activity_tests import assign_values, generate_test_data
 
 

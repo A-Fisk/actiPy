@@ -3,8 +3,8 @@ import pdb
 import pandas as pd
 import numpy as np
 from astropy.timeseries import LombScargle
-import actiPy.activity as act
-import actiPy.preprocessing as prep
+import circaPy.activity as act
+import circaPy.preprocessing as prep
 
 
 @prep.validate_input

@@ -1,9 +1,9 @@
 [![Build Status](https://travis-ci.org/A-Fisk/actigraphy_analysis.png?branch=master)](https://travis-ci.org/A-Fisk/actigraphy_analysis)  
 
 
-# ActiPy
+# CircaPy
 
-ActiPy is a python module for circadian analysis of activity data.
+CircaPy is a python module for circadian analysis of activity data.
 It was developed using laboratory
 rodents data but is applicable across species and monitoring devices.
 
@@ -16,23 +16,23 @@ Before you continue you need an installation of Anaconda, available
 Then in a terminal of your choice run the following 
 
 ```
-pip install git+https://github.com/aa-fisk/actiPy.git@main
+pip install git+https://github.com/A-Fisk/circaPy.git@main
 ```
 
-This will install actiPy in your current python environment.
+This will install circaPy in your current python environment.
 Package dependencies are listed in the environment.yml file 
 
 
-## Using actiPy
+## Using circaPy
 
-actiPy provides a set of functions to analyse and plot the most common
+circaPy provides a set of functions to analyse and plot the most common
 methods of circadian analysis.
 
 Create some test data 
 ```
 import pandas as pd
 import numpy as np
-import actiPy.activity as act
+import circaPy.activity as act
 
 # Create a sample dataset with time-series activity data
 index = pd.date_range(start='2024-01-01', periods=86400, freq="10s")
@@ -43,7 +43,7 @@ df = pd.DataFrame(values, index=index)
 
 Calculate IV 
 ```
-# Use actiPy's calculate_IV function to compute Interdaily Variability
+# Use circaPy's calculate_IV function to compute Interdaily Variability
 iv = act.calculate_IV(df)
 
 # Print the result
@@ -52,8 +52,8 @@ print(f"Interdaily Variability (IV): {iv:.4f}")
 
 Plot actogram 
 ```
-# Use actiPy plot_actogram
-import actiPy.actogram_plot as actp
+# Use circaPy plot_actogram
+import circaPy.actogram_plot as actp
 
 actp.plot_actogram(df, showfig=True)
 ```
