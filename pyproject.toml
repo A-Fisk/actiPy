@@ -7,7 +7,7 @@ name = "circaPy"
 authors = [
     {name = "Angus Fisk", email = "angus_fisk@hotmail.com"},
     ]
-version = "0.1.4"
+version = "0.1.5"
 description = "For analysing circadian activity data"
 readme = "README.md"
 requires-python = ">=3.9"

@@ -38,6 +38,7 @@ https://www.sphinx-doc.org/en/master/tutorial/more-sphinx-customization.html
 - add in doc urls to pyproject/metadata 
 - setup apitoken in twine?
 - auto generate wheels and upload - github actions
+- add changelog files 
 
 ### TODO later/maybe
 - Write documentation
@@ -92,6 +93,10 @@ period of day we want)
 
 
 ### How do we get there
+
+# changelog
+v0.1.5 - updates name to circaPy
+
 # Resources 
 
 - Example of how to structure repo 
